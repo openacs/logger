@@ -51,6 +51,11 @@ if { [exists_and_not_null project_id] } {
 # Projects
 set project_values [db_list_of_lists select_projects {}]
 
+if { ([exists_and_not_null start_date] || [exists_and_not_null end_date]) && ![exists_and_not_null time_stamp] } {
+    # HACK: The filter is called 'time_stamp', but the variables passed are called start_date/end_date.
+    set time_stamp "foo"
+}
+
 #----------------------------------------------------------------------
 # Define list elements
 #----------------------------------------------------------------------
