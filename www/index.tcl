@@ -41,10 +41,12 @@ ad_page_contract {
 
 set instance_name [ad_conn instance_name]
 
+set admin_p [permission::permission_p -object_id [ad_conn package_id] -privilege admin]
 
 if { ![exists_and_not_null project_id] } {
     set package_projects [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
-    if { [llength $package_projects] == 1 } {
+    set num_package_projects [llength $package_projects]
+    if { $num_package_projects == 1 } {
         set project_id $package_projects
     }
 }
