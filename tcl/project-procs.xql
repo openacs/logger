@@ -2,7 +2,7 @@
 
 <queryset>
 
-  <fullquery name="logger::project::get.select_info">
+  <fullquery name="logger::project::get.select_project">
     <querytext>
         select project_id,
                name,

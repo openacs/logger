@@ -24,7 +24,7 @@ ad_proc -public logger::project::new {
  
   <p>
   I've tried to design this proc so that it can be used also
-  if there is no ad_conn connection, for example during a data import.
+  if there is no HTTP (ad_conn) connection, for example during a data import.
   </p>
 
   @param name          The name of the project.
@@ -99,6 +99,8 @@ ad_proc -public logger::project::delete {
   contained within it. Also deletes all logger variables mapped to this
   project that are not mapped to other projects.
 
+  @return The return value from db_exec_plsql
+
   @param project_id The id of the project to delete
 
   @author Peter Marklund
@@ -125,7 +127,7 @@ ad_proc -public logger::project::get {
 } {
     upvar $array project_array
 
-    db_1row select_info {} -column_array project_array
+    db_1row select_project {} -column_array project_array
 }
 
 ad_proc -public logger::project::add_variable {

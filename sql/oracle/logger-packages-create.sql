@@ -98,8 +98,16 @@ as
   )
   is
   begin
-        -- Delete all variables only mapped to this project. This will cascade
-        -- referencing measurements
+        -- Delete all measurements in the project
+        for rec in (select measurement_id
+                    from logger_measurements
+                    where project_id = logger_project.delete.project_id
+                   )
+        loop
+          logger_measurement.delete(rec.measurement_id);
+        end loop;        
+
+        -- Delete all variables only mapped to this project.
         for rec in (select variable_id
                    from logger_variables
                    where exists (select 1
@@ -116,7 +124,7 @@ as
         end loop;                                 
 
         -- Delete the project acs object. This will cascade the row in the logger_projects table
-        -- as well as all remaining measurements and projections in the project
+        -- as well as all projections in the project
         acs_object.delete(project_id);
 
   end delete;

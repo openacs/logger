@@ -41,6 +41,12 @@ aa_register_case logger_create_package {
         set projection_start_time "2003-04-10"
         set projection_end_time "2003-04-20"
         set projection_value "10"
+        array set hour_measurement_1 {
+            value 11
+            time_stamp "2003-04-15"
+            description "I worked on the time logger"
+        }
+        
 
         # Create a package
         set package_id [apm_package_instance_new -instance_name $package_name \
@@ -116,8 +122,16 @@ aa_register_case logger_create_package {
                                                                       $projection_value
 
         # Create mesurements
+        set hour_measurement_1_id [logger::measurement::new -project_id $project_id \
+                                                            -variable_id $hours_var_id \
+                                                            -value $hour_measurement_1(value) \
+                                                            -time_stamp $hour_measurement_1(time_stamp) \
+                                                            -description $hour_measurement_1(description)]
 
         # Check that measurements are retrievable
+        logger::measurement::get -measurement_id $hour_measurement_1_id -array hour_measurement_1_retr
+        aa_equals "Value of measurements is retrievable" $hour_measurement_1_retr(value) \
+                                                         $hour_measurement_1(value)
 
     }  -teardown_code { 
         #####
