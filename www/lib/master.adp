@@ -5,7 +5,7 @@
 <property name="header_stuff">
   @header_stuff@
   <style type="text/css" media="all">
-    @import "@package_url@style.css";
+    @import "/resources/logger/style.css";
   </style>
 </property>
 <property name="doc_type">
