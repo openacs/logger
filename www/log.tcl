@@ -75,7 +75,7 @@ logger::variable::get -variable_id $variable_id -array variable_array
 
 # The creator of a log entry can always edit it
 if { $entry_exists_p } {
-    set edit_p [expr [permission::permission_p -object_id $entry_id -privilege edit] || \
+    set edit_p [expr [permission::permission_p -object_id $entry_id -privilege write] || \
                     $current_user_id == $entry_array(creation_user)]
 } else {
     set edit_p 0
