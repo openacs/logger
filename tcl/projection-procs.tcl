@@ -16,6 +16,8 @@ ad_proc -public logger::projection::new {
     {-start_time:required}
     {-end_time:required}
     {-value:required}
+    {-name:required}
+    {-description:required}
 } {
     Create a new projection for a certain variable and project.
 
@@ -23,9 +25,9 @@ ad_proc -public logger::projection::new {
     @param project_id    The id of the project the projection is for
     @param variable_id   The id of the variable the projection is for
     @param start_time    Marks the start of the time range the projection is for.
-                         Must be on ANSI format.
+                         Must be on ANSI day format "YYYY-MM-DD".
     @param end_time      Marks the end of the time range the projection is for.
-                         Must be on ANSI format.
+                         Must be on ANSI day format "YYYY-MM-DD".
     @param value         The anticipated or targeted value (a sum for 
                          additive variables, an average for non-additive 
                          variables).
@@ -43,6 +45,25 @@ ad_proc -public logger::projection::new {
     db_dml insert_projection {}
 
     return $projection_id
+}
+
+ad_proc -public logger::projection::edit {
+    {-projection_id ""}
+    {-variable_id:required}
+    {-start_time:required}
+    {-end_time:required}
+    {-value:required}
+    {-name:required}
+    {-description:required}
+} {
+    Edit a projection. The parameters are explained in the 
+    logger::projection::new proc.
+
+    @return The return value of db_dml
+
+    @author Peter Marklund
+} {
+    db_dml update_projection {}
 }
 
 ad_proc -public logger::projection::delete {

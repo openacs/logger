@@ -152,6 +152,8 @@ create table logger_projections (
   projection_id         integer
                         constraint logger_projections_pk
                         primary key,
+  name                  varchar(1000),
+  description           varchar(4000),
   project_id            integer
                         constraint logger_projections_pid_nn
                         not null

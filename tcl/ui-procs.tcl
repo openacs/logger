@@ -70,3 +70,39 @@ ad_proc -public logger::ui::navbar_link_selected_p {
 
     return $selected_p
 }
+
+ad_proc -public logger::ui::variable_options {
+    {-project_id:required}
+} {
+    Return a list suitable to be passed to the form builder
+    for the select box of the variables that are mapped to
+    a project.
+
+    @param project_id The id of the project to return variable options for
+    
+    @return A list with variable options on the format 
+         [list [list variable_label1 variable_id1] [list variable_label2 variable_value2] ...]
+         Returns the empty string if project_id is an empty string.
+
+    @author Peter Marklund
+} {
+    if { [empty_string_p $project_id] } {
+        return ""
+    }
+
+    set variable_options [list]
+    db_foreach variable_options {
+        select lv.variable_id,
+               lv.name
+        from logger_variables lv
+        where exists (select 1
+                      from logger_project_var_map lpvm
+                      where lpvm.project_id = :project_id
+                        and lpvm.variable_id = lv.variable_id
+                      )
+    } {
+        lappend variable_options [list $name $variable_id] 
+    }
+
+    return $variable_options
+}

@@ -114,9 +114,7 @@ if { $project_exists_p } {
          }
     }
    
-} else {
-    # We are in add mode
-}
+} 
 
 # Finalize the form with the execution blocks
 ad_form -extend -name project_form -select_query {

@@ -15,10 +15,22 @@ set home_url [ad_parameter -package_id [ad_acs_kernel_id] HomeURL]
 set application_url [ad_conn url]
 set permissions_uri "/permissions/one"
 
+###########
+#
+# Projects
+#
+###########
+
 db_multirow -extend { permissions_url } projects select_projects {} {
     set description [string_truncate -len 50 $description]
     set permissions_url "${permissions_uri}?[export_vars {{object_id $project_id} application_url}]"
 }
+
+###########
+#
+# Variables
+#
+###########
 
 db_multirow -extend { permissions_url } variables select_variables {
       select lv.variable_id,
@@ -39,6 +51,32 @@ db_multirow -extend { permissions_url } variables select_variables {
 } {
     set permissions_url "${permissions_uri}?[export_vars {{object_id $variable_id} application_url}]"
 }
+
+###########
+#
+# Projections
+#
+###########
+
+db_multirow projections select_variables {
+    select lpe.projection_id,
+           lpe.name,
+           lpe.description,
+           lpe.value,
+           lpo.name as project_name,
+           lv.name as variable_name,
+           acs_permission.permission_p(lpo.project_id, :user_id, 'admin') as admin_p
+    from logger_projections lpe,
+         logger_projects lpo,
+         logger_variables lv
+    where exists (select 1
+                  from logger_project_pkg_map lppm
+                  where lppm.package_id = :package_id
+                    and lppm.project_id = lpe.project_id
+                 ) 
+      and lpe.project_id = lpo.project_id
+      and lpe.variable_id = lv.variable_id
+} 
 
 set package_permissions_url "${permissions_uri}?[export_vars {{object_id $package_id} application_url}]"
 

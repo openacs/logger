@@ -1,5 +1,5 @@
 ad_page_contract {
-    Add/edit/display a variable for this Logger application instance.
+    Add/edit/display a variable.
     
     @author Peter marklund (peter@collaboraid.biz)
     @creation-date 2003-04-15
