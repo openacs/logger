@@ -109,13 +109,13 @@ list::create \
         }
         description {
             label "Description"
-            display_eval {[string_truncate -len 50 $description]}
+            display_eval {[string_truncate -len 50 -- $description]}
             link_url_eval {log?[export_vars { entry_id }]}
             link_html { title "View this entry" }
         }
         description_long {
             label "Description"
-            display_eval {[string_truncate -len 400 $description]}
+            display_eval {[string_truncate -len 400 -- $description]}
             hide_p 1
             link_url_eval {log?[export_vars { entry_id }]}
             link_html { title "View this entry" }
