@@ -19,7 +19,7 @@ ad_proc -public logger::entry::new {
     {-party_id ""}
     {-task_item_id ""}
     {-project_item_id ""}
-    {-update_status_p:boolean}
+    {-update_status:boolean}
 } {
     <p>
       Create a logger entry.
