@@ -82,6 +82,8 @@ ad_form -extend -name project_form -select_query {
            active_p
     from   logger_projects
     where  project_id = :project_id
+} -new_request {
+    set project_lead [ad_conn user_id]
 } -validate {
     {
         name

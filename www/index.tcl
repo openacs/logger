@@ -2,24 +2,40 @@ ad_page_contract {
     User index page for the Logger application.
     
     @author Peter marklund (peter@collaboraid.biz)
+    @author Lars Pind (lars@collaboraid.biz)
     @creation-date 2003-04-08
     @cvs-id $Id$
 } {
-    {selected_project_id:integer ""}
-    {selected_variable_id:integer ""}
-    {selected_projection_id:integer ""}
-    {selected_user_id:integer ""}
-    {selected_start_date ""}
-    {selected_end_date ""}
-    {selected_group_by ""}
-}
-
-if { [empty_string_p [ad_conn query]] } {
-    set weekdayno [clock format [clock seconds] -format %w]
-    set new_start_date [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
-    set new_end_date [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
-    ad_returnredirect ".?[export_vars { { selected_start_date $new_start_date } { selected_end_date $new_end_date } { selected_group_by "time_stamp" } }]"
-    ad_script_abort
+    entry_id:integer,optional
+    {variable_id:integer,optional {[db_string first_variable_id { select variable_id from logger_variables order by variable_id limit 1 } -default {}]}}
+    project_id:integer,optional
+    user_id:integer,optional
+    {time_stamp:multiple,optional {[clock format [clock scan "-[clock format [clock seconds] -format %w] days"] -format "%Y-%m-%d"] [clock format [clock scan "[expr 6-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]}}
+    groupby:optional
+    orderby:optional
+    {format "normal"}
+    page:integer,optional
+} -validate {
+    time_stamps_valid {
+        if { [llength $time_stamp] != 0 && [llength $time_stamp] != 2 } {
+            ad_complain "You must supply either two or no time_stamp values"
+        } else {
+            if { [catch { 
+                set time_stamp_secs [list]
+                foreach ts [lsort $time_stamp] {
+                    lappend time_stamp_secs [clock scan $ts] 
+                }
+                
+                # We sort the time stamps here. Plain integer sort should be what we want
+                set time_stamp_secs [lsort -integer $time_stamp_secs]
+            }] } {
+                ad_complain "Time stamps not valid"
+            } else {
+                set start_date [clock format [lindex $time_stamp_secs 0] -format "%Y-%m-%d"]
+                set end_date [clock format [lindex $time_stamp_secs 1] -format "%Y-%m-%d"]
+            }
+        }
+    }
 }
 
 set package_id [ad_conn package_id]
@@ -27,377 +43,317 @@ set current_user_id [ad_conn user_id]
 set instance_name [ad_conn instance_name]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
-set filter_var_list {
-    selected_project_id
-    selected_variable_id
-    selected_projection_id
-    selected_user_id
-    selected_start_date
-    selected_end_date
-    selected_group_by
-}
-
-
-###########
-#
-# Initialize project, variable, projection, and user names
-#
-###########
-
-# We need the name of the selected project in the adp
-if { ![empty_string_p $selected_project_id] } {
-    logger::project::get -project_id $selected_project_id -array project_array
-    set selected_project_name $project_array(name)
-} else {
-    set selected_project_name ""
-}
-
-# Find a suitable default variable_id
-# No more than one variable will be selected on this page
-# Under unusual circumstances no variable will be selected
-# (variable_id will be the empty string)
-if { [empty_string_p $selected_variable_id] } {
-    # No variable selected
-
-    # First default to the variable the user last logged hours in
-    # Use any selected project and all projects otherwise
-    if { ![empty_string_p $selected_project_id] } {
-        set project_clause "le.project_id = :selected_project_id"
-    } else {
-        set project_clause ""
-    }
-    set selected_variable_id [db_string last_logged_variable_id {} -default ""]
-
-    if { [empty_string_p $selected_variable_id] } {
-        # The user has not logger hours yet
-
-        if { ![empty_string_p $selected_project_id] } {
-            # A project is selected - use the primary variable
-            set selected_variable_id [logger::project::get_primary_variable -project_id $selected_project_id]
-        } else {
-            # No project is selected and the user has never logged hours before
-            # Should we use time in this unusual case? For now we don't select any variable
-            set selected_variable_id ""
-        }
-    }
-}
-
-# Need the name of the selected variable in the adp
-if { ![empty_string_p $selected_variable_id] } {
-    logger::variable::get -variable_id $selected_variable_id -array variable_array
-    set selected_variable_name $variable_array(name)
-    set selected_variable_unit $variable_array(unit)
-} else {
-    set selected_variable_name ""
-    set selected_variable_unit ""
-}
-
-if { ![empty_string_p $selected_projection_id] } {
-    # Projection selected - use the date range of that projection
-
-    logger::projection::get -projection_id $selected_projection_id -array projection_array
-
-    set selected_projection_name $projection_array(name)
-    set selected_projection_value $projection_array(value)
-} else {
-    set selected_projection_name ""
-    set selected_projection_value ""
-}
-
-# Need the name of the selected user in the adp
-if { ![empty_string_p $selected_user_id] } {
-    set selected_user_name [person::name -person_id $selected_user_id]
-}
-
-###########
-#
-# Custom date filter form
-#
-###########
-
-# Create the form
-set export_var_list {selected_project_id selected_variable_id selected_projection_id selected_user_id}
-ad_form -name time_filter -export $export_var_list -method GET -form {
-    {start_date:text
-        {label "From"}
-        {html { style "font-size: 100%;" size 10 } }
-    }
-    {end_date:text
-        {label "To"}
-        {html { style "font-size: 100%;" size 10 } }
-    }
-    {go:text(submit)
-        {label "Go"}
-        {html {style {font-size: 100%;}}}
-    }
-} -on_request {
-    set start_date $selected_start_date
-    set end_date $selected_end_date
-} -on_submit {
-    if { ![catch { 
-        set start_seconds [clock scan $start_date] 
-        set end_seconds [clock scan $end_date] 
-    }] } {
-        if { $start_seconds < $end_seconds } {
-            set selected_start_date [clock format $start_seconds -format "%Y-%m-%d"]
-            set selected_end_date [clock format $end_seconds -format "%Y-%m-%d"]
-        } else {
-            set selected_start_date [clock format $end_seconds -format "%Y-%m-%d"]
-            set selected_end_date [clock format $start_seconds -format "%Y-%m-%d"]
-        }
-    }
-    # Redirect so we get the dates in pretty mode
-    ad_returnredirect ".?[export_vars -no_empty $filter_var_list]"
-    ad_script_abort
-}
-
-
-
-
-###########
-#
-# Select projects
-#
-###########
-
-if { [exists_and_not_null selected_project_id] } {
-    set all_projects_url ".?[export_vars -no_empty -exclude { selected_project_id } $filter_var_list]"
-} else {
-    set all_projects_url {}
-}
-
-set projects_count 0
-set single_project_id 0
-
-db_multirow -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_projects {} {
-    set filter_name "Projects"
-
-    set url ".?[export_vars -no_empty -override { { selected_project_id $unique_id } } $filter_var_list]"
-    set entry_add_url "log?[export_vars -no_empty { { project_id $unique_id } {variable_id $selected_variable_id}}]"
-    set selected_p [string equal $selected_project_id $unique_id]
-    set name [string_truncate -len 25 $name]
-    set clear_url $all_projects_url
-    incr projects_count
-    set single_project_id $unique_id
-}
-
-if { $projects_count == 0 } {
+if { [empty_string_p $variable_id] } {
     ad_return_template "no-projects"
     return
 }
 
-# Only one project: Make it selected by default
+# Get variable info
+logger::variable::get -variable_id $variable_id -array variable
 
-if { $projects_count == 1 } {
-    set selected_project_id $single_project_id
-    
-    # The multirow has only one row, we want to set it to selected, not clearable
-    multirow foreach filters {
-        set selected_p 1
-        set clear_url {}
-    }
-}
-
-###########
-#
-# Select variables
-#
-###########
-
-set where_clauses [list]
-if { ![empty_string_p $selected_project_id] } {
-    lappend where_clauses "lp.project_id = :selected_project_id"
-} else {
-    lappend where_clauses \
-        "exists (select 1
-                 from logger_project_pkg_map
-                 where project_id = lp.project_id
-                 and package_id = :package_id
-                 )"
-}
-
-db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_variables {} {
-    set filter_name "Variables"
-    set url ".?[export_vars -no_empty -override { {selected_variable_id $unique_id} } $filter_var_list]"
-    if { ![empty_string_p $selected_project_id] } {
-        # A project is selected - enable logging
-        set entry_add_url "log?[export_vars -no_empty { { variable_id $unique_id } {project_id $selected_project_id}}]"
-    } else {
-        # No project selected - we wont enable those url:s
-        set entry_add_url ""
-    }
-    set selected_p [string equal $selected_variable_id $unique_id]
-    set clear_url {}
-}
-
-###########
-#
-# Select users
-#
-###########
-
-if { [exists_and_not_null selected_user_id] } {
-    set all_users_url ".?[export_vars -no_empty -exclude { selected_user_id } $filter_var_list]"
-} else {
-    set all_users_url {}
-}
-
-set where_clauses [list]
-if { ![empty_string_p $selected_project_id] } {
-    # Select all users who have logged in selected project
-    lappend where_clauses "le.project_id = :selected_project_id"
-} else {
-    # Select all users who have logged in any project mapped to
-    # this package
-    lappend where_clauses \
-        "exists (select 1
-                 from logger_project_pkg_map
-                 where project_id = le.project_id
-                 and package_id = :package_id
-                 )"
-} 
-
-db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_users {} {
-    set filter_name "Users"
-    set url ".?[export_vars -no_empty -override { {selected_user_id $unique_id} } $filter_var_list]"
-    set entry_add_url {}
-    set selected_p [string equal $selected_user_id $unique_id]
-    set clear_url $all_users_url
-}
-
-###########
-#
-# Projections filter
-#
-###########
-
-# Only makes sense to show projections for a selected project and variable
-if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variable_id] } {
-
-    if { [exists_and_not_null selected_projection_id] } {
-        set clear_projections_url ".?[export_vars -no_empty -exclude { selected_projection_id } $filter_var_list]"
-    } else {
-        set clear_projections_url {}
-    }
-
-    db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_projections {} {
-        set filter_name "Projections"
-        set name [string_truncate -len 25 $name]
-        set url ".?[export_vars -no_empty -override { {selected_projection_id $unique_id} { selected_start_date $start_date } { selected_end_date $end_date } } $filter_var_list]"
-        set entry_add_url {}
-        set selected_p [string equal $selected_projection_id $unique_id]
-        set clear_url $clear_projections_url
-    }
-
-}
-
-#####
-#
-# Date filters
-#
-#####
-
-if { [exists_and_not_null selected_start_date] || [exists_and_not_null selected_end_date] } {
-    set date_clear_url ".?[export_vars -no_empty -exclude { selected_start_date selected_end_date } $filter_var_list]"
-} else {
-    set date_clear_url {}
-}
-
-set custom_p [expr ![empty_string_p $date_clear_url]]
-
-set filter_name "Date"
-
+# These are used to construct the values for the date filter
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
-foreach type { today yesterday this_week last_week past_7 this_month last_month past_30 } {
-    switch $type {
-        today {
-            set name "Today"
-            set new_start_date [clock format [clock seconds] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+#error [db_list_of_lists select_variables {}]
+
+# Define the list
+list::create \
+    -name entries \
+    -multirow entries \
+    -key entry_id \
+    -row_pretty_plural "entries" \
+    -checkbox_name checkbox \
+    -html { width 100% } \
+    -selected_format $format \
+    -class "list" \
+    -main_class "list" \
+    -sub_class "narrow" \
+    -pass_properties {
+        variable
+    } -actions {
+        "Add" "project-select" "Add new log entry"
+    } -bulk_actions {
+        "Delete" "log-delete" "Delete checked entries"
+    } -elements {
+        edit {
+            label {}
+            display_template {
+               <if @entries.edit_p@ true>
+                <a href="@entries.edit_url@" title="Edit this log entry"
+                ><img src="/shared/images/Edit16.gif" height="16" width="16" 
+                alt="Edit" border="0"></a>
+                </if>        
+            }
         }
-        yesterday {
-            set name "Yesterday"
-            set new_start_date [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+        project_id {
+            display_col project_name
+            label "Project"
         }
-        this_week {
-            set name "This week"
-            set new_start_date [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
+        user_id {
+            label "User"
+            display_col user_name
+            link_url_eval {[acs_community_member_url -user_id $user_id]}
+            csv_col user_name
         }
-        last_week {
-            set name "Last week"
-            set new_start_date [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
+        time_stamp {
+            label "Date"
+            display_col time_stamp_pretty
+            aggregate_label {[ad_decode $variable(type) "additive" "Total" "Average"]}
+            aggregate_group_label {[ad_decode $variable(type) "additive" "Group total" "Group Average"]}
         }
-        past_7 {
-            set name "Past 7 days"
-            set new_start_date [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+        value {
+            label $variable(name)
+            link_url_eval {log?[export_vars { entry_id }]}
+            link_html { title "View this entry" }
+            aggregate {[ad_decode $variable(type) "additive" sum average]}
+            html { align right }
         }
-        this_month {
-            set name "This month"
-            set new_start_date [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
-        } 
-        last_month {
-            set name "Last month"
-            set new_start_date [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
-        } 
-        past_30 {
-            set name "Past 30 days"
-            set new_start_date [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+        description {
+            label "Description"
+            display_eval {[string_truncate -len 50 $description]}
+            link_url_eval {log?[export_vars { entry_id }]}
+            link_html { title "View this entry" }
+        }
+        description_long {
+            label "Description"
+            display_eval {[string_truncate -len 400 $description]}
+            hide_p 1
+            link_url_eval {log?[export_vars { entry_id }]}
+            link_html { title "View this entry" }
+        }
+    } -filters {
+        project_id {
+            label "Projects"
+            values {[db_list_of_lists select_projects {}]}
+            where_clause {
+                le.project_id = :project_id
+            }
+            add_url_eval {[export_vars -base "log" { { project_id $__filter_value } variable_id }]}
+        }
+        variable_id {
+            label "Variables"
+            values {[db_list_of_lists select_variables {}]}
+            where_clause {
+                le.variable_id = :variable_id
+            }
+            add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "log" { project_id { variable_id $__filter_value } }] ""]}
+            has_default_p t
+        }
+        user_id {
+            label "Users"
+            values {[db_list_of_lists select_users {}]}
+            where_clause {
+                submitter.user_id = :user_id
+            }
+        }
+        time_stamp {
+            label "Date"
+            where_clause {
+                le.time_stamp >= to_date(:start_date,'YYYY-MM-DD') and le.time_stamp <= to_date(:end_date,'YYYY-MM-DD')
+            }
+            other_label "Custom"
+            type multival
+            has_default_p 1
+            values {
+                {
+                    "Today" {
+                        [clock format [clock seconds] -format "%Y-%m-%d"]
+                        [clock format [clock seconds] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Yesterday" {
+                        [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+                        [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "This week" {
+                        [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
+                        [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Last week" {
+                        [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
+                        [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Past 7 days" {
+                        [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
+                        [clock format [clock seconds] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "This month" {
+                        [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
+                        [clock format [clock scan "1 month -1 day" -base [clock scan "[expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Last month" {
+                        [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
+                        [clock format [clock scan "1 month -1 day" -base [clock scan "-1 month [expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Past 30 days" {
+                        [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
+                        [clock format [clock seconds] -format "%Y-%m-%d"]
+                    }
+                }
+                {
+                    "Always" {
+                        [clock format 0 -format "%Y-%m-%d"]
+                        [clock format [clock scan "+10 year"] -format "%Y-%m-%d"]
+                    }
+                }
+            }
+        }
+    } -groupby {
+        label "Group by"
+        type multivar
+        values {
+            { "Day" { { groupby time_stamp } { orderby time_stamp,desc } } }
+            { "Week" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
+            { "Project" { { groupby project_name } { orderby project_id,asc } } }
+            { "User" { { groupby user_id } { orderby user_id,asc } } }
+        }
+    } -orderby {
+        default_value time_stamp,desc
+        time_stamp {
+            label "Date"
+            orderby_desc "le.time_stamp desc, ao.creation_date desc"
+            orderby_asc "le.time_stamp asc, ao.creation_date asc"
+            default_direction desc
+        }
+        project_id {
+            label "Project" 
+            orderby_asc "project_name asc, le.time_stamp desc, ao.creation_date desc"
+            orderby_desc "project_name desc, le.time_stamp desc, ao.creation_date desc"
+        }
+        user_id {
+            label "User"
+            orderby_asc "user_name asc, le.time_stamp desc, ao.creation_date desc"
+            orderby_desc "user_name desc, le.time_stamp desc, ao.creation_date desc"
+        }
+        value {
+            label $variable(name)
+            orderby_asc "value asc, le.time_stamp desc, ao.creation_date desc"
+            orderby_desc "value desc, le.time_stamp desc, ao.creation_date desc"
+        }
+        description {
+            label "Description"
+            orderby_asc "description asc, le.time_stamp desc, ao.creation_date desc"
+            orderby_desc "description desc, le.time_stamp desc, ao.creation_date desc"
+        }
+    } -formats {
+        normal {
+            label "Table"
+            layout table
+            row {
+                checkbox {}
+                edit {}
+                project_id {}
+                user_id {}
+                time_stamp {}
+                value {}
+                description {}
+            }
+        }
+        detailed {
+            label "Detailed table"
+            layout table
+            row {
+                checkbox {
+                    html { rowspan 2 }
+                }
+                edit {} 
+                project_id {}
+                user_id {}
+                time_stamp {}
+                value {}
+            }
+            row {
+                description_long {
+                    html { colspan 5 }
+                    hide_p 0
+                }
+            }
+        }
+        list {
+            label "List"
+            layout list
+            template {
+                <table cellpadding="0" cellspacing="4">
+                  <tr>
+                    <td valign="top">
+                      <listelement name="checkbox"> 
+                    </td>
+                    <td valign="top">
+                      <span class="list-label">@variable.name@:</span>
+                      <listelement name="value">
+                      <span class="list-label">@variable.unit@</span><br>
+
+                      <listelement name="description_long"><br>
+
+                      <span class="list-label">Project:</span> <listelement name="project_id"><br>
+
+                      <span class="list-label">By</span> <listelement name="user_id">
+                      <span class="list-label">on</span> <listelement name="time_stamp">
+                    </td>
+                  </tr>
+                </table>
+            }
+        }
+        csv {
+            label "CSV"
+            output csv
+            page_size 0
         }
     }
 
-    set url ".?[export_vars -no_empty -override { { selected_start_date $new_start_date } { selected_end_date $new_end_date }} $filter_var_list]"
 
-    set selected_p [expr [string equal $selected_start_date $new_start_date] && [string equal $selected_end_date $new_end_date]]
 
-    # if selected_p is set, we'll clear custom_p
-    set custom_p [expr $custom_p && !$selected_p]
+# This query will override the ad_page_contract value entry_id
 
-    # unique_id name filter_name url entry_add_url selected_p clear_url
-    multirow append filters "" $name $filter_name $url "" $selected_p $date_clear_url {} {}
+db_multirow -extend { edit_url delete_url delete_onclick } -unclobber entries select_entries "
+	    select le.entry_id,
+	           acs_permission__permission_p(le.entry_id, :current_user_id, 'delete') as delete_p,
+	           acs_permission__permission_p(le.entry_id, :current_user_id, 'write') as edit_p,
+	           le.time_stamp,
+	           to_char(le.time_stamp, 'fmDyfm fmMMfm-fmDDfm-YYYY') as time_stamp_pretty,
+	           to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
+	           le.value,
+	           le.description,
+                   lp.project_id,               
+	           lp.name as project_name,
+	           submitter.user_id,
+	           submitter.first_names || ' ' || submitter.last_name as user_name
+	    from   logger_entries le,
+	           logger_projects lp,
+	           acs_objects ao,
+	           cc_users submitter
+	    where  le.project_id = lp.project_id
+	    and    ao.object_id = le.entry_id 
+	    and    ao.creation_user = submitter.user_id
+            [list::filter_where_clauses -and -name "entries"]
+	    [list::orderby_clause -orderby -name "entries"]
+" {
+    set selected_p [string equal [ns_queryget entry_id] $entry_id]
+    set edit_url "log?[export_vars { entry_id { edit t } }]"
+    set edit_p [ad_decode [expr [ad_decode $edit_p "t" 1 0]  || ($user_id == [ad_conn user_id])] 1 "t" "f"]
+    if { $delete_p } {
+        set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
+        set delete_url "log-delete?[export_vars { entry_id }]"
+    } else {
+        set delete_url ""
+    }
 }
 
-# Custom
-if { $custom_p } {
-    # unique_id name filter_name url entry_add_url selected_p clear_url
-    multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url {} {}
-}
 
-#####
-#
-# Group by filter
-#
-#####
 
-# TODO:
-# Flag to export_vars -no_empty which doesn't export empty strings
-
-if { [exists_and_not_null selected_group_by] } {
-    set group_clear_url ".?[export_vars -no_empty -exclude { selected_group_by } $filter_var_list]"
-} else {
-    set group_clear_url {}
-}
-
-array set group_label {
-    time_stamp "Day"
-    time_stamp_week "Week"
-    project_name "Project"
-    user_id "User"
-}
-
-foreach unique_id { time_stamp_week time_stamp project_name user_id } {
-    set url ".?[export_vars -no_empty -override { { selected_group_by $unique_id } } $filter_var_list]"
-
-    set selected_p [string equal $selected_group_by $unique_id]
-
-    # unique_id name filter_name url entry_add_url selected_p clear_url
-    multirow append filters $unique_id $group_label($unique_id) "Group by" $url "" $selected_p $group_clear_url
-}
+# This spits out the CSV if we happen to be in CSV layout
+list::write_output -name entries

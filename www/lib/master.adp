@@ -1,7 +1,7 @@
 <master>
 <property name="title">@title;noquote@</property>
 <property name="context">@context;noquote@</property>
-<if @focus;noquote@ not nil><property name="focus">@focus;noquote@</property></if>
+<if @focus@ not nil><property name="focus">@focus;noquote@</property></if>
 <property name="header_stuff">
   @header_stuff@
   <style type="text/css" media="all">

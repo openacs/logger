@@ -20,43 +20,49 @@
 
   <fullquery name="select_projects">
     <querytext>
-	    select lp.project_id as unique_id,
-	           lp.name
-	    from logger_projects lp,
-	         logger_project_pkg_map lppm
-	    where lp.project_id = lppm.project_id	
-		  and lppm.package_id = :package_id
-	    order by lp.name
+    	    select lp.name as label,
+                       lp.project_id as project_id,
+                       (select count(*) from logger_entries e where e.project_id = lp.project_id and variable_id = :variable_id) as count
+    	    from   logger_projects lp,
+    	           logger_project_pkg_map lppm
+    	    where  lp.project_id = lppm.project_id	
+    		   and lppm.package_id = :package_id
+    	    order  by lp.name
     </querytext>
   </fullquery>
 
   <fullquery name="select_variables">
     <querytext>
-	    select lv.variable_id as unique_id,
-	           lv.name || ' (' || lv.unit || ')' as name
-	    from logger_variables lv,
-	         logger_projects lp,
-	         logger_project_var_map lpvm
-	    where lp.project_id = lpvm.project_id
-	      and lv.variable_id = lpvm.variable_id
-	    [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
-	    group by lv.variable_id, lv.name, lv.unit
+    	    select lv.name || ' (' || lv.unit || ')' as name,
+                   lv.variable_id as unique_id
+    	    from   logger_variables lv,
+    	           logger_projects lp,
+    	           logger_project_var_map lpvm
+    	    where  lp.project_id = lpvm.project_id
+    	    and    lv.variable_id = lpvm.variable_id
+            and    exists (select 1
+                           from logger_project_pkg_map
+                           where project_id = lp.project_id
+                           and package_id = :package_id
+                           )
+    	    group  by lv.variable_id, lv.name, lv.unit
     </querytext>
   </fullquery>
 
   <fullquery name="select_users">
     <querytext>
-	    select submitter.user_id as unique_id,
-	           submitter.first_names || ' ' || submitter.last_name as name
-	    from   cc_users submitter,
-	           logger_entries le,
-	           acs_objects ao
-	    where  ao.object_id = le.entry_id
-	    and    submitter.user_id = ao.creation_user
-	    and    ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
-	            or submitter.user_id = :current_user_id
-	           )
-	    group  by submitter.user_id, submitter.first_names, submitter.last_name
+    	    select submitter.first_names || ' ' || submitter.last_name as label,
+                       submitter.user_id as user_id
+    	    from   cc_users submitter,
+    	           logger_entries le,
+    	           acs_objects ao
+    	    where  ao.object_id = le.entry_id
+    	    and    submitter.user_id = ao.creation_user
+    	    and    exists (select 1
+                               from   logger_project_pkg_map
+                               where  project_id = le.project_id
+                               and    package_id = :package_id)
+    	    group  by submitter.user_id, submitter.first_names, submitter.last_name
     </querytext>
   </fullquery>
 
