@@ -224,3 +224,115 @@ ad_proc -public logger::entry::task_id {
 } {
     return [db_string task_id { } -default ""]
 }
+
+
+ad_proc -public logger::entry::pm_before_change {
+    {-task_item_id:required}
+} {
+    Stores the state of the task before the hour are logged and the 
+    percent complete changed. 
+    
+    @author  (jader-ibr@bread.com)
+    @creation-date 2004-11-17
+    
+    @param task_item_id
+
+    @return 
+    
+    @error 
+} {
+
+    pm::task::get \
+        -tasks_item_id                   [list $task_item_id] \
+        -one_line_array                  old_one_line \
+        -description_array               old_description \
+        -description_mime_type_array     old_description_mime_type \
+        -estimated_hours_work_array      old_estimated_hours_work \
+        -estimated_hours_work_min_array  old_estimated_hours_work_min \
+        -estimated_hours_work_max_array  old_estimated_hours_work_max \
+        -dependency_array                old_dependency \
+        -percent_complete_array          old_percent_complete \
+        -end_date_day_array              old_end_date_day \
+        -end_date_month_array            old_end_date_month \
+        -end_date_year_array             old_end_date_year \
+        -project_item_id_array           old_project_item_id \
+	-priority_array                  old_priority_array \
+        -set_client_properties_p         t
+}
+
+
+ad_proc -public logger::entry::pm_after_change {
+    {-task_item_id:required}
+    {-new_percent_complete:required}
+    {-old_percent_complete:required}
+} {
+    Updates total percent complete for project manager,
+    adds a comment on the changes made, and if the change opens
+    or closes the task, sends out an email notification.
+    
+    @author  (jader-ibr@bread.com)
+    @creation-date 2004-11-17
+    
+    @param task_item_id
+
+    @param new_percent_complete
+
+    @param old_percent_complete
+
+    @return 
+    
+    @error 
+} {
+
+    set user_id [ad_conn user_id]
+    set peeraddr [ad_conn peeraddr]
+
+    pm::task::update_percent \
+        -task_item_id $task_item_id \
+        -percent_complete $new_percent_complete
+    
+    # figure out what changed and notify everyone
+    
+    set task_item_id_array(1) $task_item_id
+    set number   1
+    set comments(1) ""
+    set comments_mime_type(1) "text/html"
+    
+    pm::task::what_changed \
+        -task_item_id_array          task_item_id_array \
+        -number                      $number \
+        -comments_array              comments \
+        -comments_mime_type_array    comments_mime_type
+    
+    if {[string length $comments(1)] > 0} {
+        
+        # add comment to task
+        pm::util::general_comment_add \
+            -object_id $task_item_id \
+            -title [pm::task::name -task_item_id $task_item_id] \
+            -comment $comments(1) \
+            -mime_type $comments_mime_type(1) \
+            -user_id $user_id \
+            -peeraddr $peeraddr \
+            -type "task" \
+            -send_email_p f
+        
+        # if the old_percent was >= 100 and now less, or
+        # the old_percent was < 100 and is now more, then
+        # we need to send out an email to notify everyone
+        
+        if { \
+                 $old_percent_complete >= 100 && \
+                 $new_percent_complete <  100 || \
+                 $old_percent_complete <  100 && \
+                 $new_percent_complete >= 100} {
+            
+            # send email notification
+            pm::task::email_alert \
+                -task_item_id $task_item_id \
+                -edit_p t \
+                -comment $comments(1) \
+                -comment_mime_type $comments_mime_type(1)
+        }
+    }
+}

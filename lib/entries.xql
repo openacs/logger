@@ -20,16 +20,24 @@
 
   <fullquery name="select_projects">
     <querytext>
-    	    select lp.name as label,
-                       lp.project_id as project_id,
-                       (select count(*) from logger_entries e where e.project_id = lp.project_id and variable_id = :variable_id) as count
-    	    from   logger_projects lp,
-    	           logger_project_pkg_map lppm
-    	    where  lp.project_id = lppm.project_id	
-            and    lppm.package_id = :package_id
-            and    lp.active_p = 't' 
-            $project_where
-    	    order  by lp.name
+        SELECT
+        lp.name as label,
+        lp.project_id as project_id,
+        count(e.project_id) as count
+        FROM
+        logger_projects lp,
+        logger_project_pkg_map lppm,
+        logger_entries e
+        WHERE
+        lp.project_id   = lppm.project_id and
+        e.project_id    = lp.project_id and
+        e.variable_id   = :variable_id and
+        lppm.package_id = :package_id
+        $project_where
+        GROUP BY
+        lp.name, lp.project_id
+        ORDER BY
+        lp.name
     </querytext>
   </fullquery>
 
