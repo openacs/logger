@@ -51,7 +51,9 @@ if { [exists_and_not_null project_id] } {
 # Projects
 set project_values [db_list_of_lists select_projects {}]
 
-# Define the list
+#----------------------------------------------------------------------
+# Define list elements
+#----------------------------------------------------------------------
 
 set elements {
     edit {
@@ -124,6 +126,132 @@ foreach id $tree_ids {
 
 lappend normal_row value {} description {}
 
+#----------------------------------------------------------------------
+# Define list filters
+#----------------------------------------------------------------------
+
+set filters {
+    project_id {
+        label "Projects"
+        values $project_values
+        where_clause {
+            le.project_id = :project_id
+        }
+        add_url_eval {[export_vars -base "log" { { project_id $__filter_value } variable_id }]}
+        has_default_p {[ad_decode [llength $project_values] 1 1 0]}
+    }
+    variable_id {
+        label "Variables"
+        values {[db_list_of_lists select_variables {}]}
+        where_clause {
+            le.variable_id = :variable_id
+        }
+        add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "log" { project_id { variable_id $__filter_value } }] ""]}
+        has_default_p t
+    }
+    projection_id {
+        label "Projections"
+        type multivar
+        values $projection_values
+        has_default_p 1
+    }
+    user_id {
+        label "Users"
+        values {[db_list_of_lists select_users {}]}
+        where_clause {
+            submitter.user_id = :user_id
+        }
+    }
+    time_stamp {
+        label "Date"
+        where_clause {
+            le.time_stamp >= to_date(:start_date,'YYYY-MM-DD') and le.time_stamp <= to_date(:end_date,'YYYY-MM-DD')
+        }
+        other_label "Custom"
+        type multival
+        has_default_p 1
+        values {
+            {
+                "Today" {
+                    [clock format [clock seconds] -format "%Y-%m-%d"]
+                    [clock format [clock seconds] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "Yesterday" {
+                    [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+                    [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "This week" {
+                    [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
+                    [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "Last week" {
+                    [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
+                    [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "Past 7 days" {
+                    [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
+                    [clock format [clock seconds] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "This month" {
+                    [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
+                    [clock format [clock scan "1 month -1 day" -base [clock scan "[expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
+                }
+            }
+            {
+                "Last month" {
+                    [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
+                    [clock format [clock scan "1 month -1 day" -base [clock scan "-1 month [expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
+                }
+            }
+            {
+                "Past 30 days" {
+                    [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
+                    [clock format [clock seconds] -format "%Y-%m-%d"]
+                }
+            }
+            {
+                "Always" {
+                    [clock format 0 -format "%Y-%m-%d"]
+                    [clock format [clock scan "+10 year"] -format "%Y-%m-%d"]
+                }
+            }
+        }
+    }
+}
+
+foreach id $tree_ids {
+    set values_${id} [list]
+    foreach elm [category_tree::get_tree $id] {
+        foreach { category_id category_name deprecated_p level } $elm {}
+        lappend values_${id} [list "[string repeat "..." [expr $level-1]]$category_name" $category_id]
+    }
+    set tree_name_${id} [category_tree::get_name $id]
+    # Grab value frmo request
+    if { [ns_queryexists cat_${id}] } {
+        set cat_${id} [ns_queryget cat_${id}]
+    }
+    lappend filters cat_${id} \
+        [list label \$tree_name_${id} \
+             values \$values_${id} \
+             where_clause "exists (select 1 from category_object_map where object_id = le.entry_id and category_id = :cat_${id})"]
+}
+
+
+
+#----------------------------------------------------------------------
+# Define list
+#----------------------------------------------------------------------
+
 list::create \
     -name entries \
     -multirow entries \
@@ -140,104 +268,8 @@ list::create \
         "Add Entry" "project-select" "Add new log entry"
     } -bulk_actions {
         "Delete" "log-delete" "Delete checked entries"
-    } -elements $elements -filters {
-        project_id {
-            label "Projects"
-            values $project_values
-            where_clause {
-                le.project_id = :project_id
-            }
-            add_url_eval {[export_vars -base "log" { { project_id $__filter_value } variable_id }]}
-            has_default_p {[ad_decode [llength $project_values] 1 1 0]}
-        }
-        variable_id {
-            label "Variables"
-            values {[db_list_of_lists select_variables {}]}
-            where_clause {
-                le.variable_id = :variable_id
-            }
-            add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "log" { project_id { variable_id $__filter_value } }] ""]}
-            has_default_p t
-        }
-        projection_id {
-            label "Projections"
-            type multivar
-            values $projection_values
-            has_default_p 1
-        }
-        user_id {
-            label "Users"
-            values {[db_list_of_lists select_users {}]}
-            where_clause {
-                submitter.user_id = :user_id
-            }
-        }
-        time_stamp {
-            label "Date"
-            where_clause {
-                le.time_stamp >= to_date(:start_date,'YYYY-MM-DD') and le.time_stamp <= to_date(:end_date,'YYYY-MM-DD')
-            }
-            other_label "Custom"
-            type multival
-            has_default_p 1
-            values {
-                {
-                    "Today" {
-                        [clock format [clock seconds] -format "%Y-%m-%d"]
-                        [clock format [clock seconds] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Yesterday" {
-                        [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
-                        [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "This week" {
-                        [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
-                        [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Last week" {
-                        [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
-                        [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Past 7 days" {
-                        [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
-                        [clock format [clock seconds] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "This month" {
-                        [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
-                        [clock format [clock scan "1 month -1 day" -base [clock scan "[expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Last month" {
-                        [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
-                        [clock format [clock scan "1 month -1 day" -base [clock scan "-1 month [expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Past 30 days" {
-                        [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
-                        [clock format [clock seconds] -format "%Y-%m-%d"]
-                    }
-                }
-                {
-                    "Always" {
-                        [clock format 0 -format "%Y-%m-%d"]
-                        [clock format [clock scan "+10 year"] -format "%Y-%m-%d"]
-                    }
-                }
-            }
-        }
-    } -groupby {
+    } -elements $elements -filters $filters \
+    -groupby {
         label "Group by"
         type multivar
         values {
@@ -332,11 +364,9 @@ list::create \
         }
     }
 
-# TODO: Filter by category
-
 # TODO: Order by category tree
 
-# TODO: With multiple categories from the same tree, make sure they're listed in correct sort_order
+# TODO B: With multiple categories from the same tree, make sure they're listed in correct sort_order
 
 
 # We add a virtual column per category tree
