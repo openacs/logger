@@ -117,6 +117,7 @@ ad_form -extend -name project_form -select_query {
     ad_script_abort
 }
 
+
 if { $project_exists_p } {
     # We are in edit or display mode
 
@@ -126,9 +127,11 @@ if { $project_exists_p } {
     #
     ###########
 
-    db_multirow variables variables_in_project {} 
-
-    set n_can_be_mapped [db_string n_can_be_mapped {}]
+    db_multirow -extend { display_url set_primary_url unmap_url } variables variables_in_project {} {
+        set display_url [export_vars -base variable { variable_id }]
+        set set_primary_url [export_vars -base set-primary-variable { variable_id project_id }]
+        set unmap_url [export_vars -base unmap-variable-from-project { variable_id project_id }]
+    }
 
     ###########
     #
@@ -136,5 +139,77 @@ if { $project_exists_p } {
     #
     ###########
 
-    db_multirow projections select_projections {}   
+    db_multirow -extend { display_url start_date_pretty end_date_pretty value_pretty delete_url } projections select_projections {} {
+        set display_url [export_vars -base projection { projection_id }]
+        set start_date_pretty [lc_time_fmt $start_date_ansi "%x"]
+        set end_date_pretty [lc_time_fmt $end_date_ansi "%x"]
+        set value_pretty [lc_numeric $value]
+        set delete_url [export_vars -base projection-delete { projection_id }]
+    }
 }
+
+template::list::create \
+    -name variables \
+    -actions [list "Add variable" [export_vars -base map-variable-to-project { project_id }] {}] \
+    -elements {
+        name {
+            label "Variable Name"
+            link_url_col display_url
+        }
+        unit {
+            label "Unit"
+        }
+        type {
+            label "Additive"
+            display_template {
+                <if @variables.type@ eq additive>Yes</if><else>No</else>
+            }
+            html { align center }
+        }
+        primary_p {
+            label "Primary"
+            display_template {
+                <if @variables.primary_p@ true><b>*</b></if>
+                <else><a href="@variables.set_primary_url@">set</a></else>
+            }
+            html { align center }
+        }
+        unmap {
+            label Unmap
+            link_url_col unmap_url
+            display_template {<if @variables.primary_p@ false>Unmap</if>}
+        }
+    }
+
+
+template::list::create \
+    -name "projections" \
+    -actions [list "Create new projection" [export_vars -base projection { project_id }] {}] \
+    -elements {
+        name {
+            label "Projection Name"
+            link_url_col display_url
+        }
+        start_date_pretty {
+            label "Start"
+        }
+        end_date_pretty {
+            label "End"
+        }
+        variable_name {
+            label "Variable"
+        }
+        value_pretty {
+            label "Value"
+            html { align right }
+        }
+        delete {
+            sub_class narrow
+            display_template {
+                <a href="@projections.delete_url@" title="Delete this projection"
+                onclick="return confirm('Are you sure you want to delete the projection @projections.name@?');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                </if>
+            }            
+            html { align center }
+        }
+    }

@@ -6,6 +6,7 @@ ad_page_contract {
     @cvs-id $Id$
 } {
     variable_id:optional
+    project_id:optional
 }
 
 set package_id [ad_conn package_id]
@@ -29,7 +30,7 @@ if { [exists_and_not_null variable_id] } {
 set context [list $page_title]
 
 set actions_list [list [list Edit "edit"] [list Done done]]
-ad_form -name variable_form -cancel_url index -mode $ad_form_mode -actions $actions_list -form {
+ad_form -name variable_form -cancel_url index -export { project_id } -mode $ad_form_mode -actions $actions_list -form {
     variable_id:key(acs_object_id_seq)
 
     {name:text
@@ -55,17 +56,26 @@ ad_form -name variable_form -cancel_url index -mode $ad_form_mode -actions $acti
     }
 
 } -new_data {
-    logger::variable::new -variable_id $variable_id \
+    set variable_id [logger::variable::new \
+                         -variable_id $variable_id \
                          -name $name \
                          -unit $unit \
-                         -type $type
+                         -type $type]
+
+    if { [exists_and_not_null project_id] } {
+        logger::project::map_variable \
+            -project_id $project_id \
+            -variable_id $variable_id
+        ad_returnredirect [export_vars -base project { project_id }]
+        ad_script_abort
+    }
 } -edit_data {
-    logger::variable::edit -variable_id $variable_id \
-                         -name $name \
-                         -unit $unit \
-                         -type $type              
+    logger::variable::edit \
+        -variable_id $variable_id \
+        -name $name \
+        -unit $unit \
+        -type $type              
 } -after_submit {
-          
     ad_returnredirect "[ad_conn url]?variable_id=$variable_id"
     ad_script_abort
 }

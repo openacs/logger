@@ -5,150 +5,27 @@
 
   <h2 class="logger">Projects</h2>
 
-  <if @projects:rowcount@ ne 0>
-    <% # Project table header %>
-
-    <table class="logger_listing" cellpadding="4" cellspacing="1">
-      <tr class="logger_listing_header">
-        <th class="logger_listing_narrow">&nbsp;</th>
-        <th class="logger_listing">Project Name</th>
-        <th class="logger_listing">Active</th>
-        <th class="logger_listing">Project Lead</th>
-        <th class="logger_listing_narrow">Permissions</th>
-        <th class="logger_listing_narrow">Unlink</th>
-        <th class="logger_listing_narrow">&nbsp;</th>
-      </tr>
-
-    <% # Project table rows %>
-    <multiple name="projects">
-      <if @projects.rownum@ odd>
-        <tr class="logger_listing_odd">
-      </if>
-      <else>
-        <tr class="logger_listing_even">
-      </else>
-        <td class="logger_listing_narrow">
-          <a href="@projects.edit_url@" title="Edit project attributes"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
-        </td>
-        <td class="logger_listing">
-          <a href="@projects.display_url@" title="Display project info">@projects.name@</a>
-        </td>
-        <td class="logger_listing"><if @projects.active_p@ eq t>Yes (<a href="@projects.make_inactive_url@" title="Make this project inactive">toggle</a>)</if><else>No (<a href="@projects.make_active_url@" title="Make this project active">toggle</a>)</else> </td>
-        <td class="logger_listing">@projects.project_lead_chunk;noquote@</td>
-        <td class="logger_listing_narrow" align="center">
-          <if @projects.admin_p@>
-            <a href="@projects.permissions_url@" title="Set permissions for this project">Set</a>
-          </if>
-        </td>
-        <td class="logger_listing_narrow">
-          <a href="@projects.unmap_url@">Unlink</a>
-        </td>
-        <td class="logger_listing_narrow">
-          <if @projects.admin_p@>
-            <a href="@projects.delete_url@" title="Delete this project"
-            onclick="return confirm('Are you sure you want to delete project @projects.name@?');"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
-          </if>
-        </td>
-      </tr>  
-    </multiple>
-
-    <% # Close project table %>
-    </table>
-  </if>
-  <else>
-    <!-- No projects -->
-    <span class="no_items_text">There are no projects</span>
-  </else>
-
-  <p>
-    <b>&raquo;</b> <a href="project">Create new project</a>
-  </p>
+  <listtemplate name="projects"></listtemplate>
+  
+  <p></p>
 
   <if @mappable_projects:rowcount@ gt 0>
     <p>
       Projects not in this logger application instance which can be linked in:
     </p>
-    <table class="logger_listing" cellpadding="4" cellspacing="1">
-      <tr class="logger_listing_header">
-        <th class="logger_listing_narrow">Name</th>
-        <th class="logger_listing_narrow">Link to instance</th>
-      </tr>
-
-      <multiple name="mappable_projects">
-        <if @mappable_projects.rownum@ odd>
-          <tr class="logger_listing_odd">
-        </if>
-        <else>
-          <tr class="logger_listing_even">
-        </else>
-          <td class="logger_listing">
-            @mappable_projects.name@
-          </td>
-          <td class="logger_listing_narrow" align="center">
-            <a href="@mappable_projects.map_url@">Link</a>
-          </td>
-        </tr>
-      </multiple>
-    </table>
+    <listtemplate name="mappable_projects"></listtemplate>
+    <p></p>
 
   </if>  
 
   <h2 class="logger">Variables</h2>
 
-  <if @variables:rowcount@ ne 0>
-    <table class="logger_listing" cellpadding="4" cellspacing="1">
-      <tr class="logger_listing_header">
-        <th class="logger_listing_narrow">&nbsp;</th>
-        <th class="logger_listing">Name</th>
-        <th class="logger_listing">Unit</th>
-        <th class="logger_listing">Additive</th>
-        <th class="logger_listing_narrow">Permissions</th>
-        <th class="logger_listing_narrow">&nbsp;</th>
-      </tr>
-
-    <multiple name="variables">
-      <if @variables.rownum@ odd>
-        <tr class="logger_listing_odd">
-      </if>
-      <else>
-        <tr class="logger_listing_even">
-      </else>
-        <td class="logger_listing_narrow">
-          <a href="@variables.edit_url@" title="Edit variable"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
-        </td>
-        <td class="logger_listing"><a href="@variables.edit_url@">@variables.name@</a></td>
-        <td class="logger_listing">@variables.unit@</td>
-        <td class="logger_listing"><if @variables.type@ eq additive>Yes</if><else>No</else></td>
-        <td class="logger_listing_narrow" align="center">
-          <if @variables.admin_p@>
-            <a href="@variables.permissions_url@">Set</a>
-          </if> 
-        <td class="logger_listing_narrow">
-          <if @variables.admin_p@>
-            <a href="@variables.delete_url@" 
-            onclick="return confirm('Are you sure you want to delete variable @variables.name@?');"
-            title="Delete variable"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
-          </if> 
-        </td>
-      </tr>
-    </multiple>
-
-    </table>    
-  </if>
-  <else>
-    <!-- There are no variables -->
-    <span class="no_items_text">There are no variables</span>
-  </else>
-
-  <p>
-    <b>&raquo;</b> <a href="variable">Add variable</a>
-  </p>
+  <listtemplate name="variables"></listtemplate>
+  <p></p>
 
   <h2 class="logger">Logger Application Instance</h2>
 
-  <p>
-    <b>&raquo;</b> <a href="@package_permissions_url@">Set permissions for this logger application instance</a>
-  </p>
+  <a href="@package_permissions_url@" class="action">Set permissions for this logger application instance</a>
 
   <h2 class="logger">Help</h2>
 

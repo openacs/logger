@@ -14,7 +14,9 @@
     <querytext>
         select lv.variable_id,
                lv.name,
-               lpvm.primary_p
+               lpvm.primary_p,
+               lv.type,
+               lv.unit
           from logger_project_var_map lpvm,
                logger_variables lv
           where lpvm.variable_id = lv.variable_id

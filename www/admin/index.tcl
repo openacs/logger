@@ -21,6 +21,63 @@ set permissions_uri "/permissions/one"
 #
 ###########
 
+
+template::list::create \
+    -name projects \
+    -no_data "No projects in this instance of logger." \
+    -actions {
+        "Create new project" project {}
+    } \
+    -elements {
+        edit {
+            link_url_col edit_url
+            display_template {
+                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="Edit" border="0">
+            }
+            sub_class narrow
+            html { align center }
+        }
+        name {
+            label "Project Name"
+            link_url_col display_url
+        }
+        active_p {
+            label "Active"
+            display_template {
+                <if @projects.active_p@ eq t>Yes (<a href="@projects.make_inactive_url@" title="Make this project inactive">toggle</a>)</if><else>No (<a href="@projects.make_active_url@" title="Make this project active">toggle</a>)</else> 
+            }
+            html { align center }
+        }
+        project_lead {
+            label "Project Lead"
+            display_template {@projects.project_lead_chunk;noquote@}
+        }
+        permissions {
+            label "Permissions"
+            link_url_col permissions_url
+            display_template {<if @projects.admin_p@ true>Permissions</if>}
+            sub_class narrow
+            html { align center }
+        }
+        unlink {
+            label "Unlink"
+            link_url_col unmap_url
+            display_template {Unlink}
+            sub_class narrow
+            html { align center }
+        }
+        delete {
+            sub_class narrow
+            display_template {
+                <if @projects.admin_p@>
+                <a href="@projects.delete_url@" title="Delete this project"
+                onclick="return confirm('Are you sure you want to delete project @projects.name@?');"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                </if>
+            }            
+            html { align center }
+        }
+    }
+
 db_multirow -extend { 
     edit_url display_url permissions_url delete_url unmap_url project_lead_chunk
     make_active_url make_inactive_url
@@ -43,6 +100,20 @@ db_multirow -extend {
 #
 #####
 
+template::list::create \
+    -name "mappable_projects" \
+    -elements {
+        name {
+            label "Project Name"
+        }
+        link {
+            label "Link in"
+            link_url_col map_url
+            html { align center }
+            display_template "Link to instance"
+        }
+    }
+
 if { $user_id != 0 } {
     db_multirow -extend { map_url } mappable_projects select_mappable_projects {} {
         set map_url "project-instance-map?[export_vars { project_id }]"
@@ -58,6 +129,52 @@ if { $user_id != 0 } {
 #
 ###########
 
+template::list::create \
+    -name variables \
+    -actions {
+        "Create new variable" variable {}
+    } \
+    -elements {
+        edit {
+            link_url_col edit_url
+            display_template {
+                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="Edit" border="0">
+            }
+            sub_class narrow
+            html { align center }
+        }
+        name {
+            label "Variable Name"
+            link_url_col edit_url
+        }
+        unit {
+            label "Unit"
+        }
+        type {
+            label "Additive"
+            display_template {
+                <if @variables.type@ eq additive>Yes</if><else>No</else>
+            }
+        }
+        permissions {
+            label "Permissions"
+            link_url_col permissions_url
+            display_template {<if @variables.admin_p@ true>Permissions</if>}
+            sub_class narrow
+            html { align center }
+        }
+        delete {
+            sub_class narrow
+            display_template {
+                <if @variables.admin_p@>
+                <a href="@variables.delete_url@" title="Delete this variable"
+                onclick="return confirm('Are you sure you want to delete variable @variables.name@?');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                </if>
+            }            
+            html { align center }
+        }
+    }
+
 db_multirow -extend { edit_url delete_url permissions_url } variables select_variables {} {
     set edit_url "variable?[export_vars { variable_id {formbutton\:formbuilder\:\:edit Edit} {form\:id variable_form} {form\:mode display}}]"
     set delete_url "variable-delete?[export_vars { variable_id }]"
@@ -65,5 +182,3 @@ db_multirow -extend { edit_url delete_url permissions_url } variables select_var
 }
 
 set package_permissions_url "${permissions_uri}?[export_vars {{object_id $package_id} application_url}]"
-
-ad_return_template
