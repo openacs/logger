@@ -58,10 +58,10 @@ ad_form -name project_form \
         {label "Description"}
     }
 
-    {project_lead:search
+    {project_lead:search,optional
         {result_datatype integer}
         {label {Project Lead}}
-        {options [logger::project::users_get_options]}
+        {options {[concat [logger::project::users_get_options]]}}
         {search_query {[db_map dbqd.acs-tcl.tcl.community-core-procs.user_search]}}
     }
 }
@@ -112,8 +112,13 @@ ad_form -extend -name project_form -select_query {
         -active_p $active_p
 
 } -after_submit {
-      
-    ad_returnredirect "[ad_conn url]?project_id=$project_id"
+    if { [ad_form_new_p -key project_id] } {
+        set message "Project \"$name\" has been created."
+    } else {
+        set message "Project \"$name\" has been modified."
+    }
+
+    ad_returnredirect -message $message [export_vars -base [ad_conn url] { project_id }]
     ad_script_abort
 }
 
@@ -147,6 +152,8 @@ if { $project_exists_p } {
         set delete_url [export_vars -base projection-delete { projection_id }]
     }
 }
+
+set add_variable_url [export_vars -base map-variable-to-project { project_id }]
 
 template::list::create \
     -name variables \

@@ -12,6 +12,16 @@
     <li><a href="@category_map_url@">Define categories</a></li>
   </ul>
 
+  <if @variables:rowcount@ eq 0>
+    <div class="boxed-user-message">
+      <h3>Important Message</h3>
+      <div class="body">
+        You must <a href="@add_variable_url@">add a variable</a> to your project before
+        you will be able to log entries to it.
+      </div>
+    </div>
+  </if>
+
   <h2>Variables</h2>
 
   <listtemplate name="variables"></listtemplate>

@@ -136,6 +136,12 @@ if { $entry_exists_p } {
     set the_project_id $project_id
 }
 
+if { [llength [category_tree::get_mapped_trees $project_id]] > 0 } {
+    set focus "log_entry_form.category_id"
+} else {
+    set focus "log_entry_form.value"
+}
+
 category::ad_form::add_widgets \
     -container_object_id $the_project_id \
     -categorized_object_id [value_if_exists entry_id] \
@@ -217,7 +223,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect [export_vars -base [ad_conn url] { project_id variable_id }]
+    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\"added." [export_vars -base [ad_conn url] { project_id variable_id }]
     ad_script_abort
 
 } -edit_data {
@@ -237,7 +243,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 
 } -after_submit {
 
-    ad_returnredirect $return_url
+    ad_returnredirect -message "Log entry modified." $return_url
     ad_script_abort
 }
 

@@ -22,7 +22,7 @@ if { [llength $project_options] == 1 } {
     ad_script_abort
 }
 
-ad_form -name project_form -form {
+ad_form -name project_form -edit_buttons { { "Next" ok } } -form {
     {project_id:integer(select)
         {label Project}
         {options {$project_options}}

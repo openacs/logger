@@ -26,14 +26,15 @@
     	    from   logger_projects lp,
     	           logger_project_pkg_map lppm
     	    where  lp.project_id = lppm.project_id	
-    		   and lppm.package_id = :package_id
+            and    lppm.package_id = :package_id
+            and    lp.active_p = 't'
     	    order  by lp.name
     </querytext>
   </fullquery>
 
   <fullquery name="select_variables">
     <querytext>
-    	    select lv.name || ' (' || lv.unit || ')' as name,
+    	    select distinct lv.name || ' (' || lv.unit || ')' as name,
                    lv.variable_id
     	    from   logger_variables lv,
     	           logger_project_var_map lpvm,

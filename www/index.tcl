@@ -49,6 +49,9 @@ if { ![exists_and_not_null project_id] } {
     if { $num_package_projects == 1 } {
         set project_id $package_projects
     }
+} else {
+    # Assume at least one project, if one is selected
+    set num_package_projects 1
 }
 
 # Default to the current projection

@@ -91,5 +91,20 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::project::users_get_options.select_project_leads">
+    <querytext>
+        select uouter.first_names || ' ' || uouter.last_name, uouter.user_id
+        from   cc_users uouter
+        where  uouter.user_id in (select distinct u.user_id
+                                  from   cc_users u
+                                  where  u.user_id in (select p.project_lead
+                                                       from   logger_projects p,
+                                                              logger_project_pkg_map ppm
+                                                       where  ppm.project_id = p.project_id
+                                                       and    ppm.package_id = :package_id)
+                                  or     u.user_id = :user_id)
+        order  by lower(uouter.first_names), lower(uouter.last_name)
+    </querytext>
+  </fullquery>
 
 </queryset>

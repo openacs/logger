@@ -282,6 +282,7 @@ ad_proc -private logger::project::users_get_options {} {
     Get the list of users to display in a drop-down to pick project lead.
 } {
     set package_id [ad_conn package_id]
+    set user_id [ad_conn user_id]
 
     set users_list [db_list_of_lists select_project_leads {}]
 
