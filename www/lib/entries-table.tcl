@@ -71,7 +71,7 @@ db_multirow -extend { edit_url delete_url delete_onclick user_chunk selected_p }
 }
 
 if { $value_count > 0 } {
-    set value_average [expr round(100 * $value_total / $value_count) / 100.0] }  {
+    set value_average [expr round(100.0 * $value_total / $value_count) / 100.0] }  {
     set value_average "n/a"
 }
 

@@ -41,6 +41,6 @@ drop function logger_entry__new (integer,
                                  timestamptz,
                                  varchar, 
                                  integer, 
-                                 integer);
+                                 varchar);
 drop function logger_entry__del (integer) ;
 drop function logger_entry__name (integer) ;

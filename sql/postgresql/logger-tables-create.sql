@@ -173,7 +173,7 @@ create table logger_projections (
   end_time              timestamptz
                         constraint logger_projections_et_nn
                         not null,
-  value                 real
+  value                 decimal
                         constraint logger_projections_value_nn
                         not null
 );

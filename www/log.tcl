@@ -19,7 +19,7 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
-set current_user_id [ad_conn user_id]
+set current_user_id [ad_maybe_redirect_for_registration]
 
 if { [exists_and_not_null entry_id] } {
     set entry_exists_p [db_string entry_exists_p {}]                         
@@ -125,7 +125,7 @@ ad_form -extend -name log_entry_form -form {
     {value:float
         {label $variable_array(name)}
         {after_html $variable_array(unit)}
-	{html {size 10}}
+	{html {size 9 maxlength 9}}
     }
 
     {description:text,optional
@@ -147,8 +147,8 @@ ad_form -extend -name log_entry_form -form {
 
 ad_form -extend -name log_entry_form -select_query_name select_logger_entries -validate {
     {value 
-        { [regexp {^([^.]+|[^.]*\.[0-9]{0,2})$} $value] }
-        {The value may not contain more than two decimals}
+        { [regexp {^([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
+        {The value may not contain more than two decimals and must be between 0 and 999999.99}
     }
 } -new_data {
     set time_stamp_ansi "[lindex $time_stamp 0]-[lindex $time_stamp 1]-[lindex $time_stamp 2]"
@@ -217,5 +217,3 @@ db_multirow -extend { url selected_p } variables select_variables {} {
     set url "log?[export_vars -override { {variable_id $unique_id} } { project_id }]"
     set selected_p [string equal $variable_id $unique_id]
 }
-
-

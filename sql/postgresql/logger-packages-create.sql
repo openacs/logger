@@ -58,16 +58,15 @@ declare
     v_rec                 record;
 begin
         -- Delete all entries in the project
-        for v_rec in (select entry_id
+        for v_rec in select entry_id
                       from logger_entries
-                      where project_id = p_project_id
-                     )
+                      where project_id = p_project_id                     
         loop
-          logger_entry__del(v_rec.entry_id);
+          perform logger_entry__del(v_rec.entry_id);
         end loop;        
 
         -- Delete all variables only mapped to this project.
-        for v_rec in (select variable_id
+        for v_rec in select variable_id
                       from logger_variables
                       where exists (select 1
                                     from logger_project_pkg_map
@@ -77,9 +76,8 @@ begin
                                       from logger_project_pkg_map 
                                       where project_id <> p_project_id
                                      )
-                      )
         loop
-            logger_variable.del(v_rec.variable_id);
+            perform logger_variable__del(v_rec.variable_id);
         end loop;                                 
 
         -- Delete the project acs object. This will cascade the row in the logger_projects table
@@ -187,7 +185,7 @@ create or replace function logger_entry__new (integer,
                                               timestamptz,
                                               varchar, 
                                               integer, 
-                                              integer) 
+                                              varchar) 
 returns integer as '
 declare
         p_entry_id            alias for $1;

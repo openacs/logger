@@ -45,10 +45,12 @@
   <formtemplate id="log_entry_form" style="standard-lars"></formtemplate>
 </blockquote>
 
-<p class="logger_font">
-  <b>&raquo;</b>
-  <a href="@add_entry_url@">Add new log entry</a>
-</p>
+<if @entry_exists_p@>
+  <p class="logger_font">
+    <b>&raquo;</b>
+    <a href="@add_entry_url@">Add new log entry</a>
+  </p>
+</if>
 
 <if @show_log_history_p@>
   <h3 class="logger" style="clear: left;">Log history for the past @log_history_n_days@ days</h3>
