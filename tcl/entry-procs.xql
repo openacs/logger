@@ -29,4 +29,10 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::entry::task_id.task_id">
+    <querytext>
+      select current_timestamp when 1 = 0
+    </querytext>
+  </fullquery>
+
 </queryset>

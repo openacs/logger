@@ -1,15 +1,70 @@
 # Expected variables:
-#
+# -------------------
 # filters_p, default true, show filters
-#
 
 if { ![exists_and_not_null filters_p] } {
     set filters_p 1
 }
 
+# Optional variables:
+# -------------------
+# pm_task_id 
+# pm_project_id 
+# show_tasks_p 
+# show_orderby_p the calling include may not want to show links to sort
+# project_id 
+# variable_id
+# start_date in ansi format
+# end_date in ansi format
+# format (normal is default)
+# url : of logger (if called by another package) /url/to/logger/
+# add_link If you want to override the add link (for example, to go
+#   directly to the correct project)
+# project_manager_url : if passed in, the /url/to/project-manager/
+#   that is used to display the link to the task and project page.
+# entry_id (not sure if this works), should highlight entries.
+# return_url (used for delete links)
+
 if { ![exists_and_not_null format] } {
     set format "normal"
 }
+
+if { ![exists_and_not_null show_tasks_p]} {
+    set show_tasks_p 0
+}
+
+if { ![info exists project_manager_url]} {
+    set project_manager_url ""
+}
+
+# Debugging:
+# ns_log notice "project: $project_id variable_id: $variable_id filters_p: $filters_p pm_project_id: $pm_project_id pm_task_id: $pm_task_id start_date:$start_date end_date: $end_date show_orderby: $show_orderby_p entry_id: $entry_id show_tasks_p: $show_tasks_p"
+
+
+# Usage:
+# ------
+# This can be used as an include for the main index page of logger,
+# and it can be also used in includes from other apps, like
+# project-manager. The most important distinction is whether or not
+# filter options are going to be shown. If they are, then a lot more
+# computation has to be done. 
+
+# Because this can be called from other packages as well, the URLs we
+# compute have to be fully qualified.
+
+if {[info exists url]} {
+    set base_url $url
+} else {
+    set base_url [ad_conn package_url]
+}
+
+# Testing:
+# --------
+# use cases to test for:
+# using logger with and without project-manager
+# when using project-manager, both integrated and not integrated with PM
+# using logger with categories and without
+
 
 set package_id [ad_conn package_id]
 set current_user_id [ad_conn user_id]
@@ -27,14 +82,30 @@ logger::variable::get -variable_id $variable_id -array variable
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
+# -----------------------
+# PREPARATION FOR FILTERS
+# -----------------------
+
 # 1. get category-trees mapped to projects in this logger
-set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
-array set tree_id_array [list]
-foreach id $project_ids {
-    foreach elm [category_tree::get_mapped_trees $id] {
-        set tree_id_array([lindex $elm 0]) .
-    }
+
+# the logger::package::all_projects_in_package proc may be able to be
+# optimized in some way? If you have thousands of projects, it tends
+# to be a bit slow. Perhaps limit the results to only open projects?
+
+if {[exists_and_not_null project_id] && !$filters_p} {
+    set project_ids [list $project_id]
+}  else {
+    set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
 }
+
+array set tree_id_array [list]
+
+set elm_forest [category_tree::get_mapped_trees_from_object_list $project_ids]
+
+foreach elm $elm_forest {
+    set tree_id_array([lindex $elm 0]) .
+}
+
 set tree_ids [array names tree_id_array]
 
 
@@ -49,6 +120,15 @@ if { [exists_and_not_null project_id] } {
 }
 
 # Projects
+
+# we don't need to show all the project options if this is being
+# displayed in an include, and we're not showing the filters. 
+if {$filters_p} {
+    set project_where ""
+} else {
+    set project_where "and lp.project_id = :project_id"
+}
+
 set project_values [db_list_of_lists select_projects {}]
 
 if { ([exists_and_not_null start_date] || [exists_and_not_null end_date]) && ![exists_and_not_null time_stamp] } {
@@ -91,7 +171,7 @@ set elements {
     }
     value {
         label $variable(name)
-        link_url_eval {log?[export_vars { entry_id }]}
+        link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
         link_html { title "View this entry" }
         aggregate {[ad_decode $variable(type) "additive" sum average]}
         html { align right }
@@ -100,14 +180,18 @@ set elements {
     description {
         label "Description"
         display_eval {[string_truncate -len 50 -- $description]}
-        link_url_eval {log?[export_vars { entry_id }]}
+        link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
         link_html { title "View this entry" }
     }
+    task_name {
+        label "Task"
+        link_url_eval {[export_vars -base "${my_project_manager_url}task-one" { task_id }]}
+}
     description_long {
         label "Description"
         display_eval {[string_truncate -len 400 -- $description]}
         hide_p 1
-        link_url_eval {log?[export_vars { entry_id }]}
+        link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
         link_html { title "View this entry" }
     }
 }
@@ -123,7 +207,7 @@ set filters {
         where_clause {
             le.project_id = :project_id
         }
-        add_url_eval {[export_vars -base "log" { { project_id $__filter_value } variable_id }]}
+        add_url_eval {[export_vars -base "${base_url}log" { { project_id $__filter_value } variable_id }]}
         has_default_p {[ad_decode [llength $project_values] 1 1 0]}
     }
     variable_id {
@@ -132,7 +216,7 @@ set filters {
         where_clause {
             le.variable_id = :variable_id
         }
-        add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "log" { project_id { variable_id $__filter_value } }] ""]}
+        add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "${base_url}log" { project_id { variable_id $__filter_value } }] ""]}
         has_default_p t
     }
     projection_id {
@@ -145,7 +229,7 @@ set filters {
         label "Users"
         values {[db_list_of_lists select_users {}]}
         where_clause {
-            submitter.user_id = :user_id
+            submitter.person_id = :user_id
         }
     }
     time_stamp {
@@ -213,6 +297,12 @@ set filters {
             }
         }
     }
+    pm_task_id {
+        label "Tasks"
+        where_clause {
+            task.item_id = :pm_task_id
+        }
+    }
 }
 
 set orderbys {
@@ -244,6 +334,12 @@ set orderbys {
     }
     default_value time_stamp,desc
 }
+
+# the calling include may not want to show links to sort
+if {[exists_and_not_null show_orderby_p] && !$show_orderby_p} {
+    set orderbys ""
+}
+
 
 set groupby_values {
     { "Day" { { groupby time_stamp } { orderby time_stamp,desc } } }
@@ -297,12 +393,52 @@ foreach id $tree_ids {
                                      [list orderby c_${id}_category_id]]]
 }
 
+
+if {$show_tasks_p} {
+    lappend normal_row task_name {}
+}
+
 lappend normal_row value {} description {}
 
+
+
+# we modify the queries if we are viewing tasks
+
+if { $show_tasks_p || [exists_and_not_null pm_task_id]} {
+    set task_select "case when task.title is null then '' else task.title end as task_name, task.item_id as task_id,"
+
+    set task_left_join {
+        LEFT JOIN  (select 
+                    r.title, 
+                    m.logger_entry,
+                    i.item_id 
+                    from 
+                    cr_items i, 
+                    cr_revisions r,
+                    pm_task_logger_proj_map m 
+                    where 
+                    r.item_id = m.task_item_id and
+                    i.live_revision = r.revision_id) task 
+        ON le.entry_id = task.logger_entry,
+    }
+} else {
+    set task_left_join ","
+    set task_select ""
+}
 
 #----------------------------------------------------------------------
 # Define list
 #----------------------------------------------------------------------
+
+if {![info exists add_link]} {
+    set add_link "${base_url}project-select"
+}
+
+set actions_list [list "Add Entry" $add_link "Add new log entry"] 
+
+set delete_link "${base_url}log-delete"
+
+set bulk_actions_list [list "Delete" $delete_link "Delete checked entries"] 
 
 list::create \
     -name entries \
@@ -316,11 +452,12 @@ list::create \
     -sub_class "narrow" \
     -pass_properties {
         variable
-    } -actions {
-        "Add Entry" "project-select" "Add new log entry"
-    } -bulk_actions {
-        "Delete" "log-delete" "Delete checked entries"
-    } -elements $elements -filters $filters \
+    } -actions $actions_list \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars {
+        return_url
+    } \
+    -elements $elements -filters $filters \
     -groupby {
         label "Group by"
         type multivar
@@ -389,7 +526,9 @@ list::create \
 
 # We add a virtual column per category tree
 
-set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p }
+# some more documentation of what's going on here would be helpful. 
+
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url }
 foreach id $tree_ids {
     lappend extend c_${id}_category_id
 }
@@ -397,30 +536,11 @@ foreach id $tree_ids {
 array set row_categories [list]
 array set project_write_p [list]
 
-db_multirow -extend $extend -unclobber entries select_entries2 "
-    select le.entry_id,
-           le.time_stamp,
-           to_char(le.time_stamp, 'YYYY-MM-DD HH24:MI:SS') as time_stamp_ansi,
-           to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
-           le.value,
-           le.description,
-           lp.project_id,               
-           lp.name as project_name,
-           submitter.user_id,
-           submitter.first_names || ' ' || submitter.last_name as user_name,
-           c.category_id,
-           c.tree_id
-    from   logger_entries le left outer join 
-           category_object_map_tree c on (c.object_id = le.entry_id),
-           logger_projects lp,
-           acs_objects ao,
-           cc_users submitter
-    where  le.project_id = lp.project_id
-    and    ao.object_id = le.entry_id 
-    and    ao.creation_user = submitter.user_id
-    [list::filter_where_clauses -and -name "entries"]
-    [list::orderby_clause -orderby -name "entries"]
-" {
+db_multirow -extend $extend -unclobber entries select_entries2 { } {
+
+    set my_base_url $base_url 
+    set my_project_manager_url $project_manager_url
+
     if { ![empty_string_p $tree_id] && ![empty_string_p $category_id] } {
         lappend row_categories($tree_id) $category_id
     }
@@ -429,7 +549,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 "
         continue
     } else {
         set selected_p [string equal [ns_queryget entry_id] $entry_id]
-        set edit_url [export_vars -base log { entry_id { edit t } { return_url [ad_return_url] } }]
+        set edit_url [export_vars -base "${base_url}log" { entry_id { edit t } { return_url [ad_return_url] } }]
         if { ![exists_and_not_null project_write_p($project_id)] } {
             set project_write_p($project_id) [template::util::is_true [permission::permission_p -object_id $project_id -privilege write]]
         }
@@ -437,7 +557,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 "
         set delete_p $edit_p
         if { $delete_p } {
             set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
-            set delete_url [export_vars -base log-delete { entry_id }]
+            set delete_url [export_vars -base "${base_url}log-delete" { entry_id }]
         } else {
             set delete_url {}
         }

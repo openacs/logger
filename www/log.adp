@@ -49,12 +49,16 @@
   <h3 class="logger" style="clear: left;">Recent Entries</h3>
 
   <include src="/packages/logger/lib/entries" 
-      user_id="@current_user_id;noquote@" 
       project_id="@project_id;noquote@" 
       variable_id="@variable_id;noquote@" 
+      filters_p="f"
+      pm_project_id="@pm_project_id;noquote@" 
       start_date="@start_date_ansi;noquote@"
       end_date="@end_date_ansi;noquote@"
+      show_orderby_p="f"
       entry_id="@entry_id_or_blank;noquote@"
-      filters_p="f"
-  />
+      show_tasks_p="@show_tasks_p;noquote@"
+      return_url="@return_url;noquote@"
+      project_manager_url="@project_manager_url;noquote@"
+      /> 
 </if>

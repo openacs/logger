@@ -12,7 +12,8 @@
   </if>
 </if>
 <else>
-  <include src="/packages/logger/lib/entries" 
+  <if @show_tasks_p@ eq 1>
+      <include src="/packages/logger/lib/entries" 
       &="entry_id"
       &="variable_id"
       &="project_id"
@@ -24,5 +25,26 @@
       &="groupby"
       &="orderby"
       &="format"
-      &="page">
+      &="page"
+      &="return_url"
+      &="project_manager_url"
+      &="show_tasks_p">
+  </if>
+  <else>
+      <include src="/packages/logger/lib/entries" 
+      &="entry_id"
+      &="variable_id"
+      &="project_id"
+      &="user_id"
+      &="time_stamp"
+      &="start_date"
+      &="end_date"
+      &="projection_id"
+      &="groupby"
+      &="orderby"
+      &="format"
+      &="page"
+      &="return_url"
+      &="show_tasks_p">
+  </else>
 </else>

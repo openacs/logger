@@ -27,7 +27,8 @@
     	           logger_project_pkg_map lppm
     	    where  lp.project_id = lppm.project_id	
             and    lppm.package_id = :package_id
-            and    lp.active_p = 't'
+            and    lp.active_p = 't' 
+            $project_where
     	    order  by lp.name
     </querytext>
   </fullquery>
@@ -48,17 +49,17 @@
   <fullquery name="select_users">
     <querytext>
     	    select submitter.first_names || ' ' || submitter.last_name as label,
-                       submitter.user_id as user_id
-    	    from   cc_users submitter,
+                       submitter.person_id as user_id
+    	    from   persons submitter,
     	           logger_entries le,
     	           acs_objects ao
     	    where  ao.object_id = le.entry_id
-    	    and    submitter.user_id = ao.creation_user
+    	    and    submitter.person_id = ao.creation_user
     	    and    exists (select 1
                                from   logger_project_pkg_map
                                where  project_id = le.project_id
                                and    package_id = :package_id)
-    	    group  by submitter.user_id, submitter.first_names, submitter.last_name
+    	    group  by submitter.person_id, submitter.first_names, submitter.last_name
     </querytext>
   </fullquery>
 

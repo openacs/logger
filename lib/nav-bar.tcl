@@ -5,6 +5,8 @@ set package_id [ad_conn package_id]
 set package_url [ad_conn package_url]
 set page_url [ad_conn url]
 
+set project_manager_url [logger::util::project_manager_url]
+
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
 # The links used in the navbar on format url1 label1 url2 label2 ...
@@ -16,7 +18,7 @@ lappend link_list $index_urls
 lappend link_list {}
 lappend link_list "List"
 
-# My log entrie page
+# My log entry page
 if { [ad_conn user_id] != 0 } {
     lappend link_list $index_urls
     lappend link_list [list [list user_id $user_id]]
@@ -25,6 +27,21 @@ if { [ad_conn user_id] != 0 } {
     lappend link_list [list "${package_url}project-select"]
     lappend link_list {}
     lappend link_list "Add Entry"
+
+    if {![empty_string_p $project_manager_url]} {
+        lappend link_list [list "${project_manager_url}"]
+        lappend link_list {}
+        lappend link_list "Projects"
+
+        lappend link_list [list "${project_manager_url}processes"]
+        lappend link_list {}
+        lappend link_list "Processes"
+
+        lappend link_list [list "${project_manager_url}tasks"]
+        lappend link_list {}
+        lappend link_list "Tasks"
+
+    }
 }
 
 # The admin index page
