@@ -6,7 +6,8 @@
   <fullquery name="select_entries">
     <querytext>
 	    select le.entry_id as id,
-	           acs_permission.permission_p(le.entry_id, :user_id, 'delete') as delete_p,
+	           acs_permission.permission_p(le.entry_id, :current_user_id, 'delete') as delete_p,
+	           acs_permission.permission_p(le.entry_id, :current_user_id, 'edit') as edit_p,
 	           le.time_stamp,
 	           to_char(le.time_stamp, 'fmMMfm-fmDDfm-YYYY') as time_stamp_pretty,
 	           le.value,

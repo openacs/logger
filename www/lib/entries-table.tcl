@@ -9,7 +9,7 @@
 #   end_date_ansi 
 #   projection_value
 
-set user_id [ad_conn user_id]
+set current_user_id [ad_conn user_id]
 set package_id [ad_conn package_id]
 
 set where_clauses [list]
@@ -51,12 +51,12 @@ if { ![exists_and_not_null selected_entry_id] } {
 set value_total 0
 set value_count 0
 
-db_multirow -extend { edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
+db_multirow -extend { entry_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
     set description [string_truncate -len 50 $description]
     set project_name [string_truncate -len 20 $project_name]
     set selected_p [string equal $id $selected_entry_id]
     set action_links_list [list]
-    set edit_url "log?[export_vars { { entry_id $id } }]"
+    set entry_url "log?[export_vars { { entry_id $id } }]"
     if { $delete_p } {
         set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
         set delete_url "log-delete?[export_vars { { entry_id $id } }]"

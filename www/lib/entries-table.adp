@@ -27,13 +27,20 @@
       </else>
     </else>
       <td class="logger_listing_narrow">
-        <a href="@entries.edit_url@" title="Edit this log entry"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
+        <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
+          <a href="@entries.entry_url@" title="Edit this log entry"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
+        </if>
       </td>
       <td class="logger_listing_narrow">@entries.project_name@</td>
       <td class="logger_listing_narrow">@entries.user_chunk@</td>
       <td class="logger_listing_narrow" align="left">@entries.time_stamp_pretty@</td>
       <td class="logger_listing_narrow" align="right" nowrap>
-        <a href="@entries.edit_url@" title="Edit this log entry">@entries.value@</a>
+        <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
+          <a href="@entries.entry_url@" title="Edit this log entry">@entries.value@</a>
+        </if>
+        <else>
+          <a href="@entries.entry_url@" title="Display this log entry">@entries.value@</a>
+        </else>
       </td>
       <td class="logger_listing_narrow">@entries.description@</td>
       <td class="logger_listing_narrow">

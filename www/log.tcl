@@ -33,37 +33,6 @@ if { [string equal [form get_action log_entry_form] "done"] } {
     ad_script_abort
 }
 
-# Different page title and form mode when adding a log entry 
-# versus displaying/editing one
-if { [exists_and_not_null entry_id] } {
-    # Initial request in display or edit mode or a submit of the form
-    set page_title "Edit Log Entry"
-    set ad_form_mode edit
-} else {
-    # Initial request in add mode
-    set page_title "Add Log Entry"
-    set ad_form_mode edit
-}
-
-set context [list $page_title]
-
-# Build the log entry form elements
-set actions [list]
-if { $entry_exists_p && [permission::permission_p -object_id $entry_id -privilege write] } {
-    lappend actions { Edit formbuilder::edit }
-}
-lappend actions { Done done }
-
-ad_form -name log_entry_form -cancel_url index -mode $ad_form_mode \
-    -actions $actions -form {
-    entry_id:key(acs_object_id_seq)
-}
-
-# On various occasions we need to know if we are dealing with a submit with the
-# form or an initial request (could also be with error message after unaccepted submit)
-set submit_p [form is_valid log_entry_form]
-
-
 ###########
 #
 # Get project and variable info
@@ -101,6 +70,49 @@ logger::variable::get -variable_id $variable_id -array variable_array
 # Build the form
 #
 ###########
+
+# The creator of a log entry can always edit it
+if { $entry_exists_p } {
+    set edit_p [expr [permission::permission_p -object_id $entry_id -privilege edit] || \
+                    $current_user_id == $entry_array(creation_user)]
+} else {
+    set edit_p 0
+}
+
+# Different page title and form mode when adding a log entry 
+# versus displaying/editing one
+if { [exists_and_not_null entry_id] } {
+    # Initial request in display or edit mode or a submit of the form
+    set page_title "Edit Log Entry"
+    if { $edit_p } {
+        set ad_form_mode edit
+    } else {
+        set ad_form_mode display
+    }
+} else {
+    # Initial request in add mode
+    set page_title "Add Log Entry"
+    set ad_form_mode edit
+}
+
+set context [list $page_title]
+
+
+# Build the log entry form elements
+set actions [list]
+if { $edit_p } {
+    lappend actions { Edit formbuilder::edit }
+}
+lappend actions { Done done }
+
+ad_form -name log_entry_form -cancel_url index -mode $ad_form_mode \
+    -actions $actions -form {
+    entry_id:key(acs_object_id_seq)
+}
+
+# On various occasions we need to know if we are dealing with a submit with the
+# form or an initial request (could also be with error message after unaccepted submit)
+set submit_p [form is_valid log_entry_form]
 
 ad_form -extend -name log_entry_form -form {
     {project:text(inform)
@@ -215,12 +227,41 @@ if { $entry_exists_p && [string equal $current_user_id $entry_array(creation_use
 
 set show_log_history_p [expr $entry_edited_by_owner_p || ! $entry_exists_p]
 
-set log_history_n_days 31
-set seconds_per_day [expr 60*60*24]
-set start_date_seconds [expr [clock seconds] - $log_history_n_days * $seconds_per_day]
-set start_date_ansi [clock format $start_date_seconds \
-                        -format "%Y-%m-%d"]
+if { $show_log_history_p } {
+    # Show N number of days previous to the last logged entry by the user
+    set ansi_format_string "%Y-%m-%d"
+    set last_logged_date [db_string last_logged_date {
+        select to_char(le.time_stamp, 'YYYY-MM-DD')
+        from logger_entries le,
+             acs_objects ao 
+        where le.entry_id = ao.object_id
+          and le.variable_id = :variable_id
+          and le.project_id = :project_id
+          and ao.creation_user = :current_user_id
+          and ao.creation_date = (select max(ao.creation_date)
+                              from logger_entries le,
+                                   acs_objects ao
+                              where le.entry_id = ao.object_id
+                                and le.variable_id = :variable_id
+                                and le.project_id = :project_id
+                                and ao.creation_user = :current_user_id
+                             )
+    } -default ""]
 
+    if { ![empty_string_p $last_logged_date] } {
+        set end_date_ansi $last_logged_date
+        set end_date_seconds [clock scan $end_date_ansi]
+    } else {
+        # Default end date to now
+        set end_date_seconds [clock seconds]
+        set end_date_ansi [clock format $end_date_seconds -format $ansi_format_string]
+    }
+    set log_history_n_days 31
+    set seconds_per_day [expr 60*60*24]
+    set start_date_seconds [expr $end_date_seconds - $log_history_n_days * $seconds_per_day]
+    set start_date_ansi [clock format $start_date_seconds \
+                            -format $ansi_format_string]
+}
 
 set add_entry_url "log?[export_vars { project_id variable_id }]"
 

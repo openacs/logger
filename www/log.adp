@@ -53,12 +53,19 @@
 </if>
 
 <if @show_log_history_p@>
-  <h3 class="logger" style="clear: left;">Log history for the past @log_history_n_days@ days</h3>
+  <h3 class="logger" style="clear: left;">Log history (@start_date_ansi@ to @end_date_ansi@)</h3>
+
+  <p>
+    The log history is
+    shown @log_history_n_days@ back from your last logged entry, or @log_history_n_days@ back from
+    today if you have no previously logged entries.
+  </p>
 
   <include src="lib/entries-table" 
         selected_user_id="@current_user_id@" 
         selected_project_id="@project_id@" 
         selected_variable_id="@variable_id@" 
         start_date_ansi="@start_date_ansi@"
+        end_date_ansi="@end_date_ansi@"
         selected_entry_id="@entry_id_or_blank@" />
 </if>
