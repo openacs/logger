@@ -83,4 +83,23 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::project::set_active_p.update_project">
+    <querytext>
+        update logger_projects
+        set    active_p = :active_p
+        where  project_id = :project_id
+    </querytext>
+  </fullquery>
+
+
+  <fullquery name="logger::project::users_get_options.select_project_leads">
+    <querytext>
+        select acs_object__name(p.project_lead), project_lead
+        from   logger_projects p,
+               logger_project_pkg_map ppm
+        where  ppm.project_id = p.project_id
+        and    ppm.package_id = :package_id
+    </querytext>
+  </fullquery>
+
 </queryset>

@@ -21,7 +21,10 @@ set permissions_uri "/permissions/one"
 #
 ###########
 
-db_multirow -extend { edit_url display_url permissions_url delete_url unmap_url project_lead_chunk } projects select_projects {} {
+db_multirow -extend { 
+    edit_url display_url permissions_url delete_url unmap_url project_lead_chunk
+    make_active_url make_inactive_url
+} projects select_projects {} {
     set description [string_truncate -len 50 $description]
 
     set edit_url "project?[export_vars { project_id {formbutton\:formbuilder\:\:edit Edit} {form\:id project_form} {form\:mode display}}]"
@@ -29,6 +32,8 @@ db_multirow -extend { edit_url display_url permissions_url delete_url unmap_url 
     set unmap_url "project-instance-map?[export_vars { project_id {unmap "t"} }]"
     set permissions_url "${permissions_uri}?[export_vars {{object_id $project_id} application_url}]"
     set delete_url "project-delete?[export_vars { project_id }]"
+    set make_active_url "project-make-active?[export_vars { project_id }]"
+    set make_inactive_url "project-make-inactive?[export_vars { project_id }]"
     set project_lead_chunk [ad_present_user $project_lead_id $project_lead_name]
 }
 

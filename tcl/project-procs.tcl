@@ -100,6 +100,24 @@ ad_proc -public logger::project::edit {
     db_dml update_project {}
 }
 
+ad_proc -public logger::project::set_active_p {
+    {-project_id:required}
+    {-active_p:required}
+} {
+    Set a Logger project active/inactive.
+
+    @param project_id The id of the project to edit
+    @param active_p The new value for active_p, must be t (true) or f (false)
+
+    @return The return value from db_dml
+
+    @author Lars Pind (lars@collaboraid.biz)
+} {
+    ad_assert_arg_value_in_list active_p {t f}
+
+    db_dml update_project {}
+}
+
 ad_proc -public logger::project::delete {
     {-project_id:required}
 } {
@@ -258,4 +276,16 @@ ad_proc -public logger::project::get_primary_variable {
     @author Peter Marklund
 } {
     return [db_string select_primary_variable {} -default ""]
+}
+
+ad_proc -private logger::project::users_get_options {} {
+    Get the list of users to display in a drop-down to pick project lead.
+} {
+    set package_id [ad_conn package_id]
+
+    set users_list [db_list_of_lists select_project_leads {}]
+
+    lappend users_list { "Search..." ":search:"}
+    
+    return $users_list
 }

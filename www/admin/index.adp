@@ -33,7 +33,7 @@
         <td class="logger_listing">
           <a href="@projects.display_url@" title="Display project info">@projects.name@</a>
         </td>
-        <td class="logger_listing"><if @projects.active_p@ eq t>Yes</if><else>No</else> </td>
+        <td class="logger_listing"><if @projects.active_p@ eq t>Yes (<a href="@projects.make_inactive_url@" title="Make this project inactive">toggle</a>)</if><else>No (<a href="@projects.make_active_url@" title="Make this project active">toggle</a>)</else> </td>
         <td class="logger_listing">@projects.project_lead_chunk@</td>
         <td class="logger_listing_narrow" align="center">
           <if @projects.admin_p@>
