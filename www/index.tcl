@@ -7,7 +7,7 @@ ad_page_contract {
     @cvs-id $Id$
 } {
     entry_id:integer,optional
-    {variable_id:integer,optional {[db_string first_variable_id { select variable_id from logger_variables order by variable_id limit 1 } -default {}]}}
+    {variable_id:integer,optional {[logger::variable::get_default_variable_id]}}
     project_id:integer,optional
     user_id:integer,optional
     {time_stamp:multiple,optional {[clock format [clock scan "-[clock format [clock seconds] -format %w] days"] -format "%Y-%m-%d"] [clock format [clock scan "[expr 6-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]}}

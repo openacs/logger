@@ -26,5 +26,15 @@
         end;
     </querytext>
   </fullquery>
- 
+
+  <fullquery name="logger::variable::get_default_variable_id.select_first_variable_id">
+    <querytext>
+        select q.*
+        from   (select variable_id 
+                from   logger_variables 
+                order  by variable_id)
+        where  rownum = 1
+    </querytext>
+  </fullquery>
+
 </queryset>

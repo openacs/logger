@@ -113,3 +113,9 @@ ad_proc -public logger::variable::get {
 
     db_1row select_variable {} -column_array variable_array
 }
+
+ad_proc -public logger::variable::get_default_variable_id {} {
+    Get the ID of the default (first) variable.
+} {
+    return [db_string select_first_variable_id {} -default {}]
+}

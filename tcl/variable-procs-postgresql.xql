@@ -23,4 +23,13 @@
     </querytext>
   </fullquery>
  
+  <fullquery name="logger::variable::get_default_variable_id.select_first_variable_id">
+    <querytext>
+        select variable_id 
+        from   logger_variables 
+        order  by variable_id 
+        limit  1  
+    </querytext>
+  </fullquery>
+
 </queryset>
