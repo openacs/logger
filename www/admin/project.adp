@@ -8,6 +8,8 @@
 </blockquote>
 
 <if @project_exists_p@ and @edit_mode_p@ eq 0>
+  <a href="@category_map_url@" class="action">Define categories</a>
+
   <h2>Variables</h2>
 
   <listtemplate name="variables"></listtemplate>

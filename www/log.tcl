@@ -123,19 +123,27 @@ ad_form -name log_entry_form -cancel_url $return_url -mode $ad_form_mode \
 # form or an initial request (could also be with error message after unaccepted submit)
 set submit_p [form is_valid log_entry_form]
 
-ad_form -extend -name log_entry_form -form {
+ad_form -extend -name log_entry_form -export { project_id variable_id return_url } -form {
     {project:text(inform)
         {label Project}
         {value $project_array(name)}
     }
-    {project_id:integer(hidden)
-        {value $project_id}
-    }
-    {variable_id:integer(hidden)
-        {value $variable_id}
-    }
-    {return_url:text(hidden) {value $return_url}}
-}    
+}
+
+if { $entry_exists_p } {
+    set category_trees [category_tree::get_mapped_trees $entry_array(project_id)]
+} else {
+    set category_trees [category_tree::get_mapped_trees $project_id]
+}
+foreach elm $category_trees {
+    foreach { tree_id name dummy } $elm {}
+    ad_form -extend -name log_entry_form -form \
+        [list [list category_id_${tree_id}:integer(category) \
+                   {label $name} \
+                   {html {single single}} \
+                   {category_tree_id $tree_id} \
+                   {category_object_id {[value_if_exists entry_id]}}]]
+}   
 
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
@@ -173,26 +181,46 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         set time_stamp [clock format [clock seconds] -format "%Y-%m-%d"]
     }
     set time_stamp [template::util::date::acquire ansi $time_stamp]
+} -on_submit {
+    # Collect categories from all the category widgets
+    set category_ids [list]
+    foreach elm $category_trees {
+        foreach { tree_id name dummy } $elm {}
+        set category_ids [concat $category_ids [set category_id_${tree_id}]]
+    }
 } -new_data {
     
     # jarkko: check to see if user has already added this entry and has come
-    # back with her back button. If the entry exists, we give the user a complaint
-    # LARS: took out the edit link, because the new templated ad_return_complaint quotes
+    # back with her back button. If the entry exists, we edit it
 
-    if { [string match [db_string check_if_exists "
-	select 1
-	from logger_entries
-	where entry_id = :entry_id
-    " -default "0"] "0"]} {
-        logger::entry::new \
-            -entry_id $entry_id \
-            -project_id $project_id \
-            -variable_id $variable_id \
-            -value $value \
-            -time_stamp $time_stamp \
-            -description $description
-    } else {
-	ad_return_complaint {} "You have already added this entry once."
+    db_transaction {
+        set exists_p [db_string check_if_exists {
+            select 1
+            from   logger_entries
+            where  entry_id = :entry_id
+        } -default "0"]
+        
+        if { !$exists_p } {
+            logger::entry::new \
+                -entry_id $entry_id \
+                -project_id $project_id \
+                -variable_id $variable_id \
+                -value $value \
+                -time_stamp $time_stamp \
+                -description $description
+        } else {
+            logger::entry::edit \
+                -entry_id $entry_id \
+                -value $value \
+                -time_stamp $time_stamp \
+                -description $description
+        }
+        
+
+        category::map_object \
+            -remove_old \
+            -object_id $entry_id \
+            $category_ids
     }
     
     # Remember this date, as the next entry is likely to be for the same date
@@ -203,13 +231,22 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_script_abort
 
 } -edit_data {
-    logger::entry::edit \
-        -entry_id $entry_id \
-        -value $value \
-        -time_stamp $time_stamp \
-        -description $description
+    db_transaction {
+        logger::entry::edit \
+            -entry_id $entry_id \
+            -value $value \
+            -time_stamp $time_stamp \
+            -description $description
+        
+        category::map_object \
+            -remove_old \
+            -object_id $entry_id \
+            $category_ids
+    }
+
 } -after_submit {
-    ad_returnredirect "[ad_conn url]?[export_vars -base [ad_conn url] { project_id variable_id return_url }]"
+
+    ad_returnredirect $return_url
     ad_script_abort
 }
 
@@ -281,6 +318,6 @@ if { [info exists entry_id] } {
 #####
 
 db_multirow -extend { url selected_p } variables select_variables {} {
-    set url "log?[export_vars -override { {variable_id $unique_id} } { project_id }]"
+    set url [export_vars -base log -override { {variable_id $unique_id} } { project_id }]
     set selected_p [string equal $variable_id $unique_id]
 }

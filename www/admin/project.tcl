@@ -213,3 +213,7 @@ template::list::create \
             html { align center }
         }
     }
+
+
+# TODO: Get category base URL dynamically
+set category_map_url [export_vars -base "/categories/cadmin/one-object" { { object_id $project_id } }]

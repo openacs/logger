@@ -1,17 +1,13 @@
 ad_library {
-    <p>
-    Procedures in the logger::package namespace. Those procedures
+    Procedures the logger::package namespace. Those procedures
     operate on logger package objects.
-    </p>
 
-   <p>
-     Unlike many other -procs.tcl files in the logger package this
-     file contains no ::new and ::delete procedures. The reason
-     is that packages are created by the APM proc apm_package_instance_new.
-     When the logger application needs extra data to be setup for package
-     instances this would be done in an after-instantiate callback in
-     the file apm-callback-procs.tcl.
-   </p>
+   Unlike many other -procs.tcl files in the logger package this
+   file contains no ::new and ::delete procedures. The reason
+   is that packages are created by the APM proc apm_package_instance_new.
+   When the logger application needs extra data to be setup for package
+   instances this would be done in an after-instantiate callback in
+   the file apm-callback-procs.tcl.
 
     @creation-date 4:th of April 2003
     @author Peter Marklund (peter@collaboraid.biz)
@@ -39,7 +35,7 @@ ad_proc -public logger::package::projects_only_in_package {
 ad_proc -public logger::package::all_projects_in_package {
     {-package_id:required}
 } {
-    Return a list of ids for all logger projects mapped to the given package.x
+    Return a list of ids for all logger projects mapped to the given package.
 
     @param package_id The id of the package to return projects for
 

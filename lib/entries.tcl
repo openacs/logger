@@ -27,6 +27,17 @@ logger::variable::get -variable_id $variable_id -array variable
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
+# 1. get category-trees mapped to projects in this logger
+set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
+array set tree_id_array [list]
+foreach id $project_ids {
+    foreach elm [category_tree::get_mapped_trees $id] {
+        set tree_id_array([lindex $elm 0]) .
+    }
+}
+set tree_ids [array names tree_id_array]
+
+
 # Projections
 set projection_values [list]
 if { [exists_and_not_null project_id] } {
@@ -40,8 +51,78 @@ if { [exists_and_not_null project_id] } {
 # Projects
 set project_values [db_list_of_lists select_projects {}]
 
-
 # Define the list
+
+set elements {
+    edit {
+        label {}
+        display_template {
+           <if @entries.edit_p@ true>
+            <a href="@entries.edit_url@" title="Edit this log entry"
+            ><img src="/shared/images/Edit16.gif" height="16" width="16" 
+            alt="Edit" border="0"></a>
+            </if>        
+        }
+    }
+    project_id {
+        display_col project_name
+        label "Project"
+        hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
+    }
+    user_id {
+        label "User"
+        display_col user_name
+        link_url_eval {[acs_community_member_url -user_id $user_id]}
+        csv_col user_name
+        hide_p {[ad_decode [exists_and_not_null user_id] 1 1 0]}
+    }
+    time_stamp {
+        label "Date"
+        display_col time_stamp_pretty
+        aggregate_label {[ad_decode $variable(type) "additive" "Total" "Average"]}
+        aggregate_group_label {[ad_decode $variable(type) "additive" "Group total" "Group Average"]}
+    }
+    value {
+        label $variable(name)
+        link_url_eval {log?[export_vars { entry_id }]}
+        link_html { title "View this entry" }
+        aggregate {[ad_decode $variable(type) "additive" sum average]}
+        html { align right }
+        display_eval {[lc_numeric $value]}
+    }
+    description {
+        label "Description"
+        display_eval {[string_truncate -len 50 -- $description]}
+        link_url_eval {log?[export_vars { entry_id }]}
+        link_html { title "View this entry" }
+    }
+    description_long {
+        label "Description"
+        display_eval {[string_truncate -len 400 -- $description]}
+        hide_p 1
+        link_url_eval {log?[export_vars { entry_id }]}
+        link_html { title "View this entry" }
+    }
+}
+
+set normal_row {
+    checkbox {}
+    edit {}
+    project_id {}
+    user_id {}
+    time_stamp {}
+}
+
+foreach id $tree_ids {
+    set id_var c_${id}_category_id
+    set cmd "join \[category::get_names \$$id_var\] \", \""
+    lappend elements c_${id}_category_id \
+        [list label \[[list category_tree::get_name $id]\] \
+             display_eval \[$cmd\]]
+    lappend normal_row c_${id}_category_id {}
+}
+
+lappend normal_row value {} description {}
 
 list::create \
     -name entries \
@@ -59,57 +140,7 @@ list::create \
         "Add Entry" "project-select" "Add new log entry"
     } -bulk_actions {
         "Delete" "log-delete" "Delete checked entries"
-    } -elements {
-        edit {
-            label {}
-            display_template {
-               <if @entries.edit_p@ true>
-                <a href="@entries.edit_url@" title="Edit this log entry"
-                ><img src="/shared/images/Edit16.gif" height="16" width="16" 
-                alt="Edit" border="0"></a>
-                </if>        
-            }
-        }
-        project_id {
-            display_col project_name
-            label "Project"
-            hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
-        }
-        user_id {
-            label "User"
-            display_col user_name
-            link_url_eval {[acs_community_member_url -user_id $user_id]}
-            csv_col user_name
-            hide_p {[ad_decode [exists_and_not_null user_id] 1 1 0]}
-        }
-        time_stamp {
-            label "Date"
-            display_col time_stamp_pretty
-            aggregate_label {[ad_decode $variable(type) "additive" "Total" "Average"]}
-            aggregate_group_label {[ad_decode $variable(type) "additive" "Group total" "Group Average"]}
-        }
-        value {
-            label $variable(name)
-            link_url_eval {log?[export_vars { entry_id }]}
-            link_html { title "View this entry" }
-            aggregate {[ad_decode $variable(type) "additive" sum average]}
-            html { align right }
-            display_eval {[lc_numeric $value]}
-        }
-        description {
-            label "Description"
-            display_eval {[string_truncate -len 50 -- $description]}
-            link_url_eval {log?[export_vars { entry_id }]}
-            link_html { title "View this entry" }
-        }
-        description_long {
-            label "Description"
-            display_eval {[string_truncate -len 400 -- $description]}
-            hide_p 1
-            link_url_eval {log?[export_vars { entry_id }]}
-            link_html { title "View this entry" }
-        }
-    } -filters {
+    } -elements $elements -filters {
         project_id {
             label "Projects"
             values $project_values
@@ -247,15 +278,7 @@ list::create \
         normal {
             label "Table"
             layout table
-            row {
-                checkbox {}
-                edit {}
-                project_id {}
-                user_id {}
-                time_stamp {}
-                value {}
-                description {}
-            }
+            row $normal_row
         }
         detailed {
             label "Detailed table"
@@ -309,20 +332,71 @@ list::create \
         }
     }
 
+# TODO: Filter by category
+
+# TODO: Order by category tree
+
+# TODO: With multiple categories from the same tree, make sure they're listed in correct sort_order
 
 
-# This query will override the ad_page_contract value entry_id
+# We add a virtual column per category tree
 
-db_multirow -extend { edit_url delete_url delete_onclick } -unclobber entries select_entries "
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty }
+foreach id $tree_ids {
+    lappend extend c_${id}_category_id
+}
+
+array set row_categories [list]
+
+db_multirow -extend $extend -unclobber entries select_entries2 "
+    select le.entry_id,
+           acs_permission__permission_p(le.entry_id, :current_user_id, 'delete') as delete_p,
+           acs_permission__permission_p(le.entry_id, :current_user_id, 'write') as edit_p,
+           le.time_stamp,
+           to_char(le.time_stamp, 'YYYY-MM-DD HH24:MI:SS') as time_stamp_ansi,
+           to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
+           le.value,
+           le.description,
+           lp.project_id,               
+           lp.name as project_name,
+           submitter.user_id,
+           submitter.first_names || ' ' || submitter.last_name as user_name,
+           c.category_id,
+           c.tree_id
+    from   logger_entries le left outer join 
+           category_object_map_tree c on (c.object_id = le.entry_id),
+           logger_projects lp,
+           acs_objects ao,
+           cc_users submitter
+    where  le.project_id = lp.project_id
+    and    ao.object_id = le.entry_id 
+    and    ao.creation_user = submitter.user_id
+    [list::filter_where_clauses -and -name "entries"]
+    [list::orderby_clause -orderby -name "entries"]
 " {
-    set selected_p [string equal [ns_queryget entry_id] $entry_id]
-    set edit_url "log?[export_vars { entry_id { edit t } }]"
-    set edit_p [ad_decode [expr [ad_decode $edit_p "t" 1 0]  || ($user_id == [ad_conn user_id])] 1 "t" "f"]
-    if { $delete_p } {
-        set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
-        set delete_url "log-delete?[export_vars { entry_id }]"
+    if { ![empty_string_p $tree_id] && ![empty_string_p $category_id] } {
+        lappend row_categories($tree_id) $category_id
+    }
+    
+    if { ![db_multirow_group_last_row_p -column entry_id] } {
+        continue
     } else {
-        set delete_url ""
+        set selected_p [string equal [ns_queryget entry_id] $entry_id]
+        set edit_url [export_vars -base log { entry_id { edit t } { return_url [ad_return_url] } }]
+        set edit_p [ad_decode [expr [ad_decode $edit_p "t" 1 0]  || ($user_id == [ad_conn user_id])] 1 "t" "f"]
+        if { $delete_p } {
+            set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
+            set delete_url [export_vars -base log-delete { entry_id }]
+        } else {
+            set delete_url {}
+        }
+        set time_stamp_pretty [lc_time_fmt $time_stamp_ansi "%x"]
+
+        foreach tree_id [array names row_categories] {
+            set c_${tree_id}_category_id $row_categories($tree_id)
+        }
+        
+        array unset row_categories
     }
 }
 
