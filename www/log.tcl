@@ -156,7 +156,7 @@ ad_form -extend -name log_entry_form -export { project_id variable_id return_url
     }
 }
 
-if { $entry_exists_p } {
+if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p] && [info exists entry_array]} {
     set the_project_id $entry_array(project_id)
 } else {
     set the_project_id $project_id
