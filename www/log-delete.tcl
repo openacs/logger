@@ -7,19 +7,20 @@ ad_page_contract {
 } {
     entry_id:integer,multiple
     {confirm_p:boolean 0}
+    {return_url "."}
 }
 
 if { !$confirm_p } {
     set num_entries [llength $entry_id]
 
     if { $num_entries == 0 } {
-        ad_returnredirect .
+        ad_returnredirect $return_url
         return
     }
 
     set page_title "Delete Log [ad_decode $num_entries 1 "Entry" "Entries"]"
     set context [list $page_title]
-    set yes_url "log-delete?[export_vars { entry_id:multiple { confirm_p 1 } }]"
+    set yes_url "log-delete?[export_vars { entry_id:multiple { confirm_p 1 } return_url}]"
     set no_url "."
 
     return
@@ -30,5 +31,5 @@ foreach entry_id $entry_id {
     logger::entry::delete -entry_id $entry_id
 }
     
-ad_returnredirect .
+ad_returnredirect $return_url
 ad_script_abort
