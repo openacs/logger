@@ -1,138 +1,243 @@
 --
--- Postgres packages for the Logger application
+-- Postgresql packages for the Logger application
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @author Peter Marklund (peter@collaboraid.biz)
--- @creation-date 2003-04-03
--- @auther Postgres Port by Dirk Gomez (openacs@dirkgomez.de)
+-- @author Postgresql porting by Dirk Gomez (openacs@dirkgomez.de)
+-- @creation-date 2003-05-07
 
-create function logger_project__new (integer, varchar, varchar, integer, integer, varchar, integer) 
+-----------
+--
+-- Projects
+--
+-----------
+
+create or replace function logger_project__new (integer, 
+                                                varchar, 
+                                                varchar, 
+                                                integer, 
+                                                integer, 
+                                                varchar, 
+                                                integer) 
 returns integer as '
 declare
-    project_id          alias for $1; -- default null
-    name                alias for $2;
-    description         alias for $3; -- default null
-    project_lead        alias for $4;
-    creation_user       alias for $5;
-    creation_ip         alias for $6; -- default null
-    package_id          alias for $7;
+    p_project_id          alias for $1;
+    p_name                alias for $2;
+    p_description         alias for $3;
+    p_project_lead        alias for $4;
+    p_creation_user       alias for $5;
+    p_creation_ip         alias for $6;
+    p_package_id          alias for $7;
 
-    v_project_id               integer;
+    v_project_id          integer;
 begin
         v_project_id := acs_object__new(
-            project_id,
+            p_project_id,
             ''logger_project'',
-            package_id,
-            creation_ip,
-            creation_user
+            p_package_id,
+            p_creation_ip,
+            p_creation_user
         );
        
        insert into logger_projects (project_id, name, description, project_lead)
-           values (v_project_id, name, description, project_lead);
+           values (v_project_id, p_name, p_description, p_project_lead);
 
        insert into logger_project_pkg_map (project_id, package_id)
-                values (v_project_id, logger_project.new.package_id);
+                values (v_project_id, p_package_id);
 
        return v_project_id;  
 end; ' language 'plpgsql';
 
-create function logger_project__delete (integer) 
+create or replace function logger_project__del (integer) 
 returns integer as '
 declare
-    project_id          alias for $1;
+    p_project_id          alias for $1;
+
+    v_rec                 record;
 begin
         -- Delete all entries in the project
-        for rec in (select entry_id
-                    from logger_entries
-                    where project_id = logger_project.delete.project_id
-                   )
+        for v_rec in (select entry_id
+                      from logger_entries
+                      where project_id = p_project_id
+                     )
         loop
-          logger_entry.delete(rec.entry_id);
+          logger_entry__del(v_rec.entry_id);
         end loop;        
 
         -- Delete all variables only mapped to this project.
-        for rec in (select variable_id
-                   from logger_variables
-                   where exists (select 1
-                                 from logger_project_pkg_map
-                                 where project_id = logger_project.delete.project_id
-                                )
-                   and not exists (select 1 
-                                   from logger_project_pkg_map 
-                                   where project_id <> logger_project.delete.project_id
-                                  )
-                   )
+        for v_rec in (select variable_id
+                      from logger_variables
+                      where exists (select 1
+                                    from logger_project_pkg_map
+                                    where project_id = p_project_id
+                                   )
+                      and not exists (select 1 
+                                      from logger_project_pkg_map 
+                                      where project_id <> p_project_id
+                                     )
+                      )
         loop
-            delete from logger_variables where variable_id = rec.variable_id;
+            logger_variable.del(v_rec.variable_id);
         end loop;                                 
 
         -- Delete the project acs object. This will cascade the row in the logger_projects table
         -- as well as all projections in the project
-        acs_object.delete(project_id);
+        -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = p_project_id;
+        perform acs_object__delete(p_project_id);
 end; ' language 'plpgsql';
 
-create function logger_project__name (integer) 
+create or replace function logger_project__name (integer) 
 returns varchar as '
 declare
-      project_id      alias for $1;
+      p_project_id      alias for $1;
 
-      v_name          logger_projects.name%TYPE;
+      v_name            varchar;
 begin
       select name
       into   v_name
       from   logger_projects
-      where  project_id = name.project_id;
+      where  project_id = p_project_id;
 
       return v_name;
 end; ' language 'plpgsql';
 
-create function logger_entry__new (integer, integer, integer, integer, date, varchar, integer, varchar, integer) 
+-----------
+--
+-- Variables
+--
+-----------
+
+create or replace function logger_variable__new(integer,
+                                                varchar,
+                                                varchar,
+                                                varchar,
+                                                integer,
+                                                integer,
+                                                integer)
 returns integer as '
 declare
-        entry_id      alias for $1;  -- default null
-        project_id          alias for $2;
-        variable_id         alias for $3;
-        value               alias for $4;
-        time_stamp          alias for $5;
-        description         alias for $6; -- default null
-        creation_user       alias for $7;
-        creation_ip         alias for $8; -- default null
+        p_variable_id      integer alias for $1;
+        p_name             varchar alias for $2;
+        p_unit             varchar alias for $3;
+        p_type             varchar alias for $4;
+        p_creation_user    integer alias for $5;
+        p_creation_ip      integer alias for $6;
+        p_package_id       integer alias for $7;
 
-        v_entry_id               integer;
+        v_variable_id      integer;
 begin
-        v_entry_id := acs_object__new(
-            entry_id,
-            ''logger_entry'',
-            project_id,
-            creation_ip,
-            creation_user
+        v_variable_id := acs_object__new(
+            p_variable_id,
+            ''logger_variable'',
+            p_package_id,
+            p_creation_ip,
+            p_creation_user
         );
-       
-       insert into logger_entries (entry_id, project_id, variable_id, value, 
-                                        time_stamp, description)
-           values (v_entry_id, project_id, variable_id, value, time_stamp, description);
 
-       return v_entry_id;  
+       insert into logger_variables (variable_id, name, unit, type, package_id)
+           values (v_variable_id, p_name, p_unit, p_type, p_package_id);
+
+       return v_variable_id;  
 end; ' language 'plpgsql';
 
-create function logger_entry__delete (integer) 
+create or replace function logger_variable__del (integer) 
 returns integer as '
 declare
-        entry_id      alias for $1;  -- default null
+        p_variable_id      alias for $1;
 begin
-        -- The row in the entries table will cascade
-        acs_object.delete(entry_id);
+        -- Everything should be set up to cascade
+        -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = p_variable_id;
+        perform acs_object__delete(p_variable_id);
 end; ' language 'plpgsql';
 
-create function logger_entry__name (integer) 
+create or replace function logger_variable__name (integer) 
 returns varchar as '
 declare
-      v_name          logger_projects.name%TYPE;  
-  begin
-        -- TODO: Should we only return the say 20 first characters here?
-        select description into v_name
-        from logger_entries
-        where entry_id = logger_entry.name.entry_id;
+      p_variable_id      alias for $1;
 
-        return v_name;
+      v_name          varchar;  
+begin
+      selec name into v_name
+      from logger_entries
+      where variable_id = p_variable_id;
+
+      return v_name;
+end; ' language 'plpgsql';
+
+-----------
+--
+-- Entries
+--
+-----------
+
+create or replace function logger_entry__new (integer, 
+                                              integer, 
+                                              integer, 
+                                              real, 
+                                              timestamptz,
+                                              varchar, 
+                                              integer, 
+                                              integer) 
+returns integer as '
+declare
+        p_entry_id            alias for $1;
+        p_project_id          alias for $2;
+        p_variable_id         alias for $3;
+        p_value               alias for $4;
+        p_time_stamp          alias for $5;
+        p_description         alias for $6;
+        p_creation_user       alias for $7;
+        p_creation_ip         alias for $8;
+
+        v_entry_id            integer;
+begin
+    v_entry_id := acs_object__new(
+        p_entry_id,
+        ''logger_entry'',
+        p_project_id,
+        p_creation_ip,
+        p_creation_user
+    );
+    
+    insert into logger_entries (entry_id, 
+                                project_id, 
+                                variable_id, 
+                                value, 
+                                time_stamp, 
+                                description)
+                        values (v_entry_id, 
+                                p_project_id, 
+                                p_variable_id, 
+                                p_value, 
+                                p_time_stamp, 
+                                p_description);
+
+    return v_entry_id;  
+end; ' language 'plpgsql';
+
+create or replace function logger_entry__del (integer) 
+returns integer as '
+declare
+        p_entry_id      alias for $1;
+begin
+        -- The row in the entries table will cascade
+        -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = p_entry_id;
+        perform acs_object__delete(p_entry_id);
+end; ' language 'plpgsql';
+
+create or replace function logger_entry__name (integer) 
+returns varchar as '
+declare
+      p_entry_id      alias for $1;
+
+      v_name          varchar;  
+begin
+      select description into v_name
+      from logger_entries
+      where entry_id = p_entry_id;
+
+      return v_name;
 end; ' language 'plpgsql';

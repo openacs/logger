@@ -1,8 +1,8 @@
--- Oracle tables for the Logger application
+-- Postgresql tables for the Logger application
 -- 
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @author Peter Marklund (peter@collaboraid.biz)
--- @creation-date 3:d of April 2003
+-- @creation-date 2003-05-07
 
 create table logger_projects (
   project_id            integer
@@ -13,12 +13,9 @@ create table logger_projects (
                         on delete cascade,
   name                  varchar(1000),
   description           varchar(4000),
-  active_p              char(1)
-                        default 't'
+  active_p              boolean
                         constraint logger_projects_ap_nn
-                        not null
-                        constraint logger_projects_ap_ck
-                        check (active_p in ('t', 'f')),
+                        not null,
   project_lead          integer
                         constraint logger_projects_pl_nn
                         not null
@@ -57,7 +54,6 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
--- 
 create table logger_project_pkg_map (
   project_id            integer
                         constraint logger_project_pkg_map_pr_fk
@@ -78,7 +74,10 @@ comment on table logger_project_pkg_map is '
 create table logger_variables (
   variable_id           integer
                         constraint logger_variables_pk
-                        primary key,
+                        primary key
+                        constraint logger_variables_pid_fk
+                        references acs_objects(object_id)
+                        on delete cascade,
   name                  varchar(200),
   unit                  varchar(200),
   type                  varchar(50)
@@ -86,7 +85,10 @@ create table logger_variables (
                         constraint logger_variables_type_nn
                         not null
                         constraint logger_variables_type_ck
-                        check (type in ('additive', 'non-additive'))
+                        check (type in ('additive', 'non-additive')),
+  package_id            integer
+                        constraint logger_project_var_map_pi_fk
+                        references apm_packages(package_id)
 );
 
 comment on column logger_variables.type is '
@@ -95,7 +97,30 @@ comment on column logger_variables.type is '
   a project. A non-additive variable would be the amount of money in a bank account.
 ';
 
-create sequence logger_variables_seq;
+comment on column logger_variables.package_id is '
+  The id of the package that the variable was created in.
+';
+
+-- We make variables acs objects to be able to use permissions
+create function inline_0 ()
+returns integer as '
+begin
+PERFORM acs_object_type__create_type (
+	''logger_variable'',            -- object_type          
+	''Logger variable'',            -- pretty_name          
+	''Logger variables'',           -- pretty_plural        
+	''acs_object'',                -- supertype            
+	''logger_variables'',           -- table_name           
+	''variable_id'',                -- id_column            
+	null,                        -- package_name         
+	''f'',                         -- abstract_p           
+	null,                        -- type_extension_table 
+	''logger_variable.name''        -- name_method          
+);
+  return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 create table logger_project_var_map (
   project_id            integer
@@ -110,12 +135,9 @@ create table logger_project_var_map (
                         on delete cascade
                         constraint logger_project_var_map_vid_nn
                         not null,
-  primary_p             char(1)
-                        default 't'
+  primary_p             boolean
                         constraint logger_project_var_map_pp_nn
-                        not null
-                        constraint logger_project_var_map_pp_ck
-                        check (primary_p in ('t', 'f')),
+                        not null,
   constraint logger_project_var_map_un
   unique(project_id, variable_id)
 );
@@ -130,6 +152,8 @@ create table logger_projections (
   projection_id         integer
                         constraint logger_projections_pk
                         primary key,
+  name                  varchar(1000),
+  description           varchar(4000),
   project_id            integer
                         constraint logger_projections_pid_nn
                         not null
@@ -142,13 +166,13 @@ create table logger_projections (
                         constraint logger_projections_vid_fk
                         references logger_variables(variable_id)
                         on delete cascade,
-  start_time            date
+  start_time            timestamptz
                         constraint logger_projections_st_nn
                         not null,
-  end_time              date
+  end_time              timestamptz
                         constraint logger_projections_et_nn
                         not null,
-  value                 integer
+  value                 real
                         constraint logger_projections_value_nn
                         not null
 );
@@ -181,11 +205,11 @@ create table logger_entries (
                         constraint logger_entries_v_id_fk
                         references logger_variables(variable_id)
                         on delete cascade,
-  value                 integer
+  value                 real
                         constraint logger_entries_value_nn
                         not null,
-  time_stamp            date
-                        default now ()
+  time_stamp            timestamptz
+                        default current_timestamp
                         constraint logger_entries_ts_nn
                         not null,
   description           varchar(4000)
@@ -212,13 +236,13 @@ begin
 PERFORM  acs_object_type__create_type (
 	''logger_entry'',        -- object_type          
 	''Logger entry'',        -- pretty_name          
-	''Logger entries'',       -- pretty_plural        
-	''acs_object'',                -- supertype            
-	''logger_entries'',       -- table_name           
+	''Logger entries'',      -- pretty_plural        
+	''acs_object'',          -- supertype            
+	''logger_entries'',      -- table_name           
 	''entry_id'',            -- id_column            
-	null,                        -- package_name         
-	''f'',                         -- abstract_p           
-	null,                        -- type_extension_table 
+	null,                    -- package_name         
+	''f'',                   -- abstract_p           
+	null,                    -- type_extension_table 
 	''logger_entry.name''    -- name_method          
 );
   return 0;

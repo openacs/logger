@@ -9,11 +9,23 @@ ad_page_contract {
     {selected_variable_id:integer ""}
     {selected_projection_id:integer ""}
     {selected_user_id:integer ""}
+    {selected_start_date ""}
+    {selected_end_date ""}
 }
 
 set package_id [ad_conn package_id]
 set current_user_id [ad_conn user_id]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
+
+set filter_var_list {
+    selected_project_id
+    selected_variable_id
+    selected_projection_id
+    selected_user_id
+    selected_start_date
+    selected_end_date
+}
+
 
 ###########
 #
@@ -107,75 +119,40 @@ if { ![empty_string_p $selected_user_id] } {
 # Create the form
 set export_var_list {selected_project_id selected_variable_id selected_projection_id selected_user_id}
 ad_form -name time_filter -export $export_var_list -method GET -form {
-    
-    {start_date:date(date)
-        {label "Start day:"}
+    {start_date:text
+        {label "From"}
+        {html { style "font-size: 100%;" size 10 } }
     }
-
-    {end_date:date(date)
-        {label "Start day:"}
+    {end_date:text
+        {label "To"}
+        {html { style "font-size: 100%;" size 10 } }
     }
-
-} -validate {
-    {start_date
-        { [template::util::date::compare $start_date $end_date] <= 0 }
-        "Start day must not be after end day"
+    {go:text(submit)
+        {label "Go"}
+        {html {style {font-size: 100%;}}}
     }
+} -on_request {
+    set start_date $selected_start_date
+    set end_date $selected_end_date
 } -on_submit {
-   # error "on_submit"
+    if { ![catch { 
+        set start_seconds [clock scan $start_date] 
+        set end_seconds [clock scan $end_date] 
+    }] } {
+        if { $start_seconds < $end_seconds } {
+            set selected_start_date [clock format $start_seconds -format "%Y-%m-%d"]
+            set selected_end_date [clock format $end_seconds -format "%Y-%m-%d"]
+        } else {
+            set selected_start_date [clock format $end_seconds -format "%Y-%m-%d"]
+            set selected_end_date [clock format $start_seconds -format "%Y-%m-%d"]
+        }
+    }
+    # Redirect so we get the dates in pretty mode
+    ad_returnredirect ".?[export_vars $filter_var_list]"
+    ad_script_abort
 }
 
-###########
-#
-# Initialize dates
-#
-###########
 
-if { [template::form is_request time_filter] } {
-     # Form was not submitted
-
-    if { ![empty_string_p $selected_projection_id] } {
-         # Projection selected - use the date range of that projection
-
-         set start_date_seconds [clock scan $projection_array(start_time)]
-         set end_date_seconds [clock scan $projection_array(end_time)]
-     } else {
-         # Use default date range
-
-         # Default end date is now (today)
-         set end_date_seconds [clock seconds]
-
-         # Default start date is N days back
-         set number_of_days_back 31
-         set seconds_per_day [expr 60*60*24]
-         set start_date_seconds [expr $end_date_seconds - 31 * $seconds_per_day]
-     }
-
-    set start_date_ansi [clock format $start_date_seconds -format "%Y-%m-%d"]
-    set end_date_ansi [clock format $end_date_seconds -format "%Y-%m-%d"]
-
-    # Set the values of the start and end date in the form
-    regsub -all -- {-} $start_date_ansi { } start_date_list
-    regsub -all -- {-} $end_date_ansi { } end_date_list
-    element set_properties time_filter start_date \
-        -value [eval template::util::date::create $start_date_list]
-    element set_properties time_filter end_date \
-        -value [eval template::util::date::create $end_date_list]
-} {
-    # Form was submitted
-    set start_date_value [template::element get_value time_filter start_date]
-    set end_date_value [template::element get_value time_filter end_date]
-    set start_date_ansi "[lindex $start_date_value 0]-[lindex $start_date_value 1]-[lindex $start_date_value 2]"
-    set end_date_ansi "[lindex $end_date_value 0]-[lindex $end_date_value 1]-[lindex $end_date_value 2]"
-}
-
-###########
-#
-# Select log entries
-#
-###########
-
-# template lib/entries-table is included - see adp
 
 
 ###########
@@ -184,10 +161,16 @@ if { [template::form is_request time_filter] } {
 #
 ###########
 
-set all_projects_url "index?[export_vars {{selected_variable_id $selected_variable_id} {selected_user_id $selected_user_id}}]"
+if { [exists_and_not_null selected_project_id] } {
+    set all_projects_url ".?[export_vars -exclude { selected_project_id } $filter_var_list]"
+} else {
+    set all_projects_url {}
+}
 
-db_multirow -extend { url log_url } projects select_projects {
-    select lp.project_id,
+set no_project_p 1
+
+db_multirow -extend { filter_name url entry_add_url selected_p clear_url } filters select_projects {
+    select lp.project_id as unique_id,
            lp.name
     from logger_projects lp,
          logger_project_pkg_map lppm
@@ -195,15 +178,28 @@ db_multirow -extend { url log_url } projects select_projects {
       and lppm.package_id = :package_id
     order by lp.name
 } {
-    # We always show the current user in the user filter so if we are showing "my entries" carry over the selected_user_id
-    # when selecting a project
-    set url_export_list {{selected_project_id $project_id}}
-    if { [string equal $selected_user_id $current_user_id] } {
-        lappend url_export_list selected_user_id
+    set filter_name "Projects"
+
+    set url ".?[export_vars -override { { selected_project_id $unique_id } } $filter_var_list]"
+    set entry_add_url "log?[export_vars { { project_id $unique_id } {variable_id $selected_variable_id}}]"
+    set selected_p [string equal $selected_project_id $unique_id]
+
+    set project_name_max_length 30
+    if { [string length $name] > $project_name_max_length } {
+        set name "[string range $name 0 [expr $project_name_max_length - 4]]..."
     }
-    set url "index?[export_vars $url_export_list]"
-    set log_url "log?[export_vars { project_id {variable_id $selected_variable_id}}]"
+
+    set clear_url $all_projects_url
+
+    set no_project_p 0
 }
+
+if { $no_project_p } {
+    ad_return_template "no-projects"
+    return
+}
+
+
 
 ###########
 #
@@ -223,10 +219,9 @@ if { ![empty_string_p $selected_project_id] } {
                  )"
 }
 
-db_multirow -extend { url log_url } variables select_variables "
-    select lv.variable_id,
-           lv.name,
-           lv.unit
+db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_variables "
+    select lv.variable_id as unique_id,
+           lv.name || ' (' || lv.unit || ')' as name
     from logger_variables lv,
          logger_projects lp,
          logger_project_var_map lpvm
@@ -235,14 +230,17 @@ db_multirow -extend { url log_url } variables select_variables "
     [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
     group by lv.variable_id, lv.name, lv.unit
 " {
-    set url "index?[export_vars {{selected_variable_id $variable_id} {selected_project_id $selected_project_id} {selected_user_id $selected_user_id}}]"
+    set filter_name "Variables"
+    set url ".?[export_vars -override { {selected_variable_id $unique_id} } $filter_var_list]"
     if { ![empty_string_p $selected_project_id] } {
         # A project is selected - enable logging
-        set log_url "log?[export_vars { variable_id {project_id $selected_project_id}}]"
+        set entry_add_url "log?[export_vars { { variable_id $unique_id } {project_id $selected_project_id}}]"
     } else {
         # No project selected - we wont enable those url:s
-        set log_url ""
+        set entry_add_url ""
     }
+    set selected_p [string equal $selected_variable_id $unique_id]
+    set clear_url {}
 }
 
 ###########
@@ -251,7 +249,11 @@ db_multirow -extend { url log_url } variables select_variables "
 #
 ###########
 
-set all_users_url "index?[export_vars {{selected_variable_id $selected_variable_id} {selected_project_id $selected_project_id}}]"
+if { [exists_and_not_null selected_user_id] } {
+    set all_users_url ".?[export_vars -exclude { selected_user_id } $filter_var_list]"
+} else {
+    set all_users_url {}
+}
 
 set where_clauses [list]
 if { ![empty_string_p $selected_project_id] } {
@@ -268,21 +270,24 @@ if { ![empty_string_p $selected_project_id] } {
                  )"
 } 
 
-db_multirow -extend { url } users select_users "
-    select submitter.user_id as user_id,
-           submitter.first_names as first_names,
-           submitter.last_name as last_name
-    from cc_users submitter,
-         logger_entries le,
-         acs_objects ao
-    where ao.object_id = le.entry_id
-      and submitter.user_id = ao.creation_user
-      and ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
-           or submitter.user_id = :current_user_id
-          )
-    group by submitter.user_id, submitter.first_names, submitter.last_name
+db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_users "
+    select submitter.user_id as unique_id,
+           submitter.first_names || ' ' || submitter.last_name as name
+    from   cc_users submitter,
+           logger_entries le,
+           acs_objects ao
+    where  ao.object_id = le.entry_id
+    and    submitter.user_id = ao.creation_user
+    and    ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
+            or submitter.user_id = :current_user_id
+           )
+    group  by submitter.user_id, submitter.first_names, submitter.last_name
 " {
-    set url "index?[export_vars {{selected_user_id $user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"
+    set filter_name "Users"
+    set url ".?[export_vars -override { {selected_user_id $unique_id} } $filter_var_list]"
+    set entry_add_url {}
+    set selected_p [string equal $selected_user_id $unique_id]
+    set clear_url $all_users_url
 }
 
 ###########
@@ -300,6 +305,75 @@ if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variab
         where lpe.project_id = :selected_project_id
           and lpe.variable_id = :selected_variable_id
     } {
-        set url "index?[export_vars {{selected_projection_id $projection_id} {selected_user_id $selected_user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"        
+        set url ".?[export_vars {{selected_projection_id $projection_id} {selected_user_id $selected_user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"        
     }
 }
+
+#####
+#
+# Date filters
+#
+#####
+
+if { [exists_and_not_null selected_start_date] || [exists_and_not_null selected_end_date] } {
+    set date_clear_url ".?[export_vars -exclude { selected_start_date selected_end_date } $filter_var_list]"
+} else {
+    set date_clear_url {}
+}
+
+set custom_p [expr ![empty_string_p $date_clear_url]]
+
+set filter_name "Date"
+
+foreach type { this_week last_week past_7 this_month last_month past_30 } {
+    switch $type {
+        this_week {
+            set name "This week"
+            set new_start_date [clock format [clock scan "-[clock format [clock seconds] -format %w] days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "[expr 6-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
+        }
+        last_week {
+            set name "Last week"
+            set new_start_date [clock format [clock scan "[expr -7-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "[expr -1-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
+        }
+        past_7 {
+            set name "Past 7 days"
+            set new_start_date [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+        }
+        this_month {
+            set name "This month"
+            set new_start_date [clock format [clock scan "[expr 1-[clock format [clock seconds] -format %d]] days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
+        } 
+        last_month {
+            set name "Last month"
+            set new_start_date [clock format [clock scan "-1 month [expr 1-[clock format [clock seconds] -format %d]] days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
+        } 
+        past_30 {
+            set name "Past 30 days"
+            set new_start_date [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+        }
+    }
+
+    set url ".?[export_vars -override { { selected_start_date $new_start_date } { selected_end_date $new_end_date }} $filter_var_list]"
+
+    set selected_p [expr [string equal $selected_start_date $new_start_date] && [string equal $selected_end_date $new_end_date]]
+
+    # if selected_p is set, we'll clear custom_p
+    set custom_p [expr $custom_p && !$selected_p]
+
+    # unique_id name filter_name url entry_add_url selected_p clear_url
+    multirow append filters "" $name $filter_name $url "" $selected_p $date_clear_url
+}
+
+# Custom
+if { $custom_p } {
+    multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url
+}
+
+
+

@@ -1,10 +1,10 @@
 --
--- Drop script for the Logger Oracle data model
+-- Drop script for the Logger Postgresql data model
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @author Peter Marklund (peter@collaboraid.biz)
--- @creation-date 2003-03-31
- -- @auther Postgres Port by Dirk Gomez (openacs@dirkgomez.de)
+-- @author Postgresql Porting by Dirk Gomez (openacs@dirkgomez.de)
+-- @creation-date 2003-05-07
 
 \i logger-tables-drop.sql
 \i logger-packages-drop.sql

@@ -1,4 +1,5 @@
 -- Drop non-procedural data model of the Logger application.
+--
 -- NOTE: In general it is not a good idea to source sql drop scripts 
 -- from the command line since such scripts may assume that any data in package instances
 -- has already been dropped by the APM through the before-uninstantiate callback.
@@ -6,7 +7,7 @@
 -- 
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @author Peter Marklund (peter@collaboraid.biz)
--- @creation-date 3:d of April 2003
+-- @creation-date 2003-05-07
 
 drop table logger_entries;
 
@@ -30,7 +31,17 @@ drop table logger_project_var_map;
 
 drop table logger_variables;
 
-drop sequence logger_variables_seq;
+create function inline_0 ()
+returns integer as '
+begin
+    perform acs_object_type__drop_type (
+        ''logger_variable'', ''f''
+    );
+
+    return null;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0 ();
 
 drop table logger_project_pkg_map;
 
@@ -47,4 +58,3 @@ begin
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0 ();
-

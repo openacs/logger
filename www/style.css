@@ -1,6 +1,8 @@
 <!-- Shall we lift these classes to the OpenACS level? -->
+
 .no_items_text {
-    font-style: italic;
+  font-style: italic;
+  font-family: tahoma,verdana,arial,helvetica; 
 }
 
 .logger_explanation_text {
@@ -17,15 +19,23 @@ table.logger_navbar {
 }
 a.logger_navbar { 
     color: white; 
+    text-decoration: none;
+}
+a.logger_navbar:visited { 
+  color: white; 
 }
 a.logger_navbar:hover { 
     color: white; 
     text-decoration: underline;
 }
-.logger_navbar_selected_link {
-    font-weight: bold;
-    color: white;
+td.logger_navbar {
+  font-family: tahoma,verdana,arial,helvetica; 
+  font-size: 70%; 
+  font-weight: bold; 
+  color: #ccccff; 
+  text-decoration: none; 
 }
+
 .logger_filter_bar_header {
     font-weight: bold;
     text-align: center;
@@ -38,7 +48,6 @@ a.logger_navbar:hover {
 .logger_filter_bar {
   background-color: #ddddff;
   vertical-align: top;
-  width: 25%;
 }
 
 .logger_filter_bar_selected_link {
@@ -66,3 +75,88 @@ table.logger_table {
   background-color: white;
 }
 
+table.logger_listing {
+  font-family: tahoma, verdana, helvetica; 
+  font-size: 85%;
+}
+table.logger_listing_tiny {
+  font-family: tahoma, verdana, helvetica; 
+  font-size: 75%;
+}
+tr.logger_listing_header {
+  background-color: #cccccc; 
+}
+tr.logger_listing_subheader {
+  background-color: #bbbbbb; 
+  font-weight: bold;
+}
+tr.logger_listing_even {
+  background-color: #f0f0f0;
+}
+tr.logger_listing_spacer {
+  background-color: #f9f9f9;
+}
+tr.logger_listing_odd {
+  background-color: #e0e0e0;
+}
+td.logger_listing_narrow {
+  padding-left: 4px; 
+  padding-right: 4px;
+}
+td.logger_listing {
+  padding-left: 16px; 
+  padding-right: 16px;
+}
+th.logger_listing_narrow {
+  padding-left: 4px; 
+  padding-right: 4px;
+}
+th.logger_listing {
+  padding-left: 16px; 
+  padding-right: 16px;
+}
+
+.logger_font {
+  font-family: tahoma,verdana,arial,helvetica; 
+}
+
+h1.logger {
+  font-family: verdana,arial,helvetica; 
+}
+h2.logger {
+  font-family: verdana,arial,helvetica; 
+}
+h3.logger {
+  font-family: verdana,arial,helvetica; 
+}
+h4.logger {
+  font-family: verdana,arial,helvetica; 
+}
+
+
+.logger_filter { 
+  font-size: 70%; 
+  font-family: tahoma,verdana,arial,helvetica; 
+}
+tr.logger_filter_selected { 
+  background-color: #eeeeff;
+}
+span.logger_filter_selected { 
+  color: black;
+}
+.logger_filter_header { 
+  font-size: 70%; 
+  font-family: tahoma,verdana,arial,helvetica; 
+  font-weight: bold; 
+}
+.logger_filter_section { 
+  font-size: 70%; 
+  font-family: tahoma,verdana,arial,helvetica; 
+  font-weight: bold; 
+  background-color: #bbbbff; 
+  padding-left: 4px; 
+  padding-top: 4px; 
+  padding-bottom: 4px; 
+  margin-top: 0px; 
+  margin-bottom: 8px;
+}

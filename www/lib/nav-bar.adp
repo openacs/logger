@@ -4,16 +4,12 @@
       <td align="right">
         <table border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td>
+            <td class="logger_navbar">
               <multiple name="links">
-                <if @links.selected_p@>
-                  <span class="logger_navbar_selected_link">@links.name@</span>
-                </if>
-                <else>
-                  <a href="@links.url@" class="logger_navbar">@links.name@</a>
-                </else>
-                <span class="logger_navbar">&nbsp;|&nbsp;</span>
+                <if @links.rownum@ gt 1>&nbsp;|&nbsp;</if>
+                <a href="@links.url@" class="logger_navbar">@links.name@</a>
               </multiple>
+              &nbsp;&nbsp;
             </td>
           </tr>
         </table>

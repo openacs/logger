@@ -22,7 +22,7 @@
   <fullquery name="logger::project::delete.delete_project">
     <querytext>
         begin
-          select logger_project__delete(:project_id);
+          select logger_project__del(:project_id);
         end;
     </querytext>
   </fullquery>

@@ -1,7 +1,9 @@
 <master>
 <property name="title">@title@</property>
 <property name="context">@context@</property>
+<if @focus@ not nil><property name="focus">@focus@</property></if>
 <property name="header_stuff">
+  @header_stuff@
   <style type="text/css" media="all">
     @import "@package_url@style.css";
   </style>
@@ -18,11 +20,3 @@
 
 <include src="nav-bar">
 
-<table width="100%">
-  <tr>
-    <td align="right">
-      <img src="http://www.w3.org/Icons/valid-xhtml10"
-          alt="Valid XHTML 1.0!" height="31" width="88" />
-    </td>
-  </tr>
-</table>

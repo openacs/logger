@@ -14,13 +14,17 @@ set link_list {}
 set index_urls [list "${package_url}" "${package_url}index"]
 lappend link_list $index_urls
 lappend link_list {}
-lappend link_list "Log entries"
+lappend link_list "List"
 
 # My log entrie page
 if { [ad_conn user_id] != 0 } {
     lappend link_list $index_urls
     lappend link_list [list [list selected_user_id $user_id]]
-    lappend link_list "My log entries"
+    lappend link_list "My Entries"
+
+    lappend link_list [list "${package_url}log"]
+    lappend link_list {}
+    lappend link_list "Add Entry"
 }
 
 # The admin index page

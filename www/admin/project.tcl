@@ -53,11 +53,13 @@ ad_form -name project_form \
     project_id:key(acs_object_id_seq)
 
     {name:text
-      {html {size 50}}
+        {html {size 50}}
+        {label "Name"}
     }
 
     {description:text(textarea),optional
 	{html {cols 60 rows 13}} 
+        {label "Description"}
     }
 } -select_query {
             select name,

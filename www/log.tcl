@@ -41,11 +41,11 @@ if { [string equal [form get_action log_entry_form] "done"] } {
 # versus displaying/editing one
 if { [exists_and_not_null entry_id] } {
     # Initial request in display or edit mode or a submit of the form
-    set page_title "One Log Entry"
-    set ad_form_mode display
+    set page_title "Edit Log Entry"
+    set ad_form_mode edit
 } else {
     # Initial request in add mode
-    set page_title "Add a Log Entry"
+    set page_title "Add Log Entry"
     set ad_form_mode edit
 }
 
@@ -208,3 +208,36 @@ set seconds_per_day [expr 60*60*24]
 set start_date_seconds [expr [clock seconds] - $log_history_n_days * $seconds_per_day]
 set start_date_ansi [clock format $start_date_seconds \
                         -format "%Y-%m-%d"]
+
+
+set add_entry_url "log?[export_vars { project_id variable_id }]"
+
+if { [info exists entry_id] } {
+    set entry_id_or_blank $entry_id 
+} else {
+    set entry_id_or_blank {}
+}
+
+
+#####
+#
+# Change variable
+#
+#####
+
+db_multirow -extend { url selected_p } variables select_variables {
+    select lv.variable_id as unique_id,
+           lv.name || ' (' || lv.unit || ')' as name
+    from logger_variables lv,
+         logger_projects lp,
+         logger_project_var_map lpvm
+    where lp.project_id = lpvm.project_id
+      and lv.variable_id = lpvm.variable_id
+      and lp.project_id = :project_id
+    group by lv.variable_id, lv.name, lv.unit
+} {
+    set url "log?[export_vars -override { {variable_id $unique_id} } { project_id }]"
+    set selected_p [string equal $variable_id $unique_id]
+}
+
+

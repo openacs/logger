@@ -1,10 +1,10 @@
 --
--- Logger Oracle data model
+-- Logger Postgresql data model
 --
 -- @author Lars Pind (lars@collaboraid.biz)
 -- @author Peter Marklund (peter@collaboraid.biz)
--- @creation-date 2003-03-28
--- @auther Postgres Port by Dirk Gomez (openacs@dirkgomez.de)
+-- @author Postgresql porting by Dirk Gomez (openacs@dirkgomez.de)
+-- @creation-date 2003-05-07
 
 \i logger-tables-create.sql
 \i logger-packages-create.sql
