@@ -32,7 +32,7 @@
         select q.*
         from   (select variable_id 
                 from   logger_variables 
-                order  by variable_id)
+                order  by variable_id) q
         where  rownum = 1
     </querytext>
   </fullquery>
