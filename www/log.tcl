@@ -172,8 +172,8 @@ ad_form -extend -name log_entry_form -form {
 
 ad_form -extend -name log_entry_form -select_query_name select_logger_entries -validate {
     {value 
-        { [regexp {^([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
-        {The value may not contain more than two decimals and must be between 0 and 999999.99}
+        { [regexp {^-?([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
+        {The value may not contain more than two decimals and must be between -999999.99 and 999999.99}
     }
 } -new_request {
     # Get the date of the last entry

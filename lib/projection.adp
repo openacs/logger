@@ -2,8 +2,8 @@
   <tr>
     <td>Dates</td>
     <td>
-      <img src="/shared/1pixel?r=0&g=0&b=255" width="@progress_time_pct@" height="16" alt="@progress_time_pct@%"
-      ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_time_pct_inverse@" height="16">
+      <img src="/shared/1pixel?r=0&g=0&b=255" width="@progress_time_pct2@" height="16" alt="@progress_time_pct@%"
+      ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_time_pct_inverse2@" height="16">
     </td>
     <td align="right">
       &nbsp;&nbsp;&nbsp;@progress_days@/@total_days@ days
@@ -16,12 +16,12 @@
     <td>@variable.name@</td>
     <td>
       <if @progress_value_pct@ gt @progress_time_pct@>
-        <img src="/shared/1pixel?r=255&g=0&b=0" width="@progress_value_pct@" height="16" alt="@progress_value_pct@%"
-        ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_value_pct_inverse@" height="16">
+        <img src="/shared/1pixel?r=255&g=0&b=0" width="@progress_value_pct2@" height="16" alt="@progress_value_pct@%"
+        ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_value_pct_inverse2@" height="16">
       </if>
       <else>
-        <img src="/shared/1pixel?r=0&g=255&b=0" width="@progress_value_pct@" height="16" alt="@progress_value_pct@%"
-        ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_value_pct_inverse@" height="16">
+        <img src="/shared/1pixel?r=0&g=255&b=0" width="@progress_value_pct2@" height="16" alt="@progress_value_pct@%"
+        ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_value_pct_inverse2@" height="16">
       </else>
     </td>
     <td align="right">

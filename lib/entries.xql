@@ -34,18 +34,13 @@
   <fullquery name="select_variables">
     <querytext>
     	    select lv.name || ' (' || lv.unit || ')' as name,
-                   lv.variable_id as unique_id
+                   lv.variable_id
     	    from   logger_variables lv,
-    	           logger_projects lp,
-    	           logger_project_var_map lpvm
-    	    where  lp.project_id = lpvm.project_id
-    	    and    lv.variable_id = lpvm.variable_id
-            and    exists (select 1
-                           from logger_project_pkg_map
-                           where project_id = lp.project_id
-                           and package_id = :package_id
-                           )
-    	    group  by lv.variable_id, lv.name, lv.unit
+    	           logger_project_var_map lpvm,
+                   logger_project_pkg_map lppm
+            where  lppm.package_id = :package_id
+            and    lpvm.project_id = lppm.project_id
+            and    lv.variable_id = lpvm.variable_id
     </querytext>
   </fullquery>
 

@@ -57,15 +57,22 @@ set total_time [expr $end_time_epoch - $start_time_epoch]
 set progress_time [expr $time_stamp_epoch - $start_time_epoch]
 
 set total_days [expr $total_time / (60*60*24) + 1]
-set progress_days [expr $progress_time / (60*60*24)]
+set progress_days [expr $progress_time / (60*60*24) + 1]
 
 set progress_time_pct [expr round($progress_time*100.0 / $total_time)]
 set progress_time_pct_inverse [expr 100-$progress_time_pct]
 
+
 # Calculate percentage of value spent
 set progress_value_pct [expr round($total_value*100.0 / $projected_value)]
-set progress_value_pct_inverse [expr 100-$progress_value_pct]
+set progress_value_pct_inverse [expr (100-$progress_value_pct)]
+
 
 set total_value_pretty [lc_numeric $total_value]
 set projected_value_pretty [lc_numeric $projected_value]
 
+
+set progress_time_pct2 [expr $progress_time_pct * 2]
+set progress_time_pct_inverse2 [expr $progress_time_pct_inverse * 2]
+set progress_value_pct2 [expr $progress_value_pct * 2]
+set progress_value_pct_inverse2 [expr $progress_value_pct_inverse * 2]

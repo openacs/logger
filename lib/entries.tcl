@@ -384,17 +384,16 @@ list::create \
 
 # We add a virtual column per category tree
 
-set extend  { edit_url delete_url delete_onclick time_stamp_pretty }
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p }
 foreach id $tree_ids {
     lappend extend c_${id}_category_id
 }
 
 array set row_categories [list]
+array set project_write_p [list]
 
 db_multirow -extend $extend -unclobber entries select_entries2 "
     select le.entry_id,
-           acs_permission__permission_p(le.entry_id, :current_user_id, 'delete') as delete_p,
-           acs_permission__permission_p(le.entry_id, :current_user_id, 'write') as edit_p,
            le.time_stamp,
            to_char(le.time_stamp, 'YYYY-MM-DD HH24:MI:SS') as time_stamp_ansi,
            to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
@@ -426,7 +425,11 @@ db_multirow -extend $extend -unclobber entries select_entries2 "
     } else {
         set selected_p [string equal [ns_queryget entry_id] $entry_id]
         set edit_url [export_vars -base log { entry_id { edit t } { return_url [ad_return_url] } }]
-        set edit_p [ad_decode [expr [ad_decode $edit_p "t" 1 0]  || ($user_id == [ad_conn user_id])] 1 "t" "f"]
+        if { ![exists_and_not_null project_write_p($project_id)] } {
+            set project_write_p($project_id) [template::util::is_true [permission::permission_p -object_id $project_id -privilege write]]
+        }
+        set edit_p [expr $project_write_p($project_id) || ($user_id == [ad_conn user_id])]
+        set delete_p $edit_p
         if { $delete_p } {
             set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
             set delete_url [export_vars -base log-delete { entry_id }]
