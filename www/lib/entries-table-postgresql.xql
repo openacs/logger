@@ -19,7 +19,7 @@
 	    from logger_entries le,
 	         logger_projects lp,
 	         acs_objects ao,
-	         all_users submitter
+	         acs_users_all submitter
 	    where le.project_id = lp.project_id
 	      and ao.object_id = le.entry_id
 	      and ao.creation_user = submitter.user_id
