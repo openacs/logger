@@ -57,7 +57,7 @@
 
   <p>
     The log history is
-    shown @log_history_n_days@ back from your last logged entry, or @log_history_n_days@ back from
+    shown @log_history_n_days@ days back from your last logged entry, or @log_history_n_days@ days back from
     today if you have no previously logged entries.
   </p>
 
