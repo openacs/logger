@@ -57,11 +57,31 @@ ad_form -name project_form \
 	{html {cols 60 rows 13}} 
         {label "Description"}
     }
-} -select_query {
-            select name,
-               description
-        from logger_projects
-       where project_id = :project_id
+
+    {project_lead:search
+        {result_datatype integer}
+        {label {Project Lead}}
+        {options [logger::project::users_get_options]}
+        {search_query {[db_map dbqd.acs-tcl.tcl.community-core-procs.user_search]}}
+    }
+}
+
+if { ![ad_form_new_p -key project_id] } {
+    ad_form -extend -name project_form -form {
+        {active_p:text(radio)
+            {label "Active"}
+            {options {{Yes t} {No f}}}
+        }
+    }
+}
+
+ad_form -extend -name project_form -select_query {
+    select name,
+           description,
+           project_lead,
+           active_p
+    from   logger_projects
+    where  project_id = :project_id
 } -validate {
     {
         name
@@ -71,19 +91,24 @@ ad_form -name project_form \
 
 } -new_data {
 
-    logger::project::new -project_id $project_id \
-                         -name $name \
-                         -description $description \
+    logger::project::new \
+        -project_id $project_id \
+        -name $name \
+        -description $description \
+        -project_lead $project_lead
+
 } -edit_data {
 
     # The edit proc requires all attributes to be provided
     # so use the old values for project_lead and active_p
-    logger::project::get -project_id $project_id -array old_project
-    logger::project::edit -project_id $project_id \
-                          -name $name \
-                          -description $description \
-                          -project_lead $old_project(project_lead) \
-                          -active_p $old_project(active_p)
+
+    logger::project::edit \
+        -project_id $project_id \
+        -name $name \
+        -description $description \
+        -project_lead $project_lead \
+        -active_p $active_p
+
 } -after_submit {
       
     ad_returnredirect "[ad_conn url]?project_id=$project_id"

@@ -1,5 +1,5 @@
 <master src="lib/master">
-<property name="title">Logger Application</property>
+<property name="title">@instance_name@</property>
 
 <table cellpadding="3" cellspacing="3">
   <tr>
@@ -69,7 +69,8 @@
                                        projection_value="@selected_projection_value;noquote@" 
                                        selected_user_id="@selected_user_id;noquote@" 
                                        start_date_ansi="@selected_start_date;noquote@" 
-                                       end_date_ansi="@selected_end_date;noquote@"/>
+                                       end_date_ansi="@selected_end_date;noquote@"
+                                       group_by="@selected_group_by;noquote@" />
 
       <!-- End log entries body -->
     </td>

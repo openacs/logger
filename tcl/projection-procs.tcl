@@ -17,7 +17,7 @@ ad_proc -public logger::projection::new {
     {-end_time:required}
     {-value:required}
     {-name:required}
-    {-description:required}
+    {-description ""}
 } {
     Create a new projection for a certain variable and project.
 
@@ -31,6 +31,8 @@ ad_proc -public logger::projection::new {
     @param value         The anticipated or targeted value (a sum for 
                          additive variables, an average for non-additive 
                          variables).
+    @param name          Used when listing or displaying the projection in the UI.
+    @param description   Describes the projection. Optional.
     
     @return The id of the created projection. Will throw an error if a projection_id
             is provided and a projection with that id already exists in the database.

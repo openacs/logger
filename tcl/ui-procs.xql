@@ -13,5 +13,16 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::ui::project_options.project_options">
+    <querytext>
+        select lp.name, 
+               lp.project_id
+        from   logger_projects lp,
+               logger_project_pkg_map lppm
+        where  lp.project_id = lppm.project_id
+        and    lppm.package_id = :package_id
+        order  by name
+    </querytext>
+  </fullquery>
 
 </queryset>
