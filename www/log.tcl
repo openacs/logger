@@ -20,6 +20,8 @@ ad_page_contract {
     }
 }
 
+# TODO: Make the recent entries list start on the date of the last entry
+
 set package_id [ad_conn package_id]
 set current_user_id [ad_maybe_redirect_for_registration]
 
@@ -126,37 +128,30 @@ ad_form -extend -name log_entry_form -form {
         {label Project}
         {value $project_array(name)}
     }
-
     {project_id:integer(hidden)
         {value $project_id}
     }
-
     {variable_id:integer(hidden)
         {value $variable_id}
     }
-
     {return_url:text(hidden) {value $return_url}}
 }    
 
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
 # but wants dates in list format
-set default_date [clock format [clock seconds] -format "%Y %m %d"]
 ad_form -extend -name log_entry_form -form {
     {value:float
         {label $variable_array(name)}
         {after_html $variable_array(unit)}
 	{html {size 9 maxlength 9}}
     }
-
     {description:text,optional
         {label Description} 
         {html {size 50}}
     }
-
-    {time_stamp:date
+    {time_stamp:date(date),to_sql(ansi),from_sql(ansi)
         {label Date}
-        {value $default_date}
     }
 } 
 
@@ -171,51 +166,50 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         { [regexp {^([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
         {The value may not contain more than two decimals and must be between 0 and 999999.99}
     }
-
+} -new_request {
+    # Get the date of the last entry
+    set time_stamp [ad_get_client_property logger time_stamp]
+    if { [empty_string_p $time_stamp] } {
+        set time_stamp [clock format [clock seconds] -format "%Y-%m-%d"]
+    }
+    set time_stamp [template::util::date::acquire ansi $time_stamp]
 } -new_data {
-    set time_stamp_ansi "[lindex $time_stamp 0]-[lindex $time_stamp 1]-[lindex $time_stamp 2]"
-
+    
     # jarkko: check to see if user has already added this entry and has come
     # back with her back button. If the entry exists, we give the user a complaint
-    # and a link to edit this particular entry.
+    # LARS: took out the edit link, because the new templated ad_return_complaint quotes
+
     if { [string match [db_string check_if_exists "
 	select 1
 	from logger_entries
 	where entry_id = :entry_id
     " -default "0"] "0"]} {
-    logger::entry::new -entry_id $entry_id \
-                             -project_id $project_id \
-                             -variable_id $variable_id \
-                             -value $value \
-                             -time_stamp $time_stamp_ansi \
-                             -description $description
+        logger::entry::new \
+            -entry_id $entry_id \
+            -project_id $project_id \
+            -variable_id $variable_id \
+            -value $value \
+            -time_stamp $time_stamp \
+            -description $description
     } else {
-	
-	doc_return 200 text/html "[ad_header_with_extra_stuff "Problem with Your Input" "" ""]
-<h2>Problem with Your Input</h2>
-
-to <a href=/>[ad_system_name]</a>
-
-<hr>    
-
-You have already added this entry once. If you want to edit this entry, click <a href='[ad_conn url]?[export_vars entry_id]'>here</a>.
-
-[ad_footer]
-"
+	ad_return_complaint {} "You have already added this entry once."
     }
+    
+    # Remember this date, as the next entry is likely to be for the same date
+    ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect "[ad_conn url]?[export_vars {project_id variable_id}]"
+    ad_returnredirect [export_vars -base [ad_conn url] { project_id variable_id }]
     ad_script_abort
 
 } -edit_data {
-    set time_stamp_ansi "[lindex $time_stamp 0]-[lindex $time_stamp 1]-[lindex $time_stamp 2]"
-    logger::entry::edit -entry_id $entry_id \
-                              -value $value \
-                              -time_stamp $time_stamp_ansi \
-                              -description $description
+    logger::entry::edit \
+        -entry_id $entry_id \
+        -value $value \
+        -time_stamp $time_stamp \
+        -description $description
 } -after_submit {
-    ad_returnredirect "[ad_conn url]?[export_vars { project_id variable_id return_url }]"
+    ad_returnredirect "[ad_conn url]?[export_vars -base [ad_conn url] { project_id variable_id return_url }]"
     ad_script_abort
 }
 
@@ -271,7 +265,7 @@ if { $show_log_history_p } {
                             -format $ansi_format_string]
 }
 
-set add_entry_url "log?[export_vars { project_id variable_id }]"
+set add_entry_url [export_vars -base log { project_id variable_id }]
 
 if { [info exists entry_id] } {
     set entry_id_or_blank $entry_id 

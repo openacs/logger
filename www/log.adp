@@ -45,27 +45,16 @@
   <formtemplate id="log_entry_form" style="standard-lars"></formtemplate>
 </blockquote>
 
-<if @entry_exists_p@>
-  <p class="logger_font">
-    <b>&raquo;</b>
-    <a href="@add_entry_url@">Add new log entry</a>
-  </p>
-</if>
+<if @show_log_history_p@ true>
+  <h3 class="logger" style="clear: left;">Recent Entries</h3>
 
-<if @show_log_history_p@>
-  <h3 class="logger" style="clear: left;">Log history (@start_date_ansi@ to @end_date_ansi@)</h3>
-
-  <p>
-    The log history is
-    shown @log_history_n_days@ days back from your last logged entry, or @log_history_n_days@ days back from
-    today if you have no previously logged entries.
-  </p>
-
-  <include src="lib/entries-table" 
-        selected_user_id="@current_user_id;noquote@" 
-        selected_project_id="@project_id;noquote@" 
-        selected_variable_id="@variable_id;noquote@" 
-        start_date_ansi="@start_date_ansi;noquote@"
-        end_date_ansi="@end_date_ansi;noquote@"
-        selected_entry_id="@entry_id_or_blank;noquote@" />
+  <include src="/packages/logger/lib/entries" 
+      user_id="@current_user_id;noquote@" 
+      project_id="@project_id;noquote@" 
+      variable_id="@variable_id;noquote@" 
+      start_date="@start_date_ansi;noquote@"
+      end_date="@end_date_ansi;noquote@"
+      entry_id="@entry_id_or_blank;noquote@"
+      filters_p="f"
+  />
 </if>

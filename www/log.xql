@@ -15,7 +15,7 @@
 	    select project_id,
 	           variable_id,
 	           value,
-	           to_char(time_stamp, 'YYYY MM DD') as time_stamp,
+	           to_char(time_stamp, 'YYYY-MM-DD') as time_stamp,
 	           description
 	    from logger_entries
 	    where entry_id = :entry_id
