@@ -23,4 +23,20 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::variable::get_default_variable_id.select_first_project_primary_variable">
+    <querytext>
+            select vm.variable_id
+            from   logger_project_var_map vm,
+                   logger_project_pkg_map pm,
+                   logger_projects p
+            where  vm.primary_p = 't'
+            and    vm.project_id = pm.project_id
+            and    pm.package_id = :package_id
+            and    p.project_id = pm.project_id
+            and    p.active_p = 't'
+            order  by lower(p.name)
+    </querytext>
+  </fullquery>
+
+
 </queryset>
