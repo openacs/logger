@@ -17,4 +17,4 @@ permission::require_permission -object_id $projection_array(project_id) -party_i
 
 logger::projection::delete -projection_id $projection_id
 
-ad_returnredirect index
+ad_returnredirect "project?[export_vars {{project_id $projection_array(project_id)}}]"

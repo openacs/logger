@@ -13,7 +13,7 @@ set package_id [ad_conn package_id]
 
 if { [string equal [form get_action projection_form] "done"] } {
     # User is done editing - redirect back to index page
-    ad_returnredirect .
+    ad_returnredirect "project?[export_vars {project_id}]"
     ad_script_abort
 }
 
@@ -135,6 +135,6 @@ ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $ac
         -description $description
 } -after_submit {
           
-    ad_returnredirect "[ad_conn url]?projection_id=$projection_id"
+    ad_returnredirect "[ad_conn url]?[export_vars {projection_id project_id}]"
     ad_script_abort
 }

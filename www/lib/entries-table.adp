@@ -48,6 +48,24 @@
       <td align="right" class="logger_emphasized_text">@value_total@ @selected_variable_unit@</td>
       <td>&nbsp;</td>
     </tr>
+
+    <!-- Row for projected value -->
+  <if @projection_value@ not nil>
+    <tr class="logger_table_rows">
+      <td class="logger_emphasized_text">Projection:</td>
+    <if @selected_project_id@ nil>
+      <td>&nbsp;</td>
+    </if>
+    <if @selected_user_id@ nil>
+      <td>&nbsp;</td>
+    </if>
+      <td align="center">&nbsp;</td>
+      <td align="center">&nbsp;</td>
+      <td align="right" class="logger_emphasized_text">@projection_value@ @selected_variable_unit@</td>
+      <td>&nbsp;</td>
+    </tr>
+  </if>
+
   </table>
 </else>
 
