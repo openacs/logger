@@ -27,7 +27,8 @@
     	           logger_project_pkg_map lppm
     	    where  lp.project_id = lppm.project_id	
     		   and lppm.package_id = :package_id
-    	    order  by lp.name
+                   and lp.active_p = 't'
+    	    order  by lower(lp.name)
     </querytext>
   </fullquery>
 
