@@ -17,7 +17,7 @@ switch -- [form get_action project_form] {
         ad_returnredirect .
         ad_script_abort
     }
-    "formbuilder::edit" {
+    "formbuilder:edit" {
         set edit_mode_p 1
     }
     default {
@@ -39,7 +39,7 @@ if { [exists_and_not_null project_id] } {
 
 set context [list $page_title]
 
-set actions_list [list [list Edit "formbuilder::edit"] [list Done done]]
+set actions_list [list [list Edit "formbuilder:edit"] [list Done done]]
 ad_form -name project_form \
         -cancel_url index \
         -mode $ad_form_mode \
