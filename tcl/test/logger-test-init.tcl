@@ -133,12 +133,18 @@ aa_register_case logger_create_package {
         aa_equals "Value of measurements is retrievable" $hour_measurement_1_retr(value) \
                                                          $hour_measurement_1(value)
 
+        # Add a test category tree
+        # TODO when the categories package is stabilized
+
     }  -teardown_code { 
         #####
         #
         # Teardown
         #
         #####
+
+        # Delete the categories
+        # TODO...
 
         # Delete the package - deletes all logger data related to the package through the before-uninstantiate callback
         apm_package_instance_delete $package_id
