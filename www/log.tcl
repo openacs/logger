@@ -1,12 +1,3 @@
-ns_log notice it's my page!
-set mypage [ns_getform]
-if {[string equal "" $mypage]} {
-    ns_log notice no form was submitted on my page
-} else {
-    ns_log notice the following form was submitted on my page
-    ns_set print $mypage
-}
-
 ad_page_contract {
     Add/edit/display a log entry.
     
