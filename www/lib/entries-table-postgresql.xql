@@ -7,7 +7,7 @@
     <querytext>
 	    select le.entry_id as id,
 	           acs_permission__permission_p(le.entry_id, :current_user_id, 'delete') as delete_p,
-	           acs_permission__permission_p(le.entry_id, :current_user_id, 'edit') as edit_p,
+	           acs_permission__permission_p(le.entry_id, :current_user_id, 'write') as edit_p,
 	           le.time_stamp,
 	           to_char(le.time_stamp, 'fmDyfm fmMMfm-fmDDfm-YYYY') as time_stamp_pretty,
 	           to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
