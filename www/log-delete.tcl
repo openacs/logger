@@ -26,8 +26,9 @@ if { !$confirm_p } {
 }
 
 foreach entry_id $entry_id {
-    permission::require_permission -object_id $entry_id -privilege delete
+    permission::require_permission -object_id $entry_id -privilege write
     logger::entry::delete -entry_id $entry_id
 }
     
 ad_returnredirect .
+ad_script_abort
