@@ -26,7 +26,7 @@
           <td colspan="7">
             <switch @group_by@>
               <case value="user_id">
-                User: @entries.user_chunk@
+                User: @entries.user_chunk;noquote@
               </case>
               <case value="project_name">
                 Project: @entries.project_name@
@@ -61,7 +61,7 @@
               </if>
             </td>
             <td class="logger_listing_narrow">@entries.project_name@</td>
-            <td class="logger_listing_narrow">@entries.user_chunk@</td>
+            <td class="logger_listing_narrow">@entries.user_chunk;noquote@</td>
             <td class="logger_listing_narrow" align="left">@entries.time_stamp_pretty@</td>
             <td class="logger_listing_narrow" align="right" nowrap>
               <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
@@ -120,7 +120,7 @@
           </if>
         </td>
         <td class="logger_listing_narrow">@entries.project_name@</td>
-        <td class="logger_listing_narrow">@entries.user_chunk@</td>
+        <td class="logger_listing_narrow">@entries.user_chunk;noquote@</td>
         <td class="logger_listing_narrow" align="left">@entries.time_stamp_pretty@</td>
         <td class="logger_listing_narrow" align="right" nowrap>
           <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
