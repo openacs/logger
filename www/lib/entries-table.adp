@@ -84,10 +84,20 @@
             <tr class="logger_listing_subheader">
               <td class="logger_listing_narrow" align="center">&nbsp;</td>
               <td class="logger_listing_narrow" colspan="3">
-                <b>Subtotal</b>
+                <if @variable.type@ eq "additive">
+                  <b>Subtotal</b>
+                </if>
+                <else>
+                  <b>Subtotal Average</b>
+                </else>
               </td>
               <td class="logger_listing_narrow" align="right" nowrap>
-                <b>@entries.subtotal@</b>
+                <if @variable.type@ eq "additive">
+                  <b>@entries.subtotal@</b>
+                </if>
+                <else>
+                  <b>@entries.subaverage@</b>
+                </else>
               </td>
               <td class="logger_listing_narrow">&nbsp;</td>
               <td class="logger_listing_narrow" align="center">&nbsp;</td>

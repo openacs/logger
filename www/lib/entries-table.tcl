@@ -67,9 +67,10 @@ set value_total 0
 set value_count 0
 
 set last_group_by_value {}
+set value_subcount 0
 set value_subtotal 0
 
-db_multirow -extend { subtotal view_url edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
+db_multirow -extend { subtotal subaverage view_url edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
     set description [string_truncate -len 50 $description]
     set project_name [string_truncate -len 20 $project_name]
     set selected_p [string equal $id $selected_entry_id]
@@ -89,12 +90,16 @@ db_multirow -extend { subtotal view_url edit_url delete_url delete_onclick user_
         # Should we reset the subtotal?
         if { ![string equal $last_group_by_value [set $group_by]] } {
             set value_subtotal 0
+            set value_subcount 0
         }
         
-        # Calculate new subtotal
+        # Calculate new subtotal/average
         set value_subtotal [expr $value_subtotal + $value]
+        incr value_subcount
+
         # and store it in the column
         set subtotal $value_subtotal
+        set subaverage [expr round(100.0 * $value_subtotal / $value_subcount) / 100.0]
 
         set last_group_by_value [set $group_by]
     }
