@@ -413,14 +413,9 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     # Remember this date, as the next entry is likely to be for the same date
     ad_set_client_property logger time_stamp $time_stamp
 
-    if {[exists_and_not_null return_url]} {
-        ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." $return_url
-        ad_script_abort
-    } else {
-        # Present the user with an add form again for quick logging
-        ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
-        ad_script_abort
-    }
+    # Present the user with an add form again for quick logging
+    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+    ad_script_abort
 
 } -edit_data {
     db_transaction {
