@@ -289,3 +289,12 @@ ad_proc -private logger::project::users_get_options {} {
     
     return $users_list
 }
+
+ad_proc -public logger::project::get_current_projection {
+    -project_id:required
+    -variable_id:required
+} {
+    Gets the active projection for the given project and variable, if any. Returns empty string if none.
+} {
+    return [db_string select_current_projection {} -default {}]
+}

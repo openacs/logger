@@ -41,9 +41,17 @@ ad_page_contract {
 
 set instance_name [ad_conn instance_name]
 
+
 if { ![exists_and_not_null project_id] } {
     set package_projects [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
     if { [llength $package_projects] == 1 } {
         set project_id $package_projects
     }
+}
+
+# Default to the current projection
+if { [exists_and_not_null project_id] && [exists_and_not_null variable_id] && ![exists_and_not_null projection_id] } {
+    set projection_id [logger::project::get_current_projection \
+                           -project_id $project_id \
+                           -variable_id $variable_id]
 }

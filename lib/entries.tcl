@@ -37,7 +37,8 @@ if { [exists_and_not_null project_id] } {
     }
 }
 
-ds_comment $projection_values
+# Projects
+set project_values [db_list_of_lists select_projects {}]
 
 
 # Define the list
@@ -111,11 +112,12 @@ list::create \
     } -filters {
         project_id {
             label "Projects"
-            values {[db_list_of_lists select_projects {}]}
+            values $project_values
             where_clause {
                 le.project_id = :project_id
             }
             add_url_eval {[export_vars -base "log" { { project_id $__filter_value } variable_id }]}
+            has_default_p {[ad_decode [llength $project_values] 1 1 0]}
         }
         variable_id {
             label "Variables"
@@ -130,6 +132,7 @@ list::create \
             label "Projections"
             type multivar
             values $projection_values
+            has_default_p 1
         }
         user_id {
             label "Users"

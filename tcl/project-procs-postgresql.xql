@@ -33,4 +33,14 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::project::get_current_projection.select_current_projection">
+    <querytext>
+        select min(p.projection_id)
+        from   logger_projections p
+        where  p.project_id = :project_id
+        and    p.variable_id = :variable_id
+        and    current_timestamp between p.start_time and p.end_time
+    </querytext>
+  </fullquery>
+
 </queryset>
