@@ -4,5 +4,5 @@
 <property name="focus">variable_form.name</property>
 
 <blockquote>
-  <formtemplate id="variable_form" style="standard-lars"></formtemplate>
+  <formtemplate id="variable_form"></formtemplate>
 </blockquote>

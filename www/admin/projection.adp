@@ -5,5 +5,5 @@
 
 
 <blockquote>
-  <formtemplate id="projection_form" style="standard-lars"></formtemplate>
+  <formtemplate id="projection_form"></formtemplate>
 </blockquote>
