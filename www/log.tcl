@@ -137,7 +137,7 @@ if { $entry_exists_p } {
 }
 
 foreach elm $category_trees {
-    foreach { tree_id name subtree_id assign_single_p } $elm {}
+    util_unlist $elm tree_id name subtree_id assign_single_p
     ad_form -extend -name log_entry_form -form \
         [list [list category_id_${tree_id}:integer(category) \
                    {label $name} \
@@ -187,7 +187,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     # Collect categories from all the category widgets
     set category_ids [list]
     foreach elm $category_trees {
-        foreach { tree_id name subtree_id assign_single_p } $elm {}
+        util_unlist $elm tree_id name subtree_id assign_single_p
         set category_ids [concat $category_ids [set category_id_${tree_id}]]
     }
 } -new_data {
