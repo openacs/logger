@@ -135,12 +135,13 @@ if { $entry_exists_p } {
 } else {
     set category_trees [category_tree::get_mapped_trees $project_id]
 }
+
 foreach elm $category_trees {
-    foreach { tree_id name subtree_id } $elm {}
+    foreach { tree_id name subtree_id assign_single_p } $elm {}
     ad_form -extend -name log_entry_form -form \
         [list [list category_id_${tree_id}:integer(category) \
                    {label $name} \
-                   {html {single single}} \
+                   [ad_decode [template::util::is_true $assign_single_p] 1 {html {single single}} {}] \
                    {category_tree_id $tree_id} \
                    {category_subtree_id $subtree_id} \
                    {category_object_id {[value_if_exists entry_id]}}]]
@@ -186,7 +187,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     # Collect categories from all the category widgets
     set category_ids [list]
     foreach elm $category_trees {
-        foreach { tree_id name dummy } $elm {}
+        foreach { tree_id name subtree_id assign_single_p } $elm {}
         set category_ids [concat $category_ids [set category_id_${tree_id}]]
     }
 } -new_data {
@@ -296,7 +297,7 @@ if { $show_log_history_p } {
         set end_date_seconds [clock seconds]
         set end_date_ansi [clock format $end_date_seconds -format $ansi_format_string]
     }
-    set log_history_n_days 31
+    set log_history_n_days 7
     set seconds_per_day [expr 60*60*24]
     set start_date_seconds [expr $end_date_seconds - $log_history_n_days * $seconds_per_day]
     set start_date_ansi [clock format $start_date_seconds \
@@ -322,3 +323,6 @@ db_multirow -extend { url selected_p } variables select_variables {} {
     set url [export_vars -base log -override { {variable_id $unique_id} } { project_id }]
     set selected_p [string equal $variable_id $unique_id]
 }
+
+
+
