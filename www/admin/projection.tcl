@@ -60,7 +60,6 @@ ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $ac
     {variable_id:integer(select)
         {label Variable}
         {options {[logger::ui::variable_options -project_id $project_id]}}
-        {mode display}
     }
 
     {value:text
