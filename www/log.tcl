@@ -61,6 +61,11 @@ if { [exists_and_not_null entry_id] && ![exists_and_not_null project_id] } {
 # Default the variable we are logging in to the primary variable of the project
 if { ![exists_and_not_null variable_id] } {
     set variable_id [logger::project::get_primary_variable -project_id $project_id]
+
+    if { [empty_string_p $variable_id] } {
+        ad_return_error "Project has no variable" "An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done."
+        ad_script_abort
+    }
 }
 
 # We need project and variable names
