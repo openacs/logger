@@ -60,3 +60,99 @@ ad_proc -private logger::util::lookup_ad_conn_var_name {
 
     return $ad_conn_name
 }
+
+
+ad_proc -public logger::util::project_manager_url {
+} {
+    Returns a valid URL to a project-manager instance, if and only if this
+    logger instance is set up to be integrated in project-manager.
+    This is set in the project-manager admin pages. Currently, this
+    proc assumes it is called from within logger.
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-24
+    
+    @return empty string if there is no linked in project-manager
+    
+    @error 
+} {
+
+    set package_id [ad_conn package_id]
+
+    return [util_memoize "logger::util::project_manager_url_cached -package_id $package_id"]
+
+}
+
+
+ad_proc -private logger::util::project_manager_url_cached {
+    -package_id:required
+} {
+    Memoized portion of project_manager_url
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-24
+
+    @see logger::util::project_manager_url
+    
+    @return 
+    
+    @error empty string if project manager is not installed
+} {
+
+    set package_url [ad_conn package_url]
+
+    # assumes that these return in the same order!
+    set possible_packages [site_node::get_children -all -package_key project-manager -node_id [site_node::get_node_id -url "/"] -element package_id]
+    set possible_urls [site_node::get_children -all -package_key project-manager -node_id [site_node::get_node_id -url "/"]]
+
+    set return_url ""
+
+    # we go through the list of project-manager URLs, and check if the
+    # current package_url is listed as one to be integrated with
+    # project-manager. If it is, we return the URL to that
+    # project-manager instance. 
+
+    set index 0
+
+    foreach this_package_id $possible_packages {
+
+        set primary_url [parameter::get \
+                             -package_id $this_package_id \
+                             -parameter "LoggerPrimaryURL"]
+
+        if {![empty_string_p $primary_url]} {
+
+            if {[string equal $package_url $primary_url]} {
+
+                set project_manager_url [lindex $possible_urls $index]
+
+                set return_url $project_manager_url
+            }
+        }
+
+        incr index
+    }
+
+    return $return_url
+}
+
+
+ad_proc -public logger::util::project_manager_linked_p {
+} {
+    Returns 1 if there is a project manager linked to this instance
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-06-03
+    
+    @return 
+    
+    @error 
+} {
+    set url [logger::util::project_manager_url]
+
+    if {[empty_string_p $url]} {
+        return 0
+    } else {
+        return 1
+    }
+}

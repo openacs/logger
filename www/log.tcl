@@ -2,6 +2,7 @@ ad_page_contract {
     Add/edit/display a log entry.
     
     @author Peter Marklund (peter@collaboraid.biz)
+    @author Jade Rubick (jader@bread.com) project-manager integration
     @creation-date 2003-04-16
     @cvs-id $Id$
 } {
@@ -10,6 +11,9 @@ ad_page_contract {
     variable_id:integer,optional
     {edit:boolean "f"}
     {return_url "."}
+    {pm_project_id:integer ""}
+    {pm_task_id:integer ""}
+    {__refreshing_p "0"}
 } -validate {
     project_id_required_in_add_mode {
         # For the sake of simplicity of the form 
@@ -20,12 +24,13 @@ ad_page_contract {
     }
 }
 
+
 # TODO: Make the recent entries list start on the date of the last entry
 
 set package_id [ad_conn package_id]
 set current_user_id [ad_maybe_redirect_for_registration]
 
-if { [exists_and_not_null entry_id] } {
+if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p]} {
     set entry_exists_p [db_string entry_exists_p {}]                         
 } else {
     set entry_exists_p 0
@@ -74,6 +79,20 @@ if { ![exists_and_not_null variable_id] } {
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
 
+# get the project_manager_url if this is related to project manager
+set project_manager_url [logger::util::project_manager_url]
+
+if {![empty_string_p $project_manager_url]} {
+    # project manager is installed, so we set the corresponding project
+    set pm_project_id [pm::project::get_project -logger_project $project_id]
+
+    #we only call this if project_manager is installed (the url is
+    #not empty)
+    if { [exists_and_not_null entry_id] && [empty_string_p $pm_task_id]} {
+        set pm_task_id [logger::entry::task_id -entry_id $entry_id]
+    }
+}
+
 ###########
 #
 # Build the form
@@ -90,14 +109,20 @@ if { $entry_exists_p } {
 
 # Different page title and form mode when adding a log entry 
 # versus displaying/editing one
-if { [exists_and_not_null entry_id] } {
+if { [exists_and_not_null entry_id] || ${__refreshing_p} } {
     # Initial request in display or edit mode or a submit of the form
     set page_title "Edit Log Entry"
+
     if { [string equal $edit "t"] && $edit_p } {
         set ad_form_mode edit
     } else {
         set ad_form_mode display
     }
+
+    if { ${__refreshing_p} } {
+        set ad_form_mode edit
+    }
+
 } else {
     # Initial request in add mode
     set page_title "Add Log Entry"
@@ -125,12 +150,13 @@ set submit_p [form is_valid log_entry_form]
 
 ad_form -extend -name log_entry_form -export { project_id variable_id return_url } -form {
     {project:text(inform)
+        {section "Project"}
         {label Project}
         {value $project_array(name)}
     }
 }
 
-if { $entry_exists_p } {
+if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p] && [info exists entry_array]} {
     set the_project_id $entry_array(project_id)
 } else {
     set the_project_id $project_id
@@ -148,6 +174,18 @@ category::ad_form::add_widgets \
     -form_name log_entry_form
 
 
+# we want to give the option of choosing task if you have chosen a
+# project. When a new task is chosen, we want to change the
+# information shown about that task
+
+if {[logger::util::project_manager_linked_p]} {
+
+    set task_options [list]
+
+    set task_options [pm::task::options_list \
+                          -project_item_id $pm_project_id]
+}
+
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
 # but wants dates in list format
@@ -155,7 +193,7 @@ ad_form -extend -name log_entry_form -form {
     {value:float
         {label $variable_array(name)}
         {after_html $variable_array(unit)}
-	{html {size 9 maxlength 9}}
+	{html {size 7 maxlength 7}}
     }
     {description:text,optional
         {label Description} 
@@ -165,6 +203,106 @@ ad_form -extend -name log_entry_form -form {
         {label Date}
     }
 } 
+
+# Additions to form if project-manager is involved.
+if {[exists_and_not_null pm_task_id]} {
+
+    # do I really need this both here and in the -on_refresh block? -jr
+
+    db_1row get_task_values "
+        SELECT
+        title as task_title, 
+        case when percent_complete is null then 0 
+        else percent_complete end as percent_complete, 
+        estimated_hours_work,
+        estimated_hours_work_min,
+        estimated_hours_work_max,
+        s.description as status_description
+        FROM
+        pm_tasks_revisionsx p,
+        cr_items i,
+        pm_task_status s,
+        pm_tasks t
+        WHERE i.item_id = p.item_id and
+        p.item_id = :pm_task_id and 
+        i.item_id = t.task_id and
+        t.status  = s.status_id and 
+        p.revision_id = i.live_revision"
+
+    ad_form -extend -name log_entry_form -form {
+        
+        {pm_project_id:text(hidden)
+            {value $pm_project_id}
+        }
+        {pm_task_id:integer(select),optional
+            {section "Task"}
+            {label "Subject"}
+            {options {$task_options}}
+            {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
+            {value $pm_task_id}
+            {help}
+            {help_text "If you change this, please wait for the page to refresh"}
+        }
+        {status_description:text(inform)
+            {label "Status"}
+        }
+    } 
+
+    set display_hours [pm::task::hours_remaining \
+                           -estimated_hours_work $estimated_hours_work \
+                           -estimated_hours_work_min $estimated_hours_work_min \
+                           -estimated_hours_work_max $estimated_hours_work_max \
+                           -percent_complete $percent_complete \
+                      ]
+
+    set total_hours_work [pm::task::estimated_hours_work \
+                              -estimated_hours_work $estimated_hours_work \
+                              -estimated_hours_work_min $estimated_hours_work_min \
+                              -estimated_hours_work_max $estimated_hours_work_max \
+                             ]
+
+    ad_form -extend -name log_entry_form -form {
+        
+        {remaining_work:text(inform)
+            {label "Remaining work"}
+            {value $display_hours}
+            {after_html "hours"}
+        }
+
+        {total_hours_work:text(inform)
+            {label "Total work"}
+            {value $total_hours_work}
+            {after_html "hours"}
+        }
+    } 
+
+    ad_form -extend -name log_entry_form -form {
+
+        {percent_complete:float
+            {label "Complete"}
+            {value $percent_complete}
+            {after_html "%"}
+            {html {size 5 maxlength 5}}
+            {help}
+            {help_text "Set to 100% to close the task, less to open it"}
+        }
+        
+    } 
+
+}
+
+
+# set the headers so you can get back to project manager.
+
+if { [exists_and_not_null pm_task_id] } {
+
+    set context [list [list "${project_manager_url}task-one?task_id=$pm_task_id" "$task_title"] $page_title]
+
+} elseif { [exists_and_not_null pm_project_id] } {
+
+    set context [list [list "${project_manager_url}one?project_item_id=$pm_project_id" "$project_array(name)"] $page_title]
+
+}
 
 ###########
 #
@@ -203,13 +341,35 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                 -variable_id $variable_id \
                 -value $value \
                 -time_stamp $time_stamp \
-                -description $description
+                -description $description \
+                -task_item_id $pm_task_id \
+                -project_item_id $pm_project_id
+
+            if {[exists_and_not_null pm_task_id]} {
+
+                pm::task::update_percent \
+                    -task_item_id $pm_task_id \
+                    -percent_complete $percent_complete
+
+            }
+
         } else {
             logger::entry::edit \
                 -entry_id $entry_id \
                 -value $value \
                 -time_stamp $time_stamp \
-                -description $description
+                -description "$description" \
+                -task_item_id "$pm_task_id" \
+                -project_item_id "$pm_project_id"
+
+            if {[exists_and_not_null pm_task_id]} {
+                
+                pm::task::update_percent \
+                    -task_item_id "$pm_task_id" \
+                    -percent_complete "$percent_complete"
+                
+            }
+            
         }
         
         category::map_object \
@@ -223,16 +383,27 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id }]
+    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
     ad_script_abort
 
 } -edit_data {
     db_transaction {
-        logger::entry::edit \
-            -entry_id $entry_id \
-            -value $value \
-            -time_stamp $time_stamp \
-            -description $description
+
+        if {[info exists pm_task_id] && [info exists pm_project_id]} {
+            logger::entry::edit \
+                -entry_id $entry_id \
+                -value $value \
+                -time_stamp $time_stamp \
+                -description $description \
+                -task_item_id "$pm_task_id" \
+                -project_item_id "$pm_project_id"
+        } else {
+            logger::entry::edit \
+                -entry_id $entry_id \
+                -value $value \
+                -time_stamp $time_stamp \
+                -description $description 
+        }
         
         category::map_object \
             -remove_old \
@@ -241,17 +412,90 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                  -container_object_id $the_project_id]
     }
 
+    if {[logger::util::project_manager_linked_p]} {
+        set this_task_id [db_string task_entry_p "select task_item_id from pm_task_logger_proj_map where logger_entry = :entry_id" -default "-1"]
+    } else {
+        set this_task_id -1
+    }
+
+    if {![string equal $this_task_id -1] && [exists_and_not_null percent_complete]} {
+
+        pm::task::update_percent \
+            -task_item_id "$this_task_id" \
+            -percent_complete "$percent_complete"
+
+        pm::task::update_hours \
+            -task_item_id $this_task_id \
+            -update_tasks_p t
+
+    }
+
 } -after_submit {
 
     ad_returnredirect -message "Log entry modified." $return_url
+
+    if {![string equal $pm_task_id -1]} {
+        pm::project::compute_status $pm_project_id
+    }
+
     ad_script_abort
+} -on_refresh {
+    
+    db_1row get_task_values "
+        SELECT
+        title as task_title, 
+        case when percent_complete is null then 0 
+        else percent_complete end as percent_complete, 
+        estimated_hours_work,
+        estimated_hours_work_min,
+        estimated_hours_work_max,
+        s.description as status_description
+        FROM
+        pm_tasks_revisionsx p,
+        cr_items i,
+        pm_task_status s,
+        pm_tasks t
+        WHERE i.item_id = p.item_id and
+        p.item_id = :pm_task_id and 
+        i.item_id = t.task_id and
+        t.status  = s.status_id and 
+        p.revision_id = i.live_revision"
+
+    foreach element [list percent_complete status_description] {
+        template::element set_value log_entry_form $element [set $element]
+    }
+
+    set display_hours [pm::task::hours_remaining \
+                           -hours_work $estimated_hours_work \
+                           -hours_work_min $estimated_hours_work_min \
+                           -hours_work_max $estimated_hours_work_max \
+                           -percent_complete $percent_complete \
+                          ]
+
+    set total_hours_work [pm::task::estimated_hours_work \
+                              -hours_work $estimated_hours_work \
+                              -hours_work_min $estimated_hours_work_min \
+                              -hours_work_max $estimated_hours_work_max \
+                             ]
+
+    template::element set_value log_entry_form remaining_work $display_hours
+    template::element set_value log_entry_form total_hours_work $total_hours_work
+
 }
+
 
 ###########
 #
 # Log history
 #
 ###########
+
+# only show tasks is project-manager is installed
+if {[logger::util::project_manager_linked_p]} {
+    set show_tasks_p t
+} else {
+    set show_tasks_p f
+}
 
 # Show the log history if the user is looking at /editing his own entry or if
 # the user is adding a new entry
@@ -299,7 +543,11 @@ if { $show_log_history_p } {
                             -format $ansi_format_string]
 }
 
-set add_entry_url [export_vars -base log { project_id variable_id }]
+set add_entry_url [export_vars -base log { project_id variable_id pm_project_id pm_task_id}]
+
+# because we're using /lib/entries, this is not implemented right
+# now. The /lib/entries section should be updated to highlight the
+# current entry_id.
 
 if { [info exists entry_id] } {
     set entry_id_or_blank $entry_id 
@@ -315,9 +563,7 @@ if { [info exists entry_id] } {
 #####
 
 db_multirow -extend { url selected_p } variables select_variables {} {
-    set url [export_vars -base log -override { {variable_id $unique_id} } { project_id }]
+    set url [export_vars -base log -override { {variable_id $unique_id} } { project_id pm_project_id pm_task_id }]
     set selected_p [string equal $variable_id $unique_id]
 }
-
-
 

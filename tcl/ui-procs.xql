@@ -13,6 +13,18 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::ui::variable_options_all.variable_options_all">
+    <querytext>
+      SELECT 
+      lv.name || ' (in ' || lv.unit || ')',
+      lv.variable_id
+      FROM 
+      logger_variables lv
+      ORDER BY
+      lv.name, lv.unit
+    </querytext>
+  </fullquery>
+
   <fullquery name="logger::ui::project_options.project_options">
     <querytext>
         select lp.name, 

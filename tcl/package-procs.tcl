@@ -75,3 +75,65 @@ ad_proc -public logger::package::variables_multirow {
 
     db_multirow variables select_variables {}    
 }
+
+
+ad_proc -public logger::package::map_project {
+    -project_id:required
+    {-package_id ""}
+} {
+    Maps a project to a package
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-20
+    
+    @param project_id
+
+    @param package_id A package ID (must be present in the
+    apm_packages table)
+
+    @return 
+    
+    @error 
+} {
+
+    if {[empty_string_p $package_id]} {
+        set package_id [ad_conn package_id]
+    }
+
+    permission::require_permission -object_id $project_id -privilege "read"
+    
+    db_dml map_project {
+        insert into logger_project_pkg_map (project_id, package_id) values (:project_id, :package_id)
+    }
+
+    return 1
+}
+
+
+ad_proc -public logger::package::unmap_project {
+    -project_id:required
+    -package_id:required
+} {
+    Unmaps a project from a package
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-20
+    
+    @param project_id
+
+    @param package_id
+
+    @return 
+    
+    @error 
+} {
+    
+    db_dml map_project {
+        delete 
+        from   logger_project_pkg_map 
+        where  project_id = :project_id
+        and    package_id = :package_id
+    }
+
+    return 1
+}

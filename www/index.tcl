@@ -41,6 +41,8 @@ ad_page_contract {
 
 set instance_name [ad_conn instance_name]
 
+set return_url [ad_return_url]
+
 set admin_p [permission::permission_p -object_id [ad_conn package_id] -privilege admin]
 
 if { ![exists_and_not_null project_id] } {
@@ -60,3 +62,30 @@ if { [exists_and_not_null project_id] && [exists_and_not_null variable_id] && ![
                            -project_id $project_id \
                            -variable_id $variable_id]
 }
+
+
+# get the project_manager_url if this is related to project manager
+set project_manager_url [logger::util::project_manager_url]
+
+if {![empty_string_p $project_manager_url]} {
+    set show_tasks_p 1
+    
+    # project manager is installed, so we set the corresponding project
+    if {[exists_and_not_null project_id]} {
+        set pm_project_id [pm::project::get_project -logger_project $project_id]
+    } else {
+        set pm_project_id ""
+    }
+
+    # we only call this if project_manager is installed (the url is
+    # not empty)
+    if { [exists_and_not_null entry_id]} {
+        set pm_task_id [logger::entry::task_id -entry_id $entry_id]
+    } else {
+        set pm_task_id ""
+    }
+
+} else {
+    set show_tasks_p 0
+}
+

@@ -7,7 +7,9 @@
             <td class="logger_navbar">
               <multiple name="links">
                 <if @links.rownum@ gt 1>&nbsp;|&nbsp;</if>
-                <a href="@links.url@" class="logger_navbar">@links.name@</a>
+              <if @links.selected_p@><i></if>
+              <a href="@links.url@" class="logger_navbar">@links.name@</a>
+              <if @links.selected_p@></i></if>
               </multiple>
               &nbsp;&nbsp;
             </td>

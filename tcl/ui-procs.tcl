@@ -90,6 +90,20 @@ ad_proc -public logger::ui::variable_options {
     return [db_list_of_lists variable_options {}]
 }
 
+ad_proc -public logger::ui::variable_options_all {
+} {
+    Return a list suitable to be passed to the form builder
+    for the select box of all variables that could be mapped to a project.
+
+    @return A list with variable options on the format 
+         [list [list variable_label1 variable_id1] [list variable_label2 variable_value2] ...]
+
+    @author Jade Rubick
+} {
+
+    return [db_list_of_lists variable_options_all {}]
+}
+
 ad_proc -public logger::ui::project_options {} {
     Return a list suitable to be passed to the form builder
     for the select box of the projects mapped to the
@@ -102,4 +116,55 @@ ad_proc -public logger::ui::project_options {} {
 } {
     set package_id [ad_conn package_id]
     return [db_list_of_lists project_options {}]
+}
+
+
+ad_proc -public logger::ui::variable_select_widget {
+    -project_id:required
+    {-current_variable_id ""}
+    -select_name:required
+} {
+    Returns a select widget, suitable for use in a form, that
+    contains all the current variables in use for a project
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-21
+    
+    @param project_id
+
+    @param current_variable_id Optionally, the currently selected 
+    variable. If left blank, will be set to the default variable_id
+    for that project
+
+    @param select_name What the name of the select widget should be
+
+    @return An HTML chunk suitable for display in a form.
+    
+    @error 
+} {
+
+    if {[empty_string_p $current_variable_id]} {
+        set current_variable_id [logger::project::get_primary_variable \
+                                     -project_id $project_id]
+    }
+
+    set variable_options [logger::ui::variable_options \
+                              -project_id $project_id]
+
+
+    set variable_widget "<select name=\"$select_name\">"
+    foreach option $variable_options {
+
+        set name [lindex $option 0]
+        set id   [lindex $option 1]
+        
+        if {[string equal $id $current_variable_id]} {
+            append variable_widget "<option selected value=\"$id\">$name</option>"
+        } else {
+            append variable_widget "<option value=\"$id\">$name</option>"
+        }
+    }
+    append variable_widget "</select>"
+
+    return $variable_widget
 }

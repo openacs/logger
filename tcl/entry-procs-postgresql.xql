@@ -24,4 +24,15 @@
     </querytext>
   </fullquery>
  
+  <fullquery name="logger::entry::task_id.task_id">
+    <querytext>
+      SELECT
+      task_item_id
+      FROM
+      pm_task_logger_proj_map m
+      WHERE
+      logger_entry = :entry_id
+    </querytext>
+  </fullquery>
+
 </queryset>

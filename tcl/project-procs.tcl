@@ -299,3 +299,71 @@ ad_proc -public logger::project::get_current_projection {
 } {
     return [db_string select_current_projection {} -default {}]
 }
+
+ad_proc -public logger::project::remap_variables {
+    -project_id:required
+    -new_variable_list:required
+} {
+    When given a list of variable IDs, sets the variables to be 
+    equal to the new variable list. 
+
+    Note this proc does not honor the default variables very much,
+    and will remap them. Feel free to improve this if it affects 
+    you.
+    
+    @author Jade Rubick (jader@bread.com)
+    @creation-date 2004-05-20
+    
+    @param project_id the logger project ID
+
+    @param new_variable_list a list of variable IDs
+
+    @return 
+    
+    @error 
+} {
+
+    set current_variables_list [logger::project::get_variables -project_id $project_id]
+
+    set primary_variable [logger::project::get_primary_variable -project_id $project_id]
+    set default_variable [logger::variable::get_default_variable_id]
+    
+    foreach new_id $new_variable_list {
+
+        # we only add it if it isn't already there
+        if {[lsearch $current_variables_list $new_id] < 0} {
+            logger::project::map_variable \
+                -project_id $project_id \
+                -variable_id $new_id
+        }
+    }
+
+    # if one of the new variables is the default variable, set it
+    # as the default variable for *that project*
+    if {[lsearch $new_variable_list $default_variable] >= 0} {
+
+        logger::project::set_primary_variable \
+            -project_id $project_id \
+            -variable_id $default_variable
+
+    } else {
+
+        logger::project::set_primary_variable \
+            -project_id $project_id \
+            -variable_id "[lindex $new_variable_list 0]"
+    }
+
+    foreach old_id $current_variables_list {
+        
+        # we only remove it if it isn't in the new list
+        if {[lsearch $new_variable_list $old_id] < 0} {
+
+            logger::project::unmap_variable \
+                -project_id $project_id \
+                -variable_id $old_id
+        }
+
+    }
+
+    return 1
+}
