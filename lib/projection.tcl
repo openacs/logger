@@ -56,8 +56,10 @@ set time_stamp_epoch [clock scan $time_stamp_ansi]
 set total_time [expr $end_time_epoch - $start_time_epoch]
 set progress_time [expr $time_stamp_epoch - $start_time_epoch]
 
-set total_days [expr $total_time / (60*60*24) + 1]
-set progress_days [expr $progress_time / (60*60*24) + 1]
+# We do a floating point division with round here, because daylight savings
+# may otherwise make the computation off by one
+set total_days [expr round($total_time / (60*60)/24.0) + 1]
+set progress_days [expr round($progress_time / (60*60)/24.0) + 1]
 
 set progress_time_pct [expr round($progress_time*100.0 / $total_time)]
 set progress_time_pct_inverse [expr 100-$progress_time_pct]
