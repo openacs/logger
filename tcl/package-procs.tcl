@@ -51,7 +51,7 @@ ad_proc -public logger::package::all_projects_in_package {
 }
 
 ad_proc -public logger::package::variables_multirow { 
-    {not_in_project_id ""}
+    {-not_in_project_id ""}
 } {
     Executes a db_multirow that returns all variables created
     in the current package and all variables mapped to projects
@@ -64,6 +64,7 @@ ad_proc -public logger::package::variables_multirow {
     @author Peter Marklund
 } {
     set package_id [ad_conn package_id]
+    set user_id [ad_conn user_id]
 
     if { ![empty_string_p $not_in_project_id] } {
         set extra_where_clause \

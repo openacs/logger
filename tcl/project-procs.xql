@@ -14,14 +14,39 @@
     </querytext>
   </fullquery>
 
-  <fullquery name="logger::project::add_variable.insert_mapping">
+  <fullquery name="logger::project::map_variable.insert_mapping">
     <querytext>
         insert into logger_project_var_map (project_id, variable_id, primary_p)
                 values (:project_id, :variable_id, :primary_p)
     </querytext>
   </fullquery>
 
-  <fullquery name="logger::project::add_variable.count_primary_p">
+  <fullquery name="logger::project::unmap_variable.delete_mapping">
+    <querytext>
+        delete from logger_project_var_map
+               where project_id = :project_id
+                 and variable_id = :variable_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="logger::project::set_primary_variable.clear_old">
+    <querytext>
+      update logger_project_var_map
+                set primary_p = 'f'
+      where project_id = :project_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="logger::project::set_primary_variable.update_new">
+    <querytext>
+      update logger_project_var_map
+                set primary_p = 't'
+      where project_id = :project_id
+        and variable_id = :variable_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="logger::project::map_variable.count_primary_p">
     <querytext>
         select count(*)
         from logger_project_var_map

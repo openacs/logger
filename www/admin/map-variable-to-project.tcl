@@ -14,17 +14,4 @@ set page_title "Add a variable to project \"$project(name)\""
 set context [list $page_title]
 
 # List all variables not already mapped to the project
-logger::package::variables_multirow $project_id
-
-db_multirow variables variables_to_map {
-    select variable_id,
-           name,
-           unit,
-           type
-      from logger_variables lv
-      where not exists (select 1
-                        from logger_project_var_map
-                        where project_id = :project_id
-                        and variable_id = lv.variable_id
-                       )            
-}
+logger::package::variables_multirow -not_in_project_id $project_id

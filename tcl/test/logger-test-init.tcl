@@ -78,7 +78,7 @@ aa_register_case logger_create_package {
         set hours_var_id [logger::variable::new -name $hours_var(name) \
                                                 -unit $hours_var(unit) \
                                                 -type $hours_var(type)]
-        logger::project::add_variable -project_id $project_id \
+        logger::project::map_variable -project_id $project_id \
                                       -variable_id $hours_var_id
 
         # Create and map the minutes variable
@@ -86,14 +86,14 @@ aa_register_case logger_create_package {
         set minutes_var_id [logger::variable::new -name $minutes_var(name) \
                                                   -unit $minutes_var(unit) \
                                                   -type $minutes_var(type)]
-        logger::project::add_variable -project_id $project_id \
+        logger::project::map_variable -project_id $project_id \
                                       -variable_id $minutes_var_id
 
         # Create and map the expense variable (euros)
         set expense_var_id [logger::variable::new -name $expense_var(name) \
                                                   -unit $expense_var(unit) \
                                                   -type $expense_var(type)]
-        logger::project::add_variable -project_id $project_id \
+        logger::project::map_variable -project_id $project_id \
                                       -variable_id $expense_var_id
 
         # Assert that variables are retrievable

@@ -9,6 +9,6 @@ ad_page_contract {
     variable_id:integer
 }
 
-logger::project::add_variable -project_id $project_id -variable_id $variable_id
+logger::project::map_variable -project_id $project_id -variable_id $variable_id
 
 ad_returnredirect "project?project_id=$project_id"

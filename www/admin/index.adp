@@ -21,7 +21,8 @@
     <tr class="logger_table_rows">
       <td>
           <if @projects.admin_p@> [ <a href="project-delete?project_id=@projects.project_id@" 
-            onclick="return confirm('Are you sure you want to delete project @projects.name@?');">delete</a> ]
+            onclick="return confirm('Are you sure you want to delete project @projects.name@?');">delete</a> |
+          <a href="@projects.permissions_url@">permissions</a> ]
           </if> 
       </td>
       <td><a href="project?project_id=@projects.project_id@">@projects.name@</a>
@@ -49,6 +50,7 @@
 <if @variables:rowcount@ ne 0>
   <table class="logger_table" cellpadding="4" cellspacing="1">
     <tr class="logger_table_header">
+      <th>&nbsp;</th>
       <th>Name</th>
       <th>Unit</th>
       <th>Additive</th>
@@ -56,6 +58,12 @@
 
   <multiple name="variables">
     <tr class="logger_table_rows">
+      <td>
+        <if @variables.admin_p@> [ <a href="variable-delete?variable_id=@variables.variable_id@" 
+          onclick="return confirm('Are you sure you want to delete variable @variables.name@?');">delete</a> |
+          <a href="@variables.permissions_url@">permissions</a> ]
+        </if> 
+      </td>
       <td><a href="variable?variable_id=@variables.variable_id@">@variables.name@</a></td>
       <td>@variables.unit@</td>
       <td><if @variables.type@ eq additive>yes</if><else>no</else></td>
@@ -71,5 +79,10 @@
 
 <p>
   <a href="variable">Add new variable</a>
+</p>
+
+<h2>Package</h2>
+<p>
+  <a href="@package_permissions_url@">Set permissions of this package</a>
 </p>
 </div>

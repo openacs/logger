@@ -10,6 +10,12 @@ ad_page_contract {
 
 set package_id [ad_conn package_id]
 
+if { [string equal [form get_action variable_form] "done"] } {
+    # User is done editing - redirect back to index page
+    ad_returnredirect .
+    ad_script_abort
+}
+
 if { [exists_and_not_null variable_id] } {
     # Initial request in display or edit mode or a submit of the form
     set page_title "One variable"
@@ -22,7 +28,8 @@ if { [exists_and_not_null variable_id] } {
 
 set context [list $page_title]
 
-ad_form -name variable_form -cancel_url index -mode $ad_form_mode -form {
+set actions_list [list [list Edit "formbuilder::edit"] [list Done done]]
+ad_form -name variable_form -cancel_url index -mode $ad_form_mode -actions $actions_list -form {
     variable_id:key(acs_object_id_seq)
 
     {name:text

@@ -138,7 +138,7 @@ ad_proc -public logger::project::get {
     db_1row select_project {} -column_array project_array
 }
 
-ad_proc -public logger::project::add_variable {
+ad_proc -public logger::project::map_variable {
     {-project_id:required}
     {-variable_id:required}
     {-primary_p ""}
@@ -169,20 +169,66 @@ ad_proc -public logger::project::add_variable {
     if { $exists_primary_p } {
         # There is already a primary_p variable so the new one can't be
         if { [string equal $primary_p "t"] } {
-            error "logger::project::add_variable - invoked with primary_p argument set to t but project $project_id already has a primary_p variable"
+            error "logger::project::map_variable - invoked with primary_p argument set to t but project $project_id already has a primary_p variable"
         }
 
         set primary_p f
     } else {
         # There is no primary_p variable so the new one must be
         if { [string equal $primary_p "f"] } {
-            error "logger::project::add_variable - invoked with primary_p argument set to f but project $project_id has no primary_p variable and must have one"
+            error "logger::project::map_variable - invoked with primary_p argument set to f but project $project_id has no primary_p variable and must have one"
         }
 
         set primary_p t
     }
 
     db_dml insert_mapping {}
+}
+
+ad_proc -public logger::project::unmap_variable {
+    {-project_id:required}
+    {-variable_id:required}
+} {
+    Disable logging in a certain variable for a project. Unmapping a primary
+    variable is not a permissible operation and this proc will throw an error
+    in that case.
+
+    @param project_id The id of the project we are mapping the variable with
+    @param variable_id The id of the variable to map
+
+    @return The return value of db_dml
+
+    @author Peter Marklund
+} {
+    # Check that this is not an attempt to delete the primary variable
+    set primary_variable_id [logger::project::get_primary_variable -project_id $project_id]
+    if { [string equal $primary_variable_id $variable_id] } {
+        error "logger::project::unmap_variable - Cannot unmap variable $variable_id as it is primary to project $project_id"
+    }
+
+    db_dml delete_mapping {}
+}
+
+ad_proc -public logger::project::set_primary_variable {
+    {-project_id:required}
+    {-variable_id:required}
+} {
+    Change primary variable of a project. Every project has one primary variable
+    (if it has any at all) and this is by default the first variable associated
+    with the project. The administrator of the project is offered the possibility
+    of changing primary variable through this proc.
+
+    @param project_id The id of the project to change primary variable for
+    @param variable_id The id of the variable that is to be the new
+                       primary variable of the project.
+
+    @return The return value of db_dml
+
+    @author Peter Marklund
+} {
+    db_dml clear_old {}
+
+    db_dml update_new {}
 }
 
 ad_proc -public logger::project::get_variables {

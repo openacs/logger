@@ -21,8 +21,16 @@ ad_proc -public logger::ui::navbar_link_selected_p {
 
     <p>
       A link is considered selected if the current page url starts with the url of the link
-      and each HTML parameter in the param_list has the specified value.
+      and each HTML parameter in the param_list has the specified value. If the param_list
+      is empty then the query string of the request must be empty for the link to be 
+      considered selected.
     </p>
+
+    @param navbar_url The url relative page root of the link
+    @param param_list A list of URL parameters and their values on the format
+                      [list [list param_name1 param_value1] [list param_name2 param_value2]]
+
+    @return 1 if the navbar link should be selected and 0 otherwise
 
     @author Peter Marklund
 } {

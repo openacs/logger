@@ -9,10 +9,11 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
+set user_id [ad_conn user_id]
 
-if { ![empty_string_p [ns_set iget [rp_getform] formbutton:done_button]] } {        
+if { [string equal [form get_action project_form] "done"] } {
     # User is done editing - redirect back to index page
-    ad_returnredirect index
+    ad_returnredirect .
     ad_script_abort
 }
 
@@ -20,15 +21,21 @@ if { [exists_and_not_null project_id] } {
     # Initial request in display or edit mode or a submit of the form
     set page_title "One Project"
     set ad_form_mode display
+    set project_exists_p [db_string project_exists_p {
+        select count(*)
+        from logger_projects
+        where project_id = :project_id
+    }]                         
 } else {
     # Initial request in add mode
     set page_title "Add a Project"
     set ad_form_mode edit
+    set project_exists_p 0
 }
 
 set context [list $page_title]
 
-set actions_list [list [list Edit "formbuilder::edit"] [list Done done_button]]
+set actions_list [list [list Edit "formbuilder::edit"] [list Done done]]
 ad_form -name project_form \
         -cancel_url index \
         -mode $ad_form_mode \
@@ -46,28 +53,58 @@ ad_form -name project_form \
     }
 }
 
-if { [exists_and_not_null project_id] } {
+if { $project_exists_p } {
     # We are in edit or display mode
     # Display the variables linked to this project
     set variables_list [list]
     set variables_text ""
     db_foreach variables_in_project {
         select lv.variable_id,
-               lv.name
+               lv.name,
+               lpvm.primary_p
           from logger_project_var_map lpvm,
                logger_variables lv
           where lpvm.variable_id = lv.variable_id
             and lpvm.project_id = :project_id
     } {
-        lappend variables_list "<a href=\"variable?variable_id=$variable_id\">$name</a>"
+        set variable_link "<a href=\"variable?variable_id=$variable_id\">$name</a>"
+        if { [string equal $primary_p "f"] } {
+            append variable_link " &nbsp; \[ <a href=\"unmap-variable-from-project?[export_vars {project_id variable_id}]\">unmap</a> | <a href=\"set-primary-variable?[export_vars {project_id variable_id}]\">make primary</a> \]"
+        } else {
+            append variable_link " (primary)"
+        }
+
+        lappend variables_list $variable_link
     } 
 
     if { [llength $variables_list] != 0 } {
-        set variables_text [join $variables_list ", "]
+        set variables_text "<ul><li><p>[join $variables_list "</p></li><li><p>"]</p></li></ul>"
     } else {
         set variables_text "<span class=\"no_items_text\">no variables</span>"
     }
-    append variables_text "&nbsp; \[<a href=\"map-variable-to-project?project_id=$project_id\">add variable</a>\]"
+    set n_can_be_mapped [db_string n_can_be_mapped {
+        select count(*)
+        from logger_variables lv
+        where (exists (select 1
+                    from logger_project_var_map lpvm,
+                         logger_project_pkg_map lppm
+                    where lv.variable_id = lpvm.variable_id
+                      and lpvm.project_id = lppm.project_id
+                      and lppm.package_id = :package_id
+                   )
+         or lv.package_id = :package_id
+         or lv.package_id is null)
+        and not exists (select 1
+                          from logger_project_var_map lpvm
+                          where lpvm.project_id = :project_id
+                            and lpvm.variable_id = lv.variable_id
+                          )
+        and acs_permission.permission_p(lv.variable_id, :user_id, 'read') = 't'
+    }]
+
+    if { $n_can_be_mapped > 0 } {
+        append variables_text "<p> \[<a href=\"map-variable-to-project?project_id=$project_id\">add variable</a>\] </p>"
+    }
 
 
      ad_form -extend -name project_form -form {

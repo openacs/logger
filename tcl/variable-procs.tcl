@@ -18,7 +18,7 @@ ad_proc -public logger::variable::new {
 } {
     Create a new variable to use for logger entries. The
     variable can be tied to logger projects through the
-    logger::project::add_variable proc.
+    logger::project::map_variable proc.
 
     @param variable_id Any pre-generated id of the variable. Optional.
     @param name The name of the new variable. Required.
@@ -43,6 +43,14 @@ ad_proc -public logger::variable::new {
     }
 
     set variable_id [db_exec_plsql insert_variable {}]
+
+    if { $pre_installed_p } {
+        # Registered users should have read privilege on pre-installed variables
+        permission::grant \
+            -party_id [acs_magic_object registered_users] \
+            -object_id $variable_id \
+            -privilege read
+    } 
 
     return $variable_id
 }

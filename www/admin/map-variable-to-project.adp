@@ -11,5 +11,7 @@
   </ul>
 </if>
 <else>
-  <span class="no_items_text">There are no variables in this package that are not already added to the project</span>
+  <p>
+    <span class="no_items_text">You do not have access to any variables that are not already added to the project</span>
+  </p>
 </else>
