@@ -28,7 +28,7 @@ ad_page_contract {
 # TODO: Make the recent entries list start on the date of the last entry
 
 set package_id [ad_conn package_id]
-set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_id [auth::require_login]
 set peeraddr   [ad_conn peeraddr]
 
 if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p]} {

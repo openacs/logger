@@ -9,7 +9,7 @@ ad_page_contract {
     @cvs-id $Id$
 } 
 
-ad_maybe_redirect_for_registration
+auth::require_login
 
 set page_title "Select Project to log entries in"
 set context [list $page_title]
