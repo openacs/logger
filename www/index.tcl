@@ -55,8 +55,6 @@ logger::variable::get -variable_id $variable_id -array variable
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
-#error [db_list_of_lists select_variables {}]
-
 # Define the list
 list::create \
     -name entries \
