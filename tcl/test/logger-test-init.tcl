@@ -41,6 +41,7 @@ aa_register_case logger_create_package {
         set projection_start_time "2003-04-10"
         set projection_end_time "2003-04-20"
         set projection_value "10"
+        set projection_name "Test Projection"
         array set hour_entry_1 {
             value 11
             time_stamp "2003-04-15"
@@ -116,7 +117,8 @@ aa_register_case logger_create_package {
                                                    -variable_id $hours_var_id \
                                                    -start_time $projection_start_time \
                                                    -end_time $projection_end_time \
-                                                   -value $projection_value]
+                                                   -value $projection_value \
+                                                   -name $projection_name]
 
         # Assert that projection values can be retrieved
         logger::projection::get -projection_id $projection_id -array projection
