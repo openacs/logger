@@ -466,16 +466,16 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     }
 
     set display_hours [pm::task::hours_remaining \
-                           -hours_work $estimated_hours_work \
-                           -hours_work_min $estimated_hours_work_min \
-                           -hours_work_max $estimated_hours_work_max \
+                           -estimated_hours_work $estimated_hours_work \
+                           -estimated_hours_work_min $estimated_hours_work_min \
+                           -estimated_hours_work_max $estimated_hours_work_max \
                            -percent_complete $percent_complete \
                           ]
 
     set total_hours_work [pm::task::estimated_hours_work \
-                              -hours_work $estimated_hours_work \
-                              -hours_work_min $estimated_hours_work_min \
-                              -hours_work_max $estimated_hours_work_max \
+                              -estimated_hours_work $estimated_hours_work \
+                              -estimated_hours_work_min $estimated_hours_work_min \
+                              -estimated_hours_work_max $estimated_hours_work_max \
                              ]
 
     template::element set_value log_entry_form remaining_work $display_hours
