@@ -8,6 +8,8 @@ ad_page_contract {
     entry_id:integer,optional
     project_id:integer,optional
     variable_id:integer,optional
+    {edit:boolean "f"}
+    {return_url "."}
 } -validate {
     project_id_required_in_add_mode {
         # For the sake of simplicity of the form 
@@ -29,7 +31,7 @@ if { [exists_and_not_null entry_id] } {
 
 if { [string equal [form get_action log_entry_form] "done"] } {
     # User is done editing - redirect back to index page
-    ad_returnredirect .
+    ad_returnredirect $return_url
     ad_script_abort
 }
 
@@ -84,7 +86,7 @@ if { $entry_exists_p } {
 if { [exists_and_not_null entry_id] } {
     # Initial request in display or edit mode or a submit of the form
     set page_title "Edit Log Entry"
-    if { $edit_p } {
+    if { [string equal $edit "t"] && $edit_p } {
         set ad_form_mode edit
     } else {
         set ad_form_mode display
@@ -105,7 +107,7 @@ if { $edit_p } {
 }
 lappend actions { Done done }
 
-ad_form -name log_entry_form -cancel_url index -mode $ad_form_mode \
+ad_form -name log_entry_form -cancel_url $return_url -mode $ad_form_mode \
     -actions $actions -form {
     entry_id:key(acs_object_id_seq)
 }
@@ -127,6 +129,8 @@ ad_form -extend -name log_entry_form -form {
     {variable_id:integer(hidden)
         {value $variable_id}
     }
+
+    {return_url:text(hidden) {value $return_url}}
 }    
 
 # Add form elements common to all modes
@@ -206,8 +210,7 @@ You have already added this entry once. If you want to edit this entry, click <a
                               -time_stamp $time_stamp_ansi \
                               -description $description
 } -after_submit {
-    
-    ad_returnredirect "[ad_conn url]?[export_vars { project_id variable_id }]"
+    ad_returnredirect "[ad_conn url]?[export_vars { project_id variable_id return_url }]"
     ad_script_abort
 }
 

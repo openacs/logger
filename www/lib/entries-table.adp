@@ -28,7 +28,7 @@
     </else>
       <td class="logger_listing_narrow">
         <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
-          <a href="@entries.entry_url@" title="Edit this log entry"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
+          <a href="@entries.edit_url@" title="Edit this log entry"><img src="/shared/images/Edit16.gif" height="16" width="16" alt="Edit" border="0"></a>
         </if>
       </td>
       <td class="logger_listing_narrow">@entries.project_name@</td>
@@ -36,13 +36,15 @@
       <td class="logger_listing_narrow" align="left">@entries.time_stamp_pretty@</td>
       <td class="logger_listing_narrow" align="right" nowrap>
         <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
-          <a href="@entries.entry_url@" title="Edit this log entry">@entries.value@</a>
+          <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
         </if>
         <else>
-          <a href="@entries.entry_url@" title="Display this log entry">@entries.value@</a>
+          <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
         </else>
       </td>
-      <td class="logger_listing_narrow">@entries.description@</td>
+      <td class="logger_listing_narrow">
+        <a href="@entries.view_url@" title="View this log entry">@entries.description@</a>
+      </td>
       <td class="logger_listing_narrow">
         <if @entries.delete_url@ not nil>
           <a href="@entries.delete_url@" onclick="@entries.delete_onclick@" title="Delete this log entry"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
