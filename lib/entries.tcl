@@ -24,6 +24,7 @@ if { ![exists_and_not_null filters_p] } {
 #   that is used to display the link to the task and project page.
 # entry_id (not sure if this works), should highlight entries.
 # return_url (used for delete links)
+# project_status (used for adding in a status for projects, active or not)
 
 if { ![exists_and_not_null format] } {
     set format "normal"
@@ -125,8 +126,16 @@ if { [exists_and_not_null project_id] } {
 # displayed in an include, and we're not showing the filters. 
 if {$filters_p} {
     set project_where ""
+
+    set project_status_values [list]
 } else {
     set project_where "and lp.project_id = :project_id"
+
+    if {[exists_and_not_null project_status]} {
+        append project_where " and lp.active_p = :project_status "
+    }
+
+    set project_status_values [list [list "True true"] [list "False false"]]
 }
 
 set project_values [db_list_of_lists select_projects {}]
@@ -209,6 +218,13 @@ set filters {
         }
         add_url_eval {[export_vars -base "${base_url}log" { { project_id $__filter_value } variable_id }]}
         has_default_p {[ad_decode [llength $project_values] 1 1 0]}
+    }
+    project_status {
+        label "Project status"
+        values $project_status_values
+        where_clause {
+            lp.active_p = :project_status
+        }
     }
     variable_id {
         label "Variables"
