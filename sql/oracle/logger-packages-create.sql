@@ -131,17 +131,18 @@ as
           logger_entry.del(rec.entry_id);
         end loop;        
 
-        -- Delete all variables only mapped to this project.
+        -- Delete all variables only mapped to this project that are not preinstalled (time, expenses)
         for rec in (select variable_id
-                   from logger_variables
-                   where exists (select 1
-                                 from logger_project_pkg_map
-                                 where project_id = logger_project.del.project_id
-                                )
-                   and not exists (select 1 
-                                   from logger_project_pkg_map 
-                                   where project_id <> logger_project.del.project_id
+                   from    logger_variables
+                   where   package_id is not null
+                   and     exists (select 1
+                                   from logger_project_pkg_map
+                                   where project_id = logger_project.del.project_id
                                   )
+                   and     not exists (select 1 
+                                       from logger_project_pkg_map 
+                                       where project_id <> logger_project.del.project_id
+                                      )
                    )
         loop
             logger_variable.del(rec.variable_id);
