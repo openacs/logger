@@ -64,12 +64,7 @@
             <td class="logger_listing_narrow">@entries.user_chunk@</td>
             <td class="logger_listing_narrow" align="left">@entries.time_stamp_pretty@</td>
             <td class="logger_listing_narrow" align="right" nowrap>
-              <if @entries.edit_p@ or @current_user_id@ eq @entries.user_id@>
-                <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
-              </if>
-              <else>
-                <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
-              </else>
+              <a href="@entries.view_url@" title="View this log entry">@entries.value@</a>
             </td>
             <td class="logger_listing_narrow">
               <a href="@entries.view_url@" title="View this log entry">@entries.description@</a>
