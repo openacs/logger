@@ -4,8 +4,17 @@
     font-weight: bold;
 }
 
+.logger_explanation_text {
+   font-style: italic;
+}
+
+.logger_emphasized_text {
+   font-weight: bold;
+}
+
 table.logger_navbar {
-  background-color: #41329c;    
+  background-color: #41329c;
+  clear: both;
 }
 a.logger_navbar { 
     color: white; 
@@ -15,7 +24,8 @@ a.logger_navbar:hover {
     text-decoration: underline;
 }
 .logger_navbar_selected_link {
-    font-weight: bold;    
+    font-weight: bold;
+    color: white;
 }
 .logger_filter_bar_header {
     font-weight: bold;
@@ -24,3 +34,31 @@ a.logger_navbar:hover {
 .logger_filter_bar_section_header {
     font-weight: bold;
 }
+
+.logger_filter_bar {
+  background-color: #ddddff;
+  float: left;
+  width: 25%;
+}
+
+.logger_body {
+  background-color: white;
+  valign: center;
+  padding-left: 10px;
+}
+
+hr {
+  clear: both;
+}
+
+table.logger_table {
+  background-color: #999999;
+  margin: 10px;
+}
+.logger_table_header { 
+  background-color: #dddddd;
+}
+.logger_table_rows {
+  background-color: white;
+}
+

@@ -36,16 +36,7 @@ ad_proc -public logger::project::new {
   @author Peter Marklund
 } {
     # Use ad_conn to initialize variables
-    # The lists are on the following array format 
-    # var_name1 ad_conn_arg_name1 var_name2 ad_conn_arg_name2 ...
-    set ad_conn_vars [list package_id package_id creation_user user_id creation_ip peeraddr]
-    if { [ad_conn isconnected] } {
-        foreach {var_name ad_conn_name} $ad_conn_vars {
-                set $var_name [ad_conn $ad_conn_name]
-        }
-    } else {
-        error "logger::project::new - this proc requires an ad_conn connection"
-    }
+    logger::util::set_vars_from_ad_conn {package_id creation_user creation_ip}
 
     # Project lead defaults to creation user
     if { [empty_string_p $project_lead] } {
@@ -85,7 +76,7 @@ ad_proc -public logger::project::edit {
 ad_proc -public logger::project::delete {
     {-project_id:required}
 } {
-  Delete a logger project and all logger measurements and projections
+  Delete a logger project and all logger entries and projections
   contained within it. Also deletes all logger variables mapped to this
   project that are not mapped to other projects.
 

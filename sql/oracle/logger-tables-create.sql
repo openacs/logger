@@ -74,7 +74,10 @@ comment on table logger_project_pkg_map is '
 create table logger_variables (
   variable_id           integer
                         constraint logger_variables_pk
-                        primary key,
+                        primary key
+                        constraint logger_variables_pid_fk
+                        references acs_objects(object_id)
+                        on delete cascade,
   name                  varchar(200),
   unit                  varchar(200),
   type                  varchar(50)
@@ -89,7 +92,7 @@ create table logger_variables (
 );
 
 comment on column logger_variables.type is '
-  Indicates if measurements of this variable should be added together or not. 
+  Indicates if entries of this variable should be added together or not. 
   Examples of additive variables are time and money spent at different times during
   a project. A non-additive variable would be the amount of money in a bank account.
 ';
@@ -98,7 +101,23 @@ comment on column logger_variables.package_id is '
   The id of the package that the variable was created in.
 ';
 
-create sequence logger_variables_seq;
+-- We make variables acs objects to be able to use permissions
+begin
+    acs_object_type.create_type (
+	'logger_variable',
+	'Logger variable',
+	'Logger variables',
+	'acs_object',
+	'logger_variables',
+	'variable_id',
+	null,
+	'f',
+	null,
+	'logger_variable.name'
+	);
+end;
+/
+show errors
 
 create table logger_project_var_map (
   project_id            integer
@@ -163,38 +182,38 @@ comment on table logger_projections is '
 
 comment on column logger_projections.value is '
   For additive variables the projection value will represent the expected or targeted 
-  sum of measurements during the time range and for non-additive variables it will 
+  sum of entries during the time range and for non-additive variables it will 
   represent an average.
 ';
 
 create sequence logger_projections_seq;
 
-create table logger_measurements (
-  measurement_id        integer
-                        constraint logger_measurements_pk
+create table logger_entries (
+  entry_id        integer
+                        constraint logger_entries_pk
                         primary key
-                        constraint logger_measurements_mid_fk
+                        constraint logger_entries_mid_fk
                         references acs_objects(object_id)
                         on delete cascade,
   project_id            integer
-                        constraint logger_measurements_pid_fk
+                        constraint logger_entries_pid_fk
                         references acs_objects(object_id)
                         on delete cascade,
   variable_id           integer
-                        constraint logger_measurements_v_id_fk
+                        constraint logger_entries_v_id_fk
                         references logger_variables(variable_id)
                         on delete cascade,
   value                 number
-                        constraint logger_measurements_value_nn
+                        constraint logger_entries_value_nn
                         not null,
   time_stamp            date
                         default sysdate
-                        constraint logger_measurements_ts_nn
+                        constraint logger_entries_ts_nn
                         not null,
   description           varchar(4000)
 );
 
-comment on table logger_measurements is '
+comment on table logger_entries is '
  This is the center piece of the logger datamodel that holds the actually reported
  data - namely numbers bound to points in time. Given the HR-XML
  Time and Reporting standard (see http://www.hr-xml.org) we considered allowing 
@@ -207,20 +226,20 @@ comment on table logger_measurements is '
  much difficulty.
 ';
 
--- Measurments need to be acs objects if we are to categorize the with the categories
+-- Entries need to be acs objects if we are to categorize the with the categories
 -- package
 begin
     acs_object_type.create_type (
-	'logger_measurement',
-	'Logger measurement',
-	'Logger measurements',
+	'logger_entry',
+	'Logger entry',
+	'Logger entries',
 	'acs_object',
-	'logger_measurements',
-	'measurement_id',
+	'logger_entries',
+	'entry_id',
 	null,
 	'f',
 	null,
-	'logger_measurement.name'
+	'logger_entry.name'
 	);
 end;
 /

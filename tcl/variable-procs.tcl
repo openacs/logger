@@ -14,8 +14,9 @@ ad_proc -public logger::variable::new {
     {-name:required}
     {-unit:required}
     {-type "additive"}
+    {-pre_installed_p 0}
 } {
-    Create a new variable to use for logger measurements. The
+    Create a new variable to use for logger entries. The
     variable can be tied to logger projects through the
     logger::project::add_variable proc.
 
@@ -24,6 +25,8 @@ ad_proc -public logger::variable::new {
     @param unit The unit of the variable, for example hours, minutes, or 
                 a currency code such as USD or EUR.
     @param type Must be either additive (default) or non-additive.
+    @param pre_installed_p Indicates whether this is a variable that is comes pre-installed
+                           with the logger application (1) or not (0). Default is 0.
 
     @return The id of the created variable.
 
@@ -31,14 +34,15 @@ ad_proc -public logger::variable::new {
 } {
     ad_assert_arg_value_in_list type {additive non-additive}
 
-    # Default variable_id to next id in a sequence
-    if { [empty_string_p $variable_id] } {
-        set variable_id [db_nextval logger_variables_seq]
+    # Use ad_conn to initialize variables    
+    logger::util::set_vars_from_ad_conn {package_id creation_user creation_ip}
+
+    if { $pre_installed_p } {
+        # Pre-installed vars are not associated with any particular package
+        set package_id [db_null]
     }
 
-    set package_id [ad_conn package_id]
-
-    db_dml insert_variable {}
+    db_exec_plsql insert_variable {}
 
     return $variable_id
 }
@@ -78,7 +82,7 @@ ad_proc -public logger::variable::delete {
 
     @author Peter Marklund
 } {
-    db_dml delete_variable {}
+    db_exec_plsql delete_variable {}
 }
 
 ad_proc -public logger::variable::get {

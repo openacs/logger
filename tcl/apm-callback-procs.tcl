@@ -8,6 +8,17 @@ ad_library {
 
 namespace eval logger::apm {}
 
+ad_proc -public logger::apm::after_install {} {
+    The Logger application is primarily intended for time and expenses reporting
+    so lets create those variables so that they don't need to be setup manually
+
+    @author Peter Marklund
+} {
+    logger::variable::new -name "Time" -unit "hours" -pre_installed_p 1
+
+    logger::variable::new -name "Expense" -unit "Euro" -pre_installed_p 1
+}
+
 ad_proc -public logger::apm::before_uninstantiate {
     {-package_id:required}
 } {

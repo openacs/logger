@@ -8,13 +8,13 @@
 -- @author Peter Marklund (peter@collaboraid.biz)
 -- @creation-date 3:d of April 2003
 
-drop table logger_measurements;
+drop table logger_entries;
 
 create function inline_0 ()
 returns integer as '
 begin
     perform acs_object_type__drop_type (
-        ''logger_measurement'', ''f''
+        ''logger_entry'', ''f''
     );
 
     return null;

@@ -55,7 +55,9 @@ ad_proc -public logger::package::variables_multirow {
 } {
     Executes a db_multirow that returns all variables created
     in the current package and all variables mapped to projects
-    in the current package.
+    in the current package. Also returns the default variables
+    that come with the installation of the Logger - Time and Expense
+    (created in no particular package instance).
 
     @param not_in_project_id Exclude variables already mapped to the given project_id.
 

@@ -90,7 +90,7 @@ create table logger_variables (
 );
 
 comment on column logger_variables.type is '
-  Indicates if measurements of this variable should be added together or not. 
+  Indicates if entries of this variable should be added together or not. 
   Examples of additive variables are time and money spent at different times during
   a project. A non-additive variable would be the amount of money in a bank account.
 ';
@@ -160,38 +160,38 @@ comment on table logger_projections is '
 
 comment on column logger_projections.value is '
   For additive variables the projection value will represent the expected or targeted 
-  sum of measurements during the time range and for non-additive variables it will 
+  sum of entries during the time range and for non-additive variables it will 
   represent an average.
 ';
 
 create sequence logger_projections_seq;
 
-create table logger_measurements (
-  measurement_id        integer
-                        constraint logger_measurements_pk
+create table logger_entries (
+  entry_id        integer
+                        constraint logger_entries_pk
                         primary key
-                        constraint logger_measurements_mid_fk
+                        constraint logger_entries_mid_fk
                         references acs_objects(object_id)
                         on delete cascade,
   project_id            integer
-                        constraint logger_measurements_pid_fk
+                        constraint logger_entries_pid_fk
                         references acs_objects(object_id)
                         on delete cascade,
   variable_id           integer
-                        constraint logger_measurements_v_id_fk
+                        constraint logger_entries_v_id_fk
                         references logger_variables(variable_id)
                         on delete cascade,
   value                 integer
-                        constraint logger_measurements_value_nn
+                        constraint logger_entries_value_nn
                         not null,
   time_stamp            date
                         default now ()
-                        constraint logger_measurements_ts_nn
+                        constraint logger_entries_ts_nn
                         not null,
   description           varchar(4000)
 );
 
-comment on table logger_measurements is '
+comment on table logger_entries is '
  This is the center piece of the logger datamodel that holds the actually reported
  data - namely numbers bound to points in time. Given the HR-XML
  Time and Reporting standard (see http://www.hr-xml.org) we considered allowing 
@@ -204,22 +204,22 @@ comment on table logger_measurements is '
  much difficulty.
 ';
 
--- Measurements need to be acs objects if we are to categorize the with the categories
+-- Entries need to be acs objects if we are to categorize the with the categories
 -- package
 create function inline_0 ()
 returns integer as '
 begin
 PERFORM  acs_object_type__create_type (
-	''logger_measurement'',        -- object_type          
-	''Logger measurement'',        -- pretty_name          
-	''Logger measurements'',       -- pretty_plural        
+	''logger_entry'',        -- object_type          
+	''Logger entry'',        -- pretty_name          
+	''Logger entries'',       -- pretty_plural        
 	''acs_object'',                -- supertype            
-	''logger_measurements'',       -- table_name           
-	''measurement_id'',            -- id_column            
+	''logger_entries'',       -- table_name           
+	''entry_id'',            -- id_column            
 	null,                        -- package_name         
 	''f'',                         -- abstract_p           
 	null,                        -- type_extension_table 
-	''logger_measurement.name''    -- name_method          
+	''logger_entry.name''    -- name_method          
 );
   return 0;
 end;' language 'plpgsql';

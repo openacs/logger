@@ -3,11 +3,11 @@
 <queryset>
   <rdbms><type>oracle</type><version>8.1.6</version></rdbms>
 
-  <fullquery name="logger::measurement::new.insert_measurement">
+  <fullquery name="logger::entry::new.insert_entry">
     <querytext>
       begin
-        :1 := logger_measurement.new (
-                  measurement_id => :measurement_id,
+        :1 := logger_entry.new (
+                  entry_id => :entry_id,
                   project_id => :project_id,
                   variable_id => :variable_id,
                   value => :value,
@@ -20,10 +20,10 @@
     </querytext>
   </fullquery>
 
-  <fullquery name="logger::measurement::new.delete_measurement">
+  <fullquery name="logger::entry::delete.delete_entry">
     <querytext>
       begin
-        logger_measurement.delete(:measurement_id);
+        logger_entry.del(:entry_id);
       end;
     </querytext>
   </fullquery>

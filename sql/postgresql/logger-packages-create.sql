@@ -41,13 +41,13 @@ returns integer as '
 declare
     project_id          alias for $1;
 begin
-        -- Delete all measurements in the project
-        for rec in (select measurement_id
-                    from logger_measurements
+        -- Delete all entries in the project
+        for rec in (select entry_id
+                    from logger_entries
                     where project_id = logger_project.delete.project_id
                    )
         loop
-          logger_measurement.delete(rec.measurement_id);
+          logger_entry.delete(rec.entry_id);
         end loop;        
 
         -- Delete all variables only mapped to this project.
@@ -86,10 +86,10 @@ begin
       return v_name;
 end; ' language 'plpgsql';
 
-create function logger_measurement__new (integer, integer, integer, integer, date, varchar, integer, varchar, integer) 
+create function logger_entry__new (integer, integer, integer, integer, date, varchar, integer, varchar, integer) 
 returns integer as '
 declare
-        measurement_id      alias for $1;  -- default null
+        entry_id      alias for $1;  -- default null
         project_id          alias for $2;
         variable_id         alias for $3;
         value               alias for $4;
@@ -98,41 +98,41 @@ declare
         creation_user       alias for $7;
         creation_ip         alias for $8; -- default null
 
-        v_measurement_id               integer;
+        v_entry_id               integer;
 begin
-        v_measurement_id := acs_object__new(
-            measurement_id,
-            ''logger_measurement'',
+        v_entry_id := acs_object__new(
+            entry_id,
+            ''logger_entry'',
             project_id,
             creation_ip,
             creation_user
         );
        
-       insert into logger_measurements (measurement_id, project_id, variable_id, value, 
+       insert into logger_entries (entry_id, project_id, variable_id, value, 
                                         time_stamp, description)
-           values (v_measurement_id, project_id, variable_id, value, time_stamp, description);
+           values (v_entry_id, project_id, variable_id, value, time_stamp, description);
 
-       return v_measurement_id;  
+       return v_entry_id;  
 end; ' language 'plpgsql';
 
-create function logger_measurement__delete (integer) 
+create function logger_entry__delete (integer) 
 returns integer as '
 declare
-        measurement_id      alias for $1;  -- default null
+        entry_id      alias for $1;  -- default null
 begin
-        -- The row in the measurements table will cascade
-        acs_object.delete(measurement_id);
+        -- The row in the entries table will cascade
+        acs_object.delete(entry_id);
 end; ' language 'plpgsql';
 
-create function logger_measurement__name (integer) 
+create function logger_entry__name (integer) 
 returns varchar as '
 declare
       v_name          logger_projects.name%TYPE;  
   begin
         -- TODO: Should we only return the say 20 first characters here?
         select description into v_name
-        from logger_measurements
-        where measurement_id = logger_measurement.name.measurement_id;
+        from logger_entries
+        where entry_id = logger_entry.name.entry_id;
 
         return v_name;
 end; ' language 'plpgsql';

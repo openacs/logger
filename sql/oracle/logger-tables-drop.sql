@@ -8,11 +8,11 @@
 -- @author Peter Marklund (peter@collaboraid.biz)
 -- @creation-date 3:d of April 2003
 
-drop table logger_measurements;
+drop table logger_entries;
 
 begin
     acs_object_type.drop_type (
-	'logger_measurement'
+	'logger_entry'
     );
 end;
 /
@@ -26,7 +26,13 @@ drop table logger_project_var_map;
 
 drop table logger_variables;
 
-drop sequence logger_variables_seq;
+begin
+    acs_object_type.drop_type (
+	'logger_variable'
+    );
+end;
+/
+show errors
 
 drop table logger_project_pkg_map;
 

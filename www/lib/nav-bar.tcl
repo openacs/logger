@@ -11,7 +11,7 @@ set link_list {}
 
 if { [ad_conn user_id] != 0 } {
     lappend link_list "${package_url}"
-    lappend link_list "My log entries"
+    lappend link_list "Log entries"
 }
 
 if { $admin_p } {

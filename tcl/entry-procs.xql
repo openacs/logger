@@ -2,26 +2,26 @@
 
 <queryset>
 
-  <fullquery name="logger::measurement::get.select_measurement">
+  <fullquery name="logger::entry::get.select_entry">
     <querytext>
-        select measurement_id,
+        select entry_id,
                project_id, 
                variable_id,
                value,
                time_stamp,
                description
-        from logger_measurements
-        where measurement_id = :measurement_id
+        from logger_entries
+        where entry_id = :entry_id
     </querytext>
   </fullquery>
 
-  <fullquery name="logger::measurement::edit.update_measurement">
+  <fullquery name="logger::entry::edit.update_entry">
     <querytext>
-        update logger_measurements
+        update logger_entries
                 set value = :value,
                     time_stamp = :time_stamp,
                     description = :description
-           where measurement_id = :measurement_id
+           where entry_id = :entry_id
     </querytext>
   </fullquery>
 

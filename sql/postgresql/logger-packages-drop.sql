@@ -8,6 +8,6 @@
 drop function logger_project__new (integer, varchar, varchar, integer, integer, varchar, integer) ;
 drop function logger_project__delete (integer) ;
 drop function logger_project__name (integer) ;
-drop function logger_measurement__new (integer, integer, integer, integer, date, varchar, integer, varchar, integer) ;
-drop function logger_measurement__delete (integer) ;
-drop function logger_measurement__name (integer) ;
+drop function logger_entry__new (integer, integer, integer, integer, date, varchar, integer, varchar, integer) ;
+drop function logger_entry__delete (integer) ;
+drop function logger_entry__name (integer) ;

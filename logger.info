@@ -14,10 +14,14 @@
         <release-date>2003-04-16</release-date>
         <vendor url="http://collaboraid.biz">Collaboraid</vendor>
 
-        <requires url="acs-datetime" version="4.0"/>
         <provides url="logger" version="0.2d"/>
+        <requires url="acs-datetime" version="4.0"/>
 
+        <files>
+            <!-- No files -->
+        </files>
         <callbacks>
+            <callback type="after-install"  proc="logger::apm::after_install"/>
             <callback type="before-uninstantiate"  proc="logger::apm::before_uninstantiate"/>
         </callbacks>
         <parameters>

@@ -13,15 +13,15 @@ create or replace package logger_project
 as
   function new (
         project_id      in integer default null,
-        name            in cr_revisions.title%TYPE,
-        description     in cr_revisions.description%TYPE default null,
+        name            in logger_projects.name%TYPE,
+        description     in logger_projects.description%TYPE default null,
         project_lead    in integer,
         creation_user   in acs_objects.creation_user%TYPE,
         creation_ip     in acs_objects.creation_ip%TYPE default null,
         package_id      in apm_packages.package_id%TYPE
   ) return integer;
 
-  procedure delete (
+  procedure del (
         project_id      in integer
   );
 
@@ -33,28 +33,52 @@ end logger_project;
 /
 show errors;
 
-create or replace package logger_measurement
+create or replace package logger_variable
 as
   function new (
-        measurement_id      in logger_measurements.measurement_id%TYPE default null,
-        project_id          in logger_measurements.project_id%TYPE,
-        variable_id         in logger_measurements.variable_id%TYPE,
-        value               in logger_measurements.value%TYPE,
-        time_stamp          in logger_measurements.time_stamp%TYPE,
-        description         in logger_measurements.description%TYPE default null,
+        variable_id      in integer default null,
+        name             in logger_variables.name%TYPE,
+        unit             in logger_variables.unit%TYPE,
+        type             in logger_variables.type%TYPE,
+        creation_user    in acs_objects.creation_user%TYPE,
+        creation_ip      in acs_objects.creation_ip%TYPE default null,
+        package_id       in apm_packages.package_id%TYPE
+  ) return integer;
+
+  procedure del (
+        variable_id      in integer
+  );
+
+  function name (
+      variable_id        in integer
+   ) return varchar2;
+
+end logger_variable;
+/
+show errors;
+
+create or replace package logger_entry
+as
+  function new (
+        entry_id      in logger_entries.entry_id%TYPE default null,
+        project_id          in logger_entries.project_id%TYPE,
+        variable_id         in logger_entries.variable_id%TYPE,
+        value               in logger_entries.value%TYPE,
+        time_stamp          in logger_entries.time_stamp%TYPE,
+        description         in logger_entries.description%TYPE default null,
         creation_user       in acs_objects.creation_user%TYPE,
         creation_ip         in acs_objects.creation_ip%TYPE default null
   ) return integer;
 
-  procedure delete (
-        measurement_id      in integer
+  procedure del (
+        entry_id      in integer
   );
 
   function name (
-      measurement_id        in integer
+      entry_id        in integer
    ) return varchar2;
 
-end logger_measurement;
+end logger_entry;
 /
 show errors;
 
@@ -66,8 +90,8 @@ create or replace package body logger_project
 as
   function new (
         project_id      in integer default null,
-        name            in cr_revisions.title%TYPE,
-        description     in cr_revisions.description%TYPE default null,
+        name            in logger_projects.name%TYPE,
+        description     in logger_projects.description%TYPE default null,
         project_lead    in integer,
         creation_user   in acs_objects.creation_user%TYPE,
         creation_ip     in acs_objects.creation_ip%TYPE default null,
@@ -93,18 +117,18 @@ as
        return v_project_id;  
   end new;
 
-  procedure delete (
+  procedure del (
         project_id      in integer
   )
   is
   begin
-        -- Delete all measurements in the project
-        for rec in (select measurement_id
-                    from logger_measurements
-                    where project_id = logger_project.delete.project_id
+        -- Delete all entries in the project
+        for rec in (select entry_id
+                    from logger_entries
+                    where project_id = logger_project.del.project_id
                    )
         loop
-          logger_measurement.delete(rec.measurement_id);
+          logger_entry.del(rec.entry_id);
         end loop;        
 
         -- Delete all variables only mapped to this project.
@@ -112,22 +136,22 @@ as
                    from logger_variables
                    where exists (select 1
                                  from logger_project_pkg_map
-                                 where project_id = logger_project.delete.project_id
+                                 where project_id = logger_project.del.project_id
                                 )
                    and not exists (select 1 
                                    from logger_project_pkg_map 
-                                   where project_id <> logger_project.delete.project_id
+                                   where project_id <> logger_project.del.project_id
                                   )
                    )
         loop
-            delete from logger_variables where variable_id = rec.variable_id;
+            logger_variable.del(rec.variable_id);
         end loop;                                 
 
         -- Delete the project acs object. This will cascade the row in the logger_projects table
         -- as well as all projections in the project
         acs_object.delete(project_id);
 
-  end delete;
+  end del;
 
   function name (
       project_id        in integer
@@ -147,60 +171,115 @@ end logger_project;
 /
 show errors;
 
-create or replace package body logger_measurement
+create or replace package body logger_variable
 as
   function new (
-        measurement_id      in logger_measurements.measurement_id%TYPE default null,
-        project_id          in logger_measurements.project_id%TYPE,
-        variable_id         in logger_measurements.variable_id%TYPE,
-        value               in logger_measurements.value%TYPE,
-        time_stamp          in logger_measurements.time_stamp%TYPE,
-        description         in logger_measurements.description%TYPE default null,
+        variable_id      in integer default null,
+        name             in logger_variables.name%TYPE,
+        unit             in logger_variables.unit%TYPE,
+        type             in logger_variables.type%TYPE,
+        creation_user    in acs_objects.creation_user%TYPE,
+        creation_ip      in acs_objects.creation_ip%TYPE default null,
+        package_id       in apm_packages.package_id%TYPE
+  ) return integer
+  is
+        v_variable_id               integer;
+  begin
+        v_variable_id := acs_object.new(
+            object_id   => variable_id,
+            object_type => 'logger_variable',
+            context_id  => package_id,
+            creation_ip => creation_ip,
+            creation_user => creation_user
+        );
+       
+       insert into logger_variables (variable_id, name, unit, type, package_id)
+           values (v_variable_id, name, unit, type, package_id);
+
+       return v_variable_id;  
+  end new;
+
+  procedure del (
+        variable_id      in integer
+  )
+  is
+  begin
+        -- Everything should be set up to cascade
+        acs_object.delete(variable_id);
+  end del;
+
+  function name (
+      variable_id        in integer
+   ) return varchar2
+  is
+      v_name          logger_projects.name%TYPE;
+  begin
+      select name
+      into   v_name
+      from   logger_variables
+      where  variable_id = name.variable_id;
+
+      return v_name;
+  end name;
+
+end logger_variable;
+/
+show errors;
+
+create or replace package body logger_entry
+as
+  function new (
+        entry_id      in logger_entries.entry_id%TYPE default null,
+        project_id          in logger_entries.project_id%TYPE,
+        variable_id         in logger_entries.variable_id%TYPE,
+        value               in logger_entries.value%TYPE,
+        time_stamp          in logger_entries.time_stamp%TYPE,
+        description         in logger_entries.description%TYPE default null,
         creation_user       in acs_objects.creation_user%TYPE,
         creation_ip         in acs_objects.creation_ip%TYPE default null
   ) return integer
   is
-        v_measurement_id               integer;
+        v_entry_id               integer;
   begin
-        v_measurement_id := acs_object.new(
-            object_id   => measurement_id,
-            object_type => 'logger_measurement',
+        v_entry_id := acs_object.new(
+            object_id   => entry_id,
+            object_type => 'logger_entry',
             context_id  => project_id,
             creation_ip => creation_ip,
             creation_user => creation_user
         );
        
-       insert into logger_measurements (measurement_id, project_id, variable_id, value, 
+       insert into logger_entries (entry_id, project_id, variable_id, value, 
                                         time_stamp, description)
-           values (v_measurement_id, project_id, variable_id, value, time_stamp, description);
+           values (v_entry_id, project_id, variable_id, value, time_stamp, description);
 
-       return v_measurement_id;  
+       return v_entry_id;  
 
   end new;
 
-  procedure delete (
-        measurement_id      in integer
+  procedure del (
+        entry_id      in integer
   )
   is
   begin
-        -- The row in the measurements table will cascade
-        acs_object.delete(measurement_id);
-  end delete;
+        -- The row in the entries table will cascade
+        acs_object.delete(entry_id);
+  end del;
 
   function name (
-      measurement_id        in integer
+      entry_id        in integer
    ) return varchar2
   is
       v_name          logger_projects.name%TYPE;  
   begin
         -- TODO: Should we only return the say 20 first characters here?
         select description into v_name
-        from logger_measurements
-        where measurement_id = logger_measurement.name.measurement_id;
+        from logger_entries
+        where entry_id = logger_entry.name.entry_id;
 
         return v_name;
   end name;
 
-end logger_measurement;
+end logger_entry;
 /
 show errors;
