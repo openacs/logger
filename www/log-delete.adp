@@ -1,4 +1,4 @@
-<master src="lib/master">
+<master src="/packages/logger/lib/master">
 <property name="title">@page_title@</property>
 <property name="context">@context@</property>
 

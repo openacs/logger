@@ -1,4 +1,4 @@
-<master src="lib/master">
+<master src="/packages/logger/lib/master">
 <property name="title">@instance_name@</property>
 
 <include src="/packages/logger/lib/entries" 
