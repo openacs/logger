@@ -25,7 +25,9 @@
 
   <h2 class="logger">Logger Application Instance</h2>
 
-  <a href="@package_permissions_url@" class="action">Set permissions for this logger application instance</a>
+  <ul class="action-links">
+    <li><a href="@package_permissions_url@">Set permissions for this logger application instance</a></li>
+  </ul>
 
   <h2 class="logger">Help</h2>
 
