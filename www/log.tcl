@@ -30,7 +30,7 @@ ad_page_contract {
 set package_id [ad_conn package_id]
 set current_user_id [ad_maybe_redirect_for_registration]
 
-if { [exists_and_not_null entry_id] } {
+if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p]} {
     set entry_exists_p [db_string entry_exists_p {}]                         
 } else {
     set entry_exists_p 0
