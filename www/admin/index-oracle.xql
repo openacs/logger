@@ -39,6 +39,7 @@
                    )
         or lv.package_id = :package_id
         or lv.package_id is null)
+        order  by lv.name
     </querytext>
   </fullquery>
 
@@ -52,6 +53,7 @@
                            where  ppm.project_id = p.project_id
                            and    ppm.package_id = :package_id)
         and    acs_permission.permission_p(p.project_id, :user_id, 'read') = 't'
+        order  by p.name
     </querytext>
   </fullquery>
     
