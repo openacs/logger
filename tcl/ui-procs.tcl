@@ -101,18 +101,5 @@ ad_proc -public logger::ui::project_options {} {
     @author Peter Marklund
 } {
     set package_id [ad_conn package_id]
-
-    set project_options [list]
-    db_foreach project_options {
-    select lp.project_id,
-           lp.name
-    from logger_projects lp,
-         logger_project_pkg_map lppm
-    where lp.project_id = lppm.project_id
-      and lppm.package_id = :package_id
-    } {
-        lappend project_options [list $name $project_id] 
-    }
-
-    return $project_options
+    return [db_list_of_lists project_options {}]
 }
