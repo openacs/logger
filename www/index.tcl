@@ -70,7 +70,7 @@ list::create \
     -pass_properties {
         variable
     } -actions {
-        "Add" "project-select" "Add new log entry"
+        "Add Entry" "project-select" "Add new log entry"
     } -bulk_actions {
         "Delete" "log-delete" "Delete checked entries"
     } -elements {
