@@ -66,7 +66,6 @@ if {[info exists url]} {
 # when using project-manager, both integrated and not integrated with PM
 # using logger with categories and without
 
-
 set package_id [ad_conn package_id]
 set current_user_id [ad_conn user_id]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
@@ -93,7 +92,7 @@ set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 # optimized in some way? If you have thousands of projects, it tends
 # to be a bit slow. Perhaps limit the results to only open projects?
 
-if {[exists_and_not_null project_id] && !$filters_p} {
+if {[exists_and_not_null project_id] && [string is false $filters_p]} {
     set project_ids [list $project_id]
 }  else {
     set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
@@ -124,18 +123,18 @@ if { [exists_and_not_null project_id] } {
 
 # we don't need to show all the project options if this is being
 # displayed in an include, and we're not showing the filters. 
-if {$filters_p} {
+if {[string is true $filters_p]} {
     set project_where ""
-
-    set project_status_values [list]
-} else {
-    set project_where "and lp.project_id = :project_id"
 
     if {[exists_and_not_null project_status]} {
         append project_where " and lp.active_p = :project_status "
     }
 
-    set project_status_values [list [list "True true"] [list "False false"]]
+    set project_status_values [list [list "Open" "t"] [list "Closed" "f"]]
+} else {
+    set project_where "and lp.project_id = :project_id"
+
+    set project_status_values [list]
 }
 
 set project_values [db_list_of_lists select_projects {}]
