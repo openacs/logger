@@ -107,25 +107,6 @@ set elements {
     }
 }
 
-set normal_row {
-    checkbox {}
-    edit {}
-    project_id {}
-    user_id {}
-    time_stamp {}
-}
-
-foreach id $tree_ids {
-    set id_var c_${id}_category_id
-    set cmd "join \[category::get_names \$$id_var\] \", \""
-    lappend elements c_${id}_category_id \
-        [list label \[[list category_tree::get_name $id]\] \
-             display_eval \[$cmd\]]
-    lappend normal_row c_${id}_category_id {}
-}
-
-lappend normal_row value {} description {}
-
 #----------------------------------------------------------------------
 # Define list filters
 #----------------------------------------------------------------------
@@ -229,14 +210,64 @@ set filters {
     }
 }
 
+set orderbys {
+    time_stamp {
+        label "Date"
+        orderby_desc "le.time_stamp desc, ao.creation_date desc"
+        orderby_asc "le.time_stamp asc, ao.creation_date asc"
+        default_direction desc
+    }
+    project_id {
+        label "Project" 
+        orderby_asc "project_name asc, le.time_stamp desc, ao.creation_date desc"
+        orderby_desc "project_name desc, le.time_stamp desc, ao.creation_date desc"
+    }
+    user_id {
+        label "User"
+        orderby_asc "user_name asc, le.time_stamp desc, ao.creation_date desc"
+        orderby_desc "user_name desc, le.time_stamp desc, ao.creation_date desc"
+    }
+    value {
+        label $variable(name)
+        orderby_asc "value asc, le.time_stamp desc, ao.creation_date desc"
+        orderby_desc "value desc, le.time_stamp desc, ao.creation_date desc"
+    }
+    description {
+        label "Description"
+        orderby_asc "description asc, le.time_stamp desc, ao.creation_date desc"
+        orderby_desc "description desc, le.time_stamp desc, ao.creation_date desc"
+    }
+    default_value time_stamp,desc
+}
+
+
+set normal_row {
+    checkbox {}
+    edit {}
+    project_id {}
+    user_id {}
+    time_stamp {}
+}
+
 foreach id $tree_ids {
+    # Elements
+    set id_var c_${id}_category_id
+    set cmd "join \[category::get_names \$$id_var\] \", \""
+    lappend elements c_${id}_category_id \
+        [list label \[[list category_tree::get_name $id]\] \
+             display_eval \[$cmd\]]
+
+    # Format
+    lappend normal_row c_${id}_category_id {}
+
+    # Filters
     set values_${id} [list]
     foreach elm [category_tree::get_tree $id] {
         foreach { category_id category_name deprecated_p level } $elm {}
         lappend values_${id} [list "[string repeat "..." [expr $level-1]]$category_name" $category_id]
     }
     set tree_name_${id} [category_tree::get_name $id]
-    # Grab value frmo request
+    # Grab value directly from request
     if { [ns_queryexists cat_${id}] } {
         set cat_${id} [ns_queryget cat_${id}]
     }
@@ -244,8 +275,13 @@ foreach id $tree_ids {
         [list label \$tree_name_${id} \
              values \$values_${id} \
              where_clause "exists (select 1 from category_object_map where object_id = le.entry_id and category_id = :cat_${id})"]
+
+    # Orderby
+    lappend orderbys c_${id}_category_id  \
+        [list label \$tree_name_${id} multirow_cols c_${id}_category_id]
 }
 
+lappend normal_row value {} description {}
 
 
 #----------------------------------------------------------------------
@@ -278,35 +314,7 @@ list::create \
             { "Project" { { groupby project_name } { orderby project_id,asc } } }
             { "User" { { groupby user_id } { orderby user_id,asc } } }
         }
-    } -orderby {
-        default_value time_stamp,desc
-        time_stamp {
-            label "Date"
-            orderby_desc "le.time_stamp desc, ao.creation_date desc"
-            orderby_asc "le.time_stamp asc, ao.creation_date asc"
-            default_direction desc
-        }
-        project_id {
-            label "Project" 
-            orderby_asc "project_name asc, le.time_stamp desc, ao.creation_date desc"
-            orderby_desc "project_name desc, le.time_stamp desc, ao.creation_date desc"
-        }
-        user_id {
-            label "User"
-            orderby_asc "user_name asc, le.time_stamp desc, ao.creation_date desc"
-            orderby_desc "user_name desc, le.time_stamp desc, ao.creation_date desc"
-        }
-        value {
-            label $variable(name)
-            orderby_asc "value asc, le.time_stamp desc, ao.creation_date desc"
-            orderby_desc "value desc, le.time_stamp desc, ao.creation_date desc"
-        }
-        description {
-            label "Description"
-            orderby_asc "description asc, le.time_stamp desc, ao.creation_date desc"
-            orderby_desc "description desc, le.time_stamp desc, ao.creation_date desc"
-        }
-    } -formats {
+    } -orderby $orderbys -formats {
         normal {
             label "Table"
             layout table
