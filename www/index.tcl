@@ -15,6 +15,7 @@ ad_page_contract {
 
 set package_id [ad_conn package_id]
 set current_user_id [ad_conn user_id]
+set instance_name [ad_conn instance_name]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
 set filter_var_list {

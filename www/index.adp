@@ -1,5 +1,5 @@
 <master src="lib/master">
-<property name="title">Logger Application</property>
+<property name="title">@instance_name@</property>
 
 <table cellpadding="3" cellspacing="3">
   <tr>
