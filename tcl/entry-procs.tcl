@@ -256,6 +256,7 @@ ad_proc -public logger::entry::pm_before_change {
         -end_date_month_array            old_end_date_month \
         -end_date_year_array             old_end_date_year \
         -project_item_id_array           old_project_item_id \
+	-priority_array                  old_priority_array \
         -set_client_properties_p         t
 }
 
