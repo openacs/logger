@@ -71,8 +71,8 @@ set value_subcount 0
 set value_subtotal 0
 
 db_multirow -extend { subtotal subaverage view_url edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
-    set description [string_truncate -len 50 $description]
-    set project_name [string_truncate -len 20 $project_name]
+    set description [string_truncate -len 50 -- $description]
+    set project_name [string_truncate -len 20 -- $project_name]
     set selected_p [string equal $id $selected_entry_id]
     set action_links_list [list]
     set view_url "log?[export_vars { { entry_id $id } }]"

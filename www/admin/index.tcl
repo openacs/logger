@@ -25,7 +25,7 @@ db_multirow -extend {
     edit_url display_url permissions_url delete_url unmap_url project_lead_chunk
     make_active_url make_inactive_url
 } projects select_projects {} {
-    set description [string_truncate -len 50 $description]
+    set description [string_truncate -len 50 -- $description]
 
     set edit_url "project?[export_vars { project_id {formbutton\:formbuilder\:\:edit Edit} {form\:id project_form} {form\:mode display}}]"
     set display_url "project?[export_vars { project_id }]"
