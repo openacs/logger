@@ -5,7 +5,6 @@
 
   <fullquery name="logger::variable::new.insert_variable">
     <querytext>
-      begin
         select logger_variable__new (
                 :variable_id,
                 :name,
@@ -15,15 +14,12 @@
                 :creation_ip,
                 :package_id               
               );
-      end;
     </querytext>
   </fullquery>
 
   <fullquery name="logger::variable::delete.delete_variable">
     <querytext>
-        begin
           select logger_variable__del(:variable_id);
-        end;
     </querytext>
   </fullquery>
  

@@ -1,3 +1,5 @@
+<master>
+<property name="title">Logger Application</property>
 <p>
   Before anyone can start working with the Logger application an administrator needs to setup a project.
 </p>    

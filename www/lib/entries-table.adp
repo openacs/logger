@@ -47,8 +47,32 @@
     <!-- Row for the grand total -->
     <tr class="logger_listing_subheader">
       <td class="logger_listing_narrow" align="center">&nbsp;</td>
-      <td class="logger_listing_narrow" colspan="3"><b>Total</b></td>
-      <td class="logger_listing_narrow" align="right" nowrap><b>@value_total@</b></td>
+      <td class="logger_listing_narrow" colspan="3">
+        <if @variable.type@ eq "additive">
+          <b>Total</b>
+        </if>
+        <else>
+          <b>Average</b>
+        </else>
+      </td>
+      <td class="logger_listing_narrow" align="right" nowrap>
+        <if @variable.type@ eq "additive">
+          <if @projection_value@ not nil and @value_total@ gt @projection_value@>
+            <font color="red"><b>@value_total@</b></font>
+          </if>
+          <else>
+            <b>@value_total@</b>
+          </else>
+        </if>
+        <else>
+          <if @projection_value@ not nil and @value_average@ gt @projection_value@>
+            <font color="red"><b>@value_average@</b></font>
+          </if>
+          <else>
+            <b>@value_average@</b>
+          </else>
+        </else>
+      </td>
       <td class="logger_listing_narrow">&nbsp;</td>
       <td class="logger_listing_narrow" align="center">&nbsp;</td>
     </tr>
@@ -58,7 +82,7 @@
     <tr class="logger_listing_odd">
       <td class="logger_listing_narrow" align="center">&nbsp;</td>
       <td class="logger_listing_narrow" colspan="3"><b>Projection</b></td>
-      <td class="logger_listing_narrow" align="right" nowrap>@projection_value@</td>
+      <td class="logger_listing_narrow" align="right" nowrap><b>@projection_value@</b></td>
       <td class="logger_listing_narrow">&nbsp;</td>
       <td class="logger_listing_narrow" align="center">&nbsp;</td>
     </tr>

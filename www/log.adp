@@ -3,28 +3,43 @@
 <property name="context">@context@</property>
 <property name="focus">log_entry_form.value</property>
 
-<div class="logger_filter_bar" style="float: right; padding: 4px; style:">
-  <table border="0" cellspacing="0" cellpadding="2" width="150">
-    <tr>
-      <td colspan="2" class="logger_filter_header">
-        Add Entry
-      </td>
-    </tr>
-    <multiple name="variables">
-      <if @variables.selected_p@ true>
-        <tr class="logger_filter_selected">
-      </if>
-      <else>
-        <tr>
-      </else>
-        <td class="logger_filter">
-          <b>&raquo;</b>
-          <a href="@variables.url@">@variables.name@</a>
+<script language="javascript">
+   function project_change() {
+      document.forms['log_entry_form'].elements['__refreshing_p'].value = 1;
+      document.forms['log_entry_form'].elements['__refresh'].value = 'project';
+      document.forms['log_entry_form'].submit();
+   }
+   function variable_change() {
+      document.forms['log_entry_form'].elements['__refreshing_p'].value = 1;
+      document.forms['log_entry_form'].elements['__refresh'].value = 'variable';
+      document.forms['log_entry_form'].submit();
+   }
+</script>
+
+<if @variables:rowcount@ not nil>
+  <div class="logger_filter_bar" style="float: right; padding: 4px; style:">
+    <table border="0" cellspacing="0" cellpadding="2" width="150">
+      <tr>
+        <td colspan="2" class="logger_filter_header">
+          Add Entry
         </td>
-      </tr>        
-    </multiple>
-  </table>
-</div>
+      </tr>
+      <multiple name="variables">
+        <if @variables.selected_p@ true>
+          <tr class="logger_filter_selected">
+        </if>
+        <else>
+          <tr>
+        </else>
+          <td class="logger_filter">
+            <b>&raquo;</b>
+            <a href="@variables.url@">@variables.name@</a>
+          </td>
+        </tr>        
+      </multiple>
+    </table>
+  </div>
+</if>
 
 <blockquote>
   <formtemplate id="log_entry_form" style="standard-lars"></formtemplate>

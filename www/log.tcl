@@ -22,11 +22,7 @@ set package_id [ad_conn package_id]
 set current_user_id [ad_conn user_id]
 
 if { [exists_and_not_null entry_id] } {
-    set entry_exists_p [db_string entry_exists_p {
-        select count(*)
-        from logger_entries
-        where entry_id = :entry_id
-    }]                         
+    set entry_exists_p [db_string entry_exists_p {}]                         
 } else {
     set entry_exists_p 0
 }
@@ -86,7 +82,7 @@ if { $entry_exists_p } {
 } 
   
 # Get project_id if it's not provided
-if { ![exists_and_not_null project_id] } {
+if { [exists_and_not_null entry_id] && ![exists_and_not_null project_id] } {
     logger::entry::get -entry_id $entry_id -array entry
     set project_id $entry(project_id)
 }
@@ -149,15 +145,7 @@ ad_form -extend -name log_entry_form -form {
 #
 ###########
 
-ad_form -extend -name log_entry_form -select_query {
-    select project_id,
-           variable_id,
-           value,
-           to_char(time_stamp, 'YYYY MM DD') as time_stamp,
-           description
-    from logger_entries
-    where entry_id = :entry_id
-} -validate {
+ad_form -extend -name log_entry_form -select_query_name select_logger_entries -validate {
     {value 
         { [regexp {^([^.]+|[^.]*\.[0-9]{0,2})$} $value] }
         {The value may not contain more than two decimals}
@@ -182,8 +170,8 @@ ad_form -extend -name log_entry_form -select_query {
                               -time_stamp $time_stamp_ansi \
                               -description $description
 } -after_submit {
-
-    ad_returnredirect "[ad_conn url]?entry_id=$entry_id"
+    
+    ad_returnredirect "[ad_conn url]?[export_vars { project_id variable_id }]"
     ad_script_abort
 }
 
@@ -225,17 +213,7 @@ if { [info exists entry_id] } {
 #
 #####
 
-db_multirow -extend { url selected_p } variables select_variables {
-    select lv.variable_id as unique_id,
-           lv.name || ' (' || lv.unit || ')' as name
-    from logger_variables lv,
-         logger_projects lp,
-         logger_project_var_map lpvm
-    where lp.project_id = lpvm.project_id
-      and lv.variable_id = lpvm.variable_id
-      and lp.project_id = :project_id
-    group by lv.variable_id, lv.name, lv.unit
-} {
+db_multirow -extend { url selected_p } variables select_variables {} {
     set url "log?[export_vars -override { {variable_id $unique_id} } { project_id }]"
     set selected_p [string equal $variable_id $unique_id]
 }

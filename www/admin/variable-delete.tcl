@@ -14,11 +14,7 @@ set user_id [ad_conn user_id]
 permission::require_permission -object_id $variable_id -party_id $user_id -privilege admin
 
 # Check that there are no log entries for this variable
-set n_log_entries [db_string n_log_entries {
-    select count(*)
-    from logger_entries
-    where variable_id = :variable_id
-}]
+set n_log_entries [db_string n_log_entries {}]
 
 if { $n_log_entries > 0 } {
     ad_return_complaint "Variable is in use" "You cannot delete this variable as it is being used by log entries"

@@ -37,28 +37,7 @@ if { [exists_and_not_null end_date_ansi] } {
 
 set value_total "0"
 
-db_multirow -extend action_links entries select_entries "
-    select le.entry_id as id,
-           acs_permission.permission_p(le.entry_id, :user_id, 'delete') as delete_p,
-           le.time_stamp,
-           lv.name as variable_name,
-           le.value,
-           lv.unit,
-           le.description,
-           lp.name as project_name,
-           submitter.first_names || ' ' || submitter.last_name as user_name
-    from logger_entries le,
-         logger_variables lv,
-         logger_projects lp,
-         acs_objects ao,
-         cc_users submitter
-    where le.variable_id = lv.variable_id
-      and le.project_id = lp.project_id
-      and ao.object_id = le.entry_id
-      and ao.creation_user = submitter.user_id
-    [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
-    order by le.time_stamp desc, ao.creation_date desc
-" {
+db_multirow -extend action_links entries select_entries {} {
     set description_max_length 50
     if { [string length $description] > $description_max_length } {
         set description "[string range $description 0 [expr $description_max_length - 4]]..."

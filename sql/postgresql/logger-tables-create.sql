@@ -14,6 +14,7 @@ create table logger_projects (
   name                  varchar(1000),
   description           varchar(4000),
   active_p              boolean
+                        default true
                         constraint logger_projects_ap_nn
                         not null,
   project_lead          integer

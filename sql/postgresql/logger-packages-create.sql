@@ -31,13 +31,15 @@ declare
 
     v_project_id          integer;
 begin
-        v_project_id := acs_object__new(
-            p_project_id,
-            ''logger_project'',
-            p_package_id,
-            p_creation_ip,
-            p_creation_user
-        );
+       v_project_id := acs_object__new(
+           p_project_id,             -- object_id
+           ''logger_project'',           -- object_type
+           current_timestamp,      -- creation_date
+           p_creation_user,        -- creation_user
+           p_creation_ip,          -- creation_ip
+           p_package_id,           -- context_id
+           ''t''                   -- security_inherit_p
+       ); 
        
        insert into logger_projects (project_id, name, description, project_lead)
            values (v_project_id, p_name, p_description, p_project_lead);
@@ -85,6 +87,8 @@ begin
         -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
         delete from acs_permissions where object_id = p_project_id;
         perform acs_object__delete(p_project_id);
+
+        return 0;
 end; ' language 'plpgsql';
 
 create or replace function logger_project__name (integer) 
@@ -113,27 +117,29 @@ create or replace function logger_variable__new(integer,
                                                 varchar,
                                                 varchar,
                                                 integer,
-                                                integer,
+                                                varchar,
                                                 integer)
 returns integer as '
 declare
-        p_variable_id      integer alias for $1;
-        p_name             varchar alias for $2;
-        p_unit             varchar alias for $3;
-        p_type             varchar alias for $4;
-        p_creation_user    integer alias for $5;
-        p_creation_ip      integer alias for $6;
-        p_package_id       integer alias for $7;
+        p_variable_id      alias for $1;
+        p_name             alias for $2;
+        p_unit             alias for $3;
+        p_type             alias for $4;
+        p_creation_user    alias for $5;
+        p_creation_ip      alias for $6;
+        p_package_id       alias for $7;
 
         v_variable_id      integer;
 begin
-        v_variable_id := acs_object__new(
-            p_variable_id,
-            ''logger_variable'',
-            p_package_id,
-            p_creation_ip,
-            p_creation_user
-        );
+       v_variable_id := acs_object__new(
+           p_variable_id,             -- object_id
+           ''logger_variable'',           -- object_type
+           current_timestamp,      -- creation_date
+           p_creation_user,        -- creation_user
+           p_creation_ip,          -- creation_ip
+           p_package_id,           -- context_id
+           ''t''                   -- security_inherit_p
+       ); 
 
        insert into logger_variables (variable_id, name, unit, type, package_id)
            values (v_variable_id, p_name, p_unit, p_type, p_package_id);
@@ -150,6 +156,8 @@ begin
         -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
         delete from acs_permissions where object_id = p_variable_id;
         perform acs_object__delete(p_variable_id);
+
+        return 0;
 end; ' language 'plpgsql';
 
 create or replace function logger_variable__name (integer) 
@@ -159,7 +167,7 @@ declare
 
       v_name          varchar;  
 begin
-      selec name into v_name
+      select description into v_name
       from logger_entries
       where variable_id = p_variable_id;
 
@@ -193,13 +201,16 @@ declare
 
         v_entry_id            integer;
 begin
+
     v_entry_id := acs_object__new(
-        p_entry_id,
-        ''logger_entry'',
-        p_project_id,
-        p_creation_ip,
-        p_creation_user
-    );
+        p_entry_id,             -- object_id
+        ''logger_entry'',       -- object_type
+        current_timestamp,      -- creation_date
+        p_creation_user,        -- creation_user
+        p_creation_ip,          -- creation_ip
+        p_project_id,           -- context_id
+        ''t''                   -- security_inherit_p
+    ); 
     
     insert into logger_entries (entry_id, 
                                 project_id, 
@@ -226,6 +237,8 @@ begin
         -- acs_object__delete should delete permissions for us but this change is not on cvs head yet
         delete from acs_permissions where object_id = p_entry_id;
         perform acs_object__delete(p_entry_id);
+
+        return 0;
 end; ' language 'plpgsql';
 
 create or replace function logger_entry__name (integer) 

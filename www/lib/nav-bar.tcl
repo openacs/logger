@@ -11,7 +11,7 @@ set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 set link_list {}
 
 # Log entries page
-set index_urls [list "${package_url}" "${package_url}index"]
+set index_urls [list "${package_url}" "${package_url}."]
 lappend link_list $index_urls
 lappend link_list {}
 lappend link_list "List"
@@ -45,7 +45,11 @@ foreach {url_list param_list label} $link_list {
         }
     }
 
-    multirow append links $label "$url?[export_vars $param_list]" $selected_p
+    if { ![empty_string_p $param_list] } {
+        append url "?[export_vars $param_list]"
+    }
+
+    multirow append links $label $url $selected_p
 }
 
 ad_return_template

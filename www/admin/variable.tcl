@@ -33,25 +33,21 @@ ad_form -name variable_form -cancel_url index -mode $ad_form_mode -actions $acti
     variable_id:key(acs_object_id_seq)
 
     {name:text
-      {html {size 50}}
+        {html {size 50}}
+        {label "Name"}
     }
 
     {unit:text
-      {html {size 50}}
+        {html {size 50}}
+        {label "Unit"}
     }
 
     {type:text(radio)
         {options {{Additive additive} {Non-Additive non-additive}}}
+        {label "Type"}
     }
 
-} -select_query {
-  select name,
-         unit,
-         type
-  from logger_variables
-  where variable_id = :variable_id    
-
-} -validate {
+} -select_query_name select_variable -validate {
     {
         name
         { ![empty_string_p [string trim $name]] }

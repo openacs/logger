@@ -55,19 +55,7 @@ if { [empty_string_p $selected_variable_id] } {
     } else {
         set project_clause ""
     }
-    set selected_variable_id [db_string last_logged_variable_id "
-        select variable_id
-        from logger_entries le,
-             acs_objects ao
-        where ao.creation_date = (select max(ao.creation_date)
-                               from logger_entries le,
-                                    acs_objects ao
-                               where ao.object_id = le.entry_id
-                               [ad_decode $project_clause "" "" "and $project_clause"]
-                              )
-          and ao.object_id = le.entry_id
-        [ad_decode $project_clause "" "" "and $project_clause"]
-    " -default ""]
+    set selected_variable_id [db_string last_logged_variable_id {} -default ""]
 
     if { [empty_string_p $selected_variable_id] } {
         # The user has not logger hours yet
@@ -112,7 +100,7 @@ if { ![empty_string_p $selected_user_id] } {
 
 ###########
 #
-# Date Filter
+# Custom date filter form
 #
 ###########
 
@@ -167,39 +155,37 @@ if { [exists_and_not_null selected_project_id] } {
     set all_projects_url {}
 }
 
-set no_project_p 1
+set projects_count 0
+set single_project_id 0
 
-db_multirow -extend { filter_name url entry_add_url selected_p clear_url } filters select_projects {
-    select lp.project_id as unique_id,
-           lp.name
-    from logger_projects lp,
-         logger_project_pkg_map lppm
-    where lp.project_id = lppm.project_id
-      and lppm.package_id = :package_id
-    order by lp.name
-} {
+db_multirow -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_projects {} {
     set filter_name "Projects"
 
     set url ".?[export_vars -override { { selected_project_id $unique_id } } $filter_var_list]"
     set entry_add_url "log?[export_vars { { project_id $unique_id } {variable_id $selected_variable_id}}]"
     set selected_p [string equal $selected_project_id $unique_id]
-
-    set project_name_max_length 30
-    if { [string length $name] > $project_name_max_length } {
-        set name "[string range $name 0 [expr $project_name_max_length - 4]]..."
-    }
-
+    set name [string_truncate -len 25 $name]
     set clear_url $all_projects_url
-
-    set no_project_p 0
+    incr projects_count
+    set single_project_id $unique_id
 }
 
-if { $no_project_p } {
+if { $projects_count == 0 } {
     ad_return_template "no-projects"
     return
 }
 
+# Only one project: Make it selected by default
 
+if { $projects_count == 1 } {
+    set selected_project_id $single_project_id
+    
+    # The multirow has only one row, we want to set it to selected, not clearable
+    multirow foreach filters {
+        set selected_p 1
+        set clear_url {}
+    }
+}
 
 ###########
 #
@@ -219,17 +205,7 @@ if { ![empty_string_p $selected_project_id] } {
                  )"
 }
 
-db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_variables "
-    select lv.variable_id as unique_id,
-           lv.name || ' (' || lv.unit || ')' as name
-    from logger_variables lv,
-         logger_projects lp,
-         logger_project_var_map lpvm
-    where lp.project_id = lpvm.project_id
-      and lv.variable_id = lpvm.variable_id
-    [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
-    group by lv.variable_id, lv.name, lv.unit
-" {
+db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_variables {} {
     set filter_name "Variables"
     set url ".?[export_vars -override { {selected_variable_id $unique_id} } $filter_var_list]"
     if { ![empty_string_p $selected_project_id] } {
@@ -270,19 +246,7 @@ if { ![empty_string_p $selected_project_id] } {
                  )"
 } 
 
-db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_users "
-    select submitter.user_id as unique_id,
-           submitter.first_names || ' ' || submitter.last_name as name
-    from   cc_users submitter,
-           logger_entries le,
-           acs_objects ao
-    where  ao.object_id = le.entry_id
-    and    submitter.user_id = ao.creation_user
-    and    ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
-            or submitter.user_id = :current_user_id
-           )
-    group  by submitter.user_id, submitter.first_names, submitter.last_name
-" {
+db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_users {} {
     set filter_name "Users"
     set url ".?[export_vars -override { {selected_user_id $unique_id} } $filter_var_list]"
     set entry_add_url {}
@@ -292,21 +256,28 @@ db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url
 
 ###########
 #
-# Select projections
+# Projections filter
 #
 ###########
 
 # Only makes sense to show projections for a selected project and variable
 if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variable_id] } {
-    db_multirow -extend { url } projections select_projections {
-        select lpe.projection_id,
-               lpe.name
-        from logger_projections lpe
-        where lpe.project_id = :selected_project_id
-          and lpe.variable_id = :selected_variable_id
-    } {
-        set url ".?[export_vars {{selected_projection_id $projection_id} {selected_user_id $selected_user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"        
+
+    if { [exists_and_not_null selected_projection_id] } {
+        set clear_projections_url ".?[export_vars -exclude { selected_projection_id } $filter_var_list]"
+    } else {
+        set clear_projections_url {}
     }
+
+    db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_projections {} {
+        set filter_name "Projections"
+        set name [string_truncate -len 25 $name]
+        set url ".?[export_vars -override { {selected_projection_id $unique_id} { selected_start_date $start_date } { selected_end_date $end_date } } $filter_var_list]"
+        set entry_add_url {}
+        set selected_p [string equal $selected_projection_id $unique_id]
+        set clear_url $clear_projections_url
+    }
+
 }
 
 #####
@@ -325,17 +296,20 @@ set custom_p [expr ![empty_string_p $date_clear_url]]
 
 set filter_name "Date"
 
+set weekdayno [clock format [clock seconds] -format %w]
+set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
+
 foreach type { this_week last_week past_7 this_month last_month past_30 } {
     switch $type {
         this_week {
             set name "This week"
-            set new_start_date [clock format [clock scan "-[clock format [clock seconds] -format %w] days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "[expr 6-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
+            set new_start_date [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
         }
         last_week {
             set name "Last week"
-            set new_start_date [clock format [clock scan "[expr -7-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
-            set new_end_date [clock format [clock scan "[expr -1-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]
+            set new_start_date [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
         }
         past_7 {
             set name "Past 7 days"
@@ -344,12 +318,12 @@ foreach type { this_week last_week past_7 this_month last_month past_30 } {
         }
         this_month {
             set name "This month"
-            set new_start_date [clock format [clock scan "[expr 1-[clock format [clock seconds] -format %d]] days"] -format "%Y-%m-%d"]
+            set new_start_date [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
             set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
         } 
         last_month {
             set name "Last month"
-            set new_start_date [clock format [clock scan "-1 month [expr 1-[clock format [clock seconds] -format %d]] days"] -format "%Y-%m-%d"]
+            set new_start_date [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
             set new_end_date [clock format [clock scan "1 month -1 day" -base [clock scan $new_start_date]] -format  "%Y-%m-%d"]
         } 
         past_30 {
@@ -367,12 +341,12 @@ foreach type { this_week last_week past_7 this_month last_month past_30 } {
     set custom_p [expr $custom_p && !$selected_p]
 
     # unique_id name filter_name url entry_add_url selected_p clear_url
-    multirow append filters "" $name $filter_name $url "" $selected_p $date_clear_url
+    multirow append filters "" $name $filter_name $url "" $selected_p $date_clear_url {} {}
 }
 
 # Custom
 if { $custom_p } {
-    multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url
+    multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url {} {}
 }
 
 

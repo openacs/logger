@@ -19,6 +19,21 @@ ad_proc -public logger::apm::after_install {} {
     logger::variable::new -name "Expense" -unit "Euro" -pre_installed_p 1
 }
 
+ad_proc -public logger::apm::before_uninstall {} {
+    This proc needs to tear down whatever the logger::apm::after_install proc
+    sets up.
+
+    @author Peter Marklund
+} {
+    # Let's delete all variables as this is guaranteed to cover the pre-installed ones
+    db_foreach all_variables {
+        select variable_id
+        from logger_variables
+    } {
+        logger::variable::delete -variable_id $variable_id
+    }
+}
+
 ad_proc -public logger::apm::before_uninstantiate {
     {-package_id:required}
 } {

@@ -26,14 +26,9 @@ if { [exists_and_not_null selected_project_id] } {
                 )"
 }
 
-db_1row select_variable_info {
-    select name,
-           unit
-    from   logger_variables
-    where  variable_id = :selected_variable_id
-} -column_array variable
-
 if { [exists_and_not_null selected_variable_id] } {
+    db_1row select_variable_info {} -column_array variable
+
     lappend where_clauses "le.variable_id = :selected_variable_id"
 }
 
@@ -53,40 +48,13 @@ if { ![exists_and_not_null selected_entry_id] } {
     set selected_entry_id {}
 }
 
-set value_total "0"
+set value_total 0
+set value_count 0
 
-db_multirow -extend { edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries "
-    select le.entry_id as id,
-           acs_permission.permission_p(le.entry_id, :user_id, 'delete') as delete_p,
-           le.time_stamp,
-           to_char(le.time_stamp, 'fmMMfm-fmDDfm-YYYY') as time_stamp_pretty,
-           le.value,
-           le.description,
-           lp.name as project_name,
-           submitter.user_id,
-           submitter.first_names || ' ' || submitter.last_name as user_name
-    from logger_entries le,
-         logger_projects lp,
-         acs_objects ao,
-         cc_users submitter
-    where le.project_id = lp.project_id
-      and ao.object_id = le.entry_id
-      and ao.creation_user = submitter.user_id
-    [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
-    order by le.time_stamp desc, ao.creation_date desc
-" {
-    set description_max_length 50
-    if { [string length $description] > $description_max_length } {
-        set description "[string range $description 0 [expr $description_max_length - 4]]..."
-    }
-
-    set project_name_max_length 20
-    if { [string length $project_name] > $project_name_max_length } {
-        set project_name "[string range $project_name 0 [expr $project_name_max_length - 4]]..."
-    }
-
+db_multirow -extend { edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
+    set description [string_truncate -len 50 $description]
+    set project_name [string_truncate -len 20 $project_name]
     set selected_p [string equal $id $selected_entry_id]
-
     set action_links_list [list]
     set edit_url "log?[export_vars { { entry_id $id } }]"
     if { $delete_p } {
@@ -99,4 +67,11 @@ db_multirow -extend { edit_url delete_url delete_onclick user_chunk selected_p }
     set user_chunk [ad_present_user $user_id $user_name]
 
     set value_total [expr $value_total + $value]
+    incr value_count
 }
+
+if { $value_count > 0 } {
+    set value_average [expr round(100 * $value_total / $value_count) / 100.0] }  {
+    set value_average "n/a"
+}
+

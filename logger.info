@@ -7,20 +7,18 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="0.2d" url="http://openacs.org/repository/download/apm/logger-0.2d.apm">
-        <owner url="mailto:peter@collaboraid.biz">Peter Marklund</owner>
+    <version name="1.0" url="http://openacs.org/repository/download/apm/logger-1.0.apm">
         <owner url="mailto:lars@collaboraid.biz">Lars Pind</owner>
+        <owner url="mailto:peter@collaboraid.biz">Peter Marklund</owner>
         <summary>Supports time and expenses reporting. Full specification is here: http://www.collaboraid.biz/developer/logger-spec</summary>
-        <release-date>2003-04-16</release-date>
+        <release-date>2003-05-08</release-date>
         <vendor url="http://collaboraid.biz">Collaboraid</vendor>
 
-        <provides url="logger" version="0.2d"/>
+        <provides url="logger" version="1.0"/>
 
-        <files>
-            <!-- No files -->
-        </files>
         <callbacks>
             <callback type="after-install"  proc="logger::apm::after_install"/>
+            <callback type="before-uninstall"  proc="logger::apm::before_uninstall"/>
             <callback type="before-uninstantiate"  proc="logger::apm::before_uninstantiate"/>
         </callbacks>
         <parameters>

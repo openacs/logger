@@ -87,21 +87,7 @@ ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $ac
     {project_id:integer(hidden)
         {value $project_id}
     }
-} -select_query {
-  select lpe.name,
-         lpe.description,
-         lpe.project_id,
-         lpe.variable_id,
-         lpe.value,
-         to_char(lpe.start_time, 'YYYY MM DD') as start_day,
-         to_char(lpe.end_time, 'YYYY MM DD') as end_day,
-         lpo.name as project
-  from logger_projections lpe,
-       logger_projects lpo
-  where lpe.projection_id = :projection_id
-    and lpe.project_id = lpo.project_id
-
-} -validate {
+} -select_query_name select_projections -validate {
     {
         name
         { ![empty_string_p [string trim $name]] }

@@ -29,11 +29,7 @@ if { [exists_and_not_null project_id] } {
     # Initial request in display or edit mode or a submit of the form
     set page_title "One Project"
     set ad_form_mode display
-    set project_exists_p [db_string project_exists_p {
-        select count(*)
-        from logger_projects
-        where project_id = :project_id
-    }]                         
+    set project_exists_p [db_string project_exists_p {}]                         
 } else {
     # Initial request in add mode
     set page_title "Add a Project"
@@ -91,7 +87,6 @@ ad_form -name project_form \
 } -after_submit {
       
     ad_returnredirect "[ad_conn url]?project_id=$project_id"
-
     ad_script_abort
 }
 
@@ -104,35 +99,9 @@ if { $project_exists_p } {
     #
     ###########
 
-    db_multirow variables variables_in_project {
-        select lv.variable_id,
-               lv.name,
-               lpvm.primary_p
-          from logger_project_var_map lpvm,
-               logger_variables lv
-          where lpvm.variable_id = lv.variable_id
-            and lpvm.project_id = :project_id
-    } 
+    db_multirow variables variables_in_project {} 
 
-    set n_can_be_mapped [db_string n_can_be_mapped {
-        select count(*)
-        from logger_variables lv
-        where (exists (select 1
-                    from logger_project_var_map lpvm,
-                         logger_project_pkg_map lppm
-                    where lv.variable_id = lpvm.variable_id
-                      and lpvm.project_id = lppm.project_id
-                      and lppm.package_id = :package_id
-                   )
-         or lv.package_id = :package_id
-         or lv.package_id is null)
-        and not exists (select 1
-                          from logger_project_var_map lpvm
-                          where lpvm.project_id = :project_id
-                            and lpvm.variable_id = lv.variable_id
-                          )
-        and acs_permission.permission_p(lv.variable_id, :user_id, 'read') = 't'
-    }]
+    set n_can_be_mapped [db_string n_can_be_mapped {}]
 
     ###########
     #
@@ -140,22 +109,5 @@ if { $project_exists_p } {
     #
     ###########
 
-    db_multirow projections select_projections {
-        select lpe.projection_id,
-               lpe.name,
-               lpe.description,
-               lpe.value,
-               lpo.name as project_name,
-               lv.name as variable_name,
-               to_char(lpe.start_time, 'YYYY-MM-DD') start_day,
-               to_char(lpe.end_time, 'YYYY-MM-DD') end_day,
-               acs_permission.permission_p(lpo.project_id, :user_id, 'admin') as admin_p
-        from logger_projections lpe,
-             logger_projects lpo,
-             logger_variables lv
-        where lpe.project_id = :project_id
-          and lpe.project_id = lpo.project_id
-          and lpe.variable_id = lv.variable_id
-    }   
-
+    db_multirow projections select_projections {}   
 }

@@ -24,7 +24,7 @@ drop function logger_variable__new(integer,
                                    varchar,
                                    varchar,
                                    integer,
-                                   integer,
+                                   varchar,
                                    integer);
 drop function logger_variable__del (integer);
 drop function logger_variable__name (integer);

@@ -21,9 +21,30 @@ set permissions_uri "/permissions/one"
 #
 ###########
 
-db_multirow -extend { permissions_url } projects select_projects {} {
+db_multirow -extend { edit_url display_url permissions_url delete_url unmap_url project_lead_chunk } projects select_projects {} {
     set description [string_truncate -len 50 $description]
+
+    set edit_url "project?[export_vars { project_id {formbutton\:formbuilder\:\:edit Edit} {form\:id project_form} {form\:mode display}}]"
+    set display_url "project?[export_vars { project_id }]"
+    set unmap_url "project-instance-map?[export_vars { project_id {unmap "t"} }]"
     set permissions_url "${permissions_uri}?[export_vars {{object_id $project_id} application_url}]"
+    set delete_url "project-delete?[export_vars { project_id }]"
+    set project_lead_chunk [ad_present_user $project_lead_id $project_lead_name]
+}
+
+#####
+#
+# Mappable projects
+#
+#####
+
+if { $user_id != 0 } {
+    db_multirow -extend { map_url } mappable_projects select_mappable_projects {} {
+        set map_url "project-instance-map?[export_vars { project_id }]"
+    }
+} else {
+    # Create empty multirow
+    multirow create mappable_projects project_id name
 }
 
 ###########
@@ -32,23 +53,9 @@ db_multirow -extend { permissions_url } projects select_projects {} {
 #
 ###########
 
-db_multirow -extend { permissions_url } variables select_variables {
-      select lv.variable_id,
-             lv.name,
-             lv.unit,
-             lv.type,
-             acs_permission.permission_p(lv.variable_id, :user_id, 'admin') as admin_p
-      from logger_variables lv
-      where (exists (select 1
-                    from logger_project_var_map lpvm,
-                         logger_project_pkg_map lppm
-                    where lv.variable_id = lpvm.variable_id
-                      and lpvm.project_id = lppm.project_id
-                      and lppm.package_id = :package_id
-                   )
-         or lv.package_id = :package_id
-         or lv.package_id is null)
-} {
+db_multirow -extend { edit_url delete_url permissions_url } variables select_variables {} {
+    set edit_url "variable?[export_vars { variable_id {formbutton\:formbuilder\:\:edit Edit} {form\:id variable_form} {form\:mode display}}]"
+    set delete_url "variable-delete?[export_vars { variable_id }]"
     set permissions_url "${permissions_uri}?[export_vars {{object_id $variable_id} application_url}]"
 }
 
