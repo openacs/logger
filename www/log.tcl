@@ -202,3 +202,9 @@ if { $entry_exists_p && [string equal $current_user_id $entry_array(creation_use
 }
 
 set show_log_history_p [expr $entry_edited_by_owner_p || ! $entry_exists_p]
+
+set log_history_n_days 31
+set seconds_per_day [expr 60*60*24]
+set start_date_seconds [expr [clock seconds] - $log_history_n_days * $seconds_per_day]
+set start_date_ansi [clock format $start_date_seconds \
+                        -format "%Y-%m-%d"]

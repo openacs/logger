@@ -9,8 +9,6 @@ ad_page_contract {
     {selected_variable_id:integer ""}
     {selected_projection_id:integer ""}
     {selected_user_id:integer ""}
-    {start_date:array {}}
-    {end_date:array {}}
 }
 
 set package_id [ad_conn package_id]
@@ -102,92 +100,80 @@ if { ![empty_string_p $selected_user_id] } {
 
 ###########
 #
-# Initialize dates
-#
-###########
-
-if { [array size start_date] == 0 } {
-    # Form was not submitted
-
-    if { ![empty_string_p $selected_projection_id] } {
-        # Projection selected - use the date range of that projection
-
-        set start_date_seconds [clock scan $projection_array(start_time)]
-        set end_date_seconds [clock scan $projection_array(end_time)]
-    } else {
-        # Use default date range
-
-        # Default end date is now (today)
-        set end_date_seconds [clock seconds]
-
-        # Default start date is N days back
-        set number_of_days_back 31
-        set seconds_per_day [expr 60*60*24]
-        set start_date_seconds [expr $end_date_seconds - 31 * $seconds_per_day]
-    }
-
-    # Initialize the start and end date arrays
-    set end_date(year) [clock format $end_date_seconds -format "%Y"]
-    set end_date(month) [clock format $end_date_seconds -format "%m"]
-    set end_date(day) [clock format $end_date_seconds -format "%d"]
-
-    set start_date(year) [clock format $start_date_seconds -format "%Y"]
-    set start_date(month) [clock format $start_date_seconds -format "%m"]
-    set start_date(day) [clock format $start_date_seconds -format "%d"]
-}
-
-# Get the ANSI representations of the dates
-set start_date_ansi "$start_date(year)-$start_date(month)-$start_date(day)"
-set end_date_ansi "$end_date(year)-$end_date(month)-$end_date(day)"
-
-###########
-#
 # Date Filter
 #
 ###########
 
 # Create the form
-template::form create time_filter -method GET
-# Export the other filter variables
-template::element create time_filter selected_project_id \
-    -widget hidden \
-    -value $selected_project_id
-template::element create time_filter selected_variable_id \
-    -widget hidden \
-    -value $selected_variable_id
-# Reset projection choice if the dates are changed
-template::element create time_filter selected_projection_id \
-    -widget hidden \
-    -value ""
-template::element create time_filter selected_user_id \
-    -widget hidden \
-    -value $selected_user_id
-template::element create time_filter start_date \
-    -label "Start day:" \
-    -widget date \
-    -datatype date
-template::element create time_filter end_date \
-    -label "End day:" \
-    -widget date \
-    -datatype date
+set export_var_list {selected_project_id selected_variable_id selected_projection_id selected_user_id}
+ad_form -name time_filter -export $export_var_list -method GET -form {
+    
+    {start_date:date(date)
+        {label "Start day:"}
+    }
 
-# Set the values of the start and end date in the form
-element set_properties time_filter start_date \
-    -value [eval template::util::date::create $start_date(year) $start_date(month) $start_date(day)]
-element set_properties time_filter end_date \
-    -value [eval template::util::date::create $end_date(year) $end_date(month) $end_date(day)]
+    {end_date:date(date)
+        {label "Start day:"}
+    }
+
+} -validate {
+    {start_date
+        { [template::util::date::compare $start_date $end_date] <= 0 }
+        "Start day must not be after end day"
+    }
+} -on_submit {
+   # error "on_submit"
+}
+
+###########
+#
+# Initialize dates
+#
+###########
+
+if { [template::form is_request time_filter] } {
+     # Form was not submitted
+
+    if { ![empty_string_p $selected_projection_id] } {
+         # Projection selected - use the date range of that projection
+
+         set start_date_seconds [clock scan $projection_array(start_time)]
+         set end_date_seconds [clock scan $projection_array(end_time)]
+     } else {
+         # Use default date range
+
+         # Default end date is now (today)
+         set end_date_seconds [clock seconds]
+
+         # Default start date is N days back
+         set number_of_days_back 31
+         set seconds_per_day [expr 60*60*24]
+         set start_date_seconds [expr $end_date_seconds - 31 * $seconds_per_day]
+     }
+
+    set start_date_ansi [clock format $start_date_seconds -format "%Y-%m-%d"]
+    set end_date_ansi [clock format $end_date_seconds -format "%Y-%m-%d"]
+
+    # Set the values of the start and end date in the form
+    regsub -all -- {-} $start_date_ansi { } start_date_list
+    regsub -all -- {-} $end_date_ansi { } end_date_list
+    element set_properties time_filter start_date \
+        -value [eval template::util::date::create $start_date_list]
+    element set_properties time_filter end_date \
+        -value [eval template::util::date::create $end_date_list]
+} {
+    # Form was submitted
+    set start_date_value [template::element get_value time_filter start_date]
+    set end_date_value [template::element get_value time_filter end_date]
+    set start_date_ansi "[lindex $start_date_value 0]-[lindex $start_date_value 1]-[lindex $start_date_value 2]"
+    set end_date_ansi "[lindex $end_date_value 0]-[lindex $end_date_value 1]-[lindex $end_date_value 2]"
+}
 
 ###########
 #
 # Select log entries
 #
 ###########
-
-# We let start date be beginning of day but end date be end of day so that if
-# both are the same day you get the entries during that day
-set end_date_seconds [clock scan "$end_date(year)-$end_date(month)-$end_date(day)"]
-set end_date_plus_one_seconds [expr $end_date_seconds + 60*60*24]
-set end_date_plus_one_ansi [clock format $end_date_plus_one_seconds -format "%Y-%m-%d"]
 
 # template lib/entries-table is included - see adp
 

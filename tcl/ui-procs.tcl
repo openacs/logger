@@ -51,7 +51,6 @@ ad_proc -public logger::ui::navbar_link_selected_p {
 
         set actual_param_value [ns_set iget [rp_getform] $param_name]
 
-        ns_log Notice "pm debug param_name $param_name param_value $param_value actual_param_value $actual_param_value"
         if { ![string equal $param_value $actual_param_value] } {
             set params_match_p 0
             break
@@ -65,8 +64,6 @@ ad_proc -public logger::ui::navbar_link_selected_p {
     }
 
     set selected_p [expr $url_matches_p && $params_match_p]
-
-    ns_log Notice "pm debug url_no_slash $url_no_slash page_url $page_url selected_p $selected_p"
 
     return $selected_p
 }

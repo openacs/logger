@@ -207,7 +207,7 @@
                                        projection_value="@selected_projection_value@" 
                                        selected_user_id="@selected_user_id@" 
                                        start_date_ansi="@start_date_ansi@" 
-                                       end_date_ansi="@end_date_plus_one_ansi@" 
+                                       end_date_ansi="@end_date_ansi@" 
                                        selected_variable_unit="@selected_variable_unit@"/>
 
       <!-- End log entries body -->
