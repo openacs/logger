@@ -1,6 +1,6 @@
 <master src="lib/master">
-<property name="title">@page_title@</property>
-<property name="context">@context@</property>
+<property name="title">@page_title;noquote@</property>
+<property name="context">@context;noquote@</property>
 <property name="focus">log_entry_form.value</property>
 
 <script language="javascript">
@@ -56,9 +56,9 @@
   <h3 class="logger" style="clear: left;">Log history for the past @log_history_n_days@ days</h3>
 
   <include src="lib/entries-table" 
-        selected_user_id="@current_user_id@" 
-        selected_project_id="@project_id@" 
-        selected_variable_id="@variable_id@" 
-        start_date_ansi="@start_date_ansi@"
-        selected_entry_id="@entry_id_or_blank@" />
+        selected_user_id="@current_user_id;noquote@" 
+        selected_project_id="@project_id;noquote@" 
+        selected_variable_id="@variable_id;noquote@" 
+        start_date_ansi="@start_date_ansi;noquote@"
+        selected_entry_id="@entry_id_or_blank;noquote@" />
 </if>

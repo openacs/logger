@@ -64,12 +64,12 @@
 
     <td class="logger_body" valign="top">
 
-      <include src="lib/entries-table" selected_project_id="@selected_project_id@" 
-                                       selected_variable_id="@selected_variable_id@"
-                                       projection_value="@selected_projection_value@" 
-                                       selected_user_id="@selected_user_id@" 
-                                       start_date_ansi="@selected_start_date@" 
-                                       end_date_ansi="@selected_end_date@"/>
+      <include src="lib/entries-table" selected_project_id="@selected_project_id;noquote@" 
+                                       selected_variable_id="@selected_variable_id;noquote@"
+                                       projection_value="@selected_projection_value;noquote@" 
+                                       selected_user_id="@selected_user_id;noquote@" 
+                                       start_date_ansi="@selected_start_date;noquote@" 
+                                       end_date_ansi="@selected_end_date;noquote@"/>
 
       <!-- End log entries body -->
     </td>
