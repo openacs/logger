@@ -248,17 +248,30 @@ if {[exists_and_not_null pm_task_id]} {
         }
     } 
 
-    set display_hours [pm::task::estimated_hours_work \
-                           -estimated_hours_work "$estimated_hours_work" \
-                           -estimated_hours_work_min "$estimated_hours_work_min" \
-                           -estimated_hours_work_max "$estimated_hours_work_max" \
+    set display_hours [pm::task::hours_remaining \
+                           -hours_work $estimated_hours_work \
+                           -hours_work_min $estimated_hours_work_min \
+                           -hours_work_max $estimated_hours_work_max \
+                           -percent_complete $percent_complete \
+                      ]
+
+    set total_hours_work [pm::task::estimated_hours_work \
+                           -hours_work $estimated_hours_work \
+                           -hours_work_min $estimated_hours_work_min \
+                           -hours_work_max $estimated_hours_work_max \
                       ]
 
     ad_form -extend -name log_entry_form -form {
         
-        {estimated_hours_work:text(inform)
-            {label "Estimated work"}
+        {remaining_work:text(inform)
+            {label "Remaining work"}
             {value $display_hours}
+            {after_html "hours"}
+        }
+
+        {total_hours_work:text(inform)
+            {label "Total work"}
+            {value $total_hours_work}
             {after_html "hours"}
         }
     } 
@@ -452,12 +465,21 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         template::element set_value log_entry_form $element [set $element]
     }
 
-    set display_hours [pm::task::estimated_hours_work \
-                           -estimated_hours_work "$estimated_hours_work" \
-                           -estimated_hours_work_min "$estimated_hours_work_min" \
-                           -estimated_hours_work_max "$estimated_hours_work_max"]
+    set display_hours [pm::task::hours_remaining \
+                           -hours_work $estimated_hours_work \
+                           -hours_work_min $estimated_hours_work_min \
+                           -hours_work_max $estimated_hours_work_max \
+                           -percent_complete $percent_complete \
+                          ]
 
-    template::element set_value log_entry_form estimated_hours_work $display_hours
+    set total_hours_work [pm::task::estimated_hours_work \
+                           -hours_work $estimated_hours_work \
+                           -hours_work_min $estimated_hours_work_min \
+                           -hours_work_max $estimated_hours_work_max \
+                      ]
+
+    template::element set_value log_entry_form remaining_work $display_hours
+    template::element set_value log_entry_form total_hours_work $total_hours_work
 
 }
 
