@@ -19,11 +19,14 @@
 	           submitter.first_names || ' ' || submitter.last_name as user_name
 	    from   logger_entries le,
 	           logger_projects lp,
+    	           logger_project_pkg_map lppm,
 	           acs_objects ao,
 	           cc_users submitter
 	    where  le.project_id = lp.project_id
 	    and    ao.object_id = le.entry_id 
 	    and    ao.creation_user = submitter.user_id
+            and    lp.project_id = lppm.project_id	
+            and    lppm.package_id = :package_id
             [list::filter_where_clauses -and -name "entries"]
 	    [list::orderby_clause -orderby -name "entries"]
     </querytext>
