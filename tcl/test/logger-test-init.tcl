@@ -50,9 +50,9 @@ aa_register_case logger_create_package {
         
 
         # Create a package
-        # Using the old depreceated proc here because apm_package_instance_new have different
-        # arg lists on cvs head and 4.6 branch
-        set package_id [apm_package_create_instance $package_name [ad_conn package_id] logger]
+        set package_id [apm_package_instance_new \
+                            -package_key logger \
+                            -instance_name $package_name]
 
         # Create a project in that package
         logger::util::set_vars_from_ad_conn {creation_user creation_ip}        
