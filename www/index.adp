@@ -69,7 +69,8 @@
                                        projection_value="@selected_projection_value@" 
                                        selected_user_id="@selected_user_id@" 
                                        start_date_ansi="@selected_start_date@" 
-                                       end_date_ansi="@selected_end_date@"/>
+                                       end_date_ansi="@selected_end_date@"
+                                       group_by="@selected_group_by@" />
 
       <!-- End log entries body -->
     </td>

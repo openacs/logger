@@ -11,6 +11,15 @@ ad_page_contract {
     {selected_user_id:integer ""}
     {selected_start_date ""}
     {selected_end_date ""}
+    {selected_group_by ""}
+}
+
+if { [empty_string_p [ad_conn query]] } {
+    set weekdayno [clock format [clock seconds] -format %w]
+    set new_start_date [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
+    set new_end_date [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
+    ad_returnredirect ".?[export_vars { { selected_start_date $new_start_date } { selected_end_date $new_end_date } { selected_group_by "time_stamp" } }]"
+    ad_script_abort
 }
 
 set package_id [ad_conn package_id]
@@ -25,6 +34,7 @@ set filter_var_list {
     selected_user_id
     selected_start_date
     selected_end_date
+    selected_group_by
 }
 
 
@@ -137,7 +147,7 @@ ad_form -name time_filter -export $export_var_list -method GET -form {
         }
     }
     # Redirect so we get the dates in pretty mode
-    ad_returnredirect ".?[export_vars $filter_var_list]"
+    ad_returnredirect ".?[export_vars -no_empty $filter_var_list]"
     ad_script_abort
 }
 
@@ -151,7 +161,7 @@ ad_form -name time_filter -export $export_var_list -method GET -form {
 ###########
 
 if { [exists_and_not_null selected_project_id] } {
-    set all_projects_url ".?[export_vars -exclude { selected_project_id } $filter_var_list]"
+    set all_projects_url ".?[export_vars -no_empty -exclude { selected_project_id } $filter_var_list]"
 } else {
     set all_projects_url {}
 }
@@ -162,8 +172,8 @@ set single_project_id 0
 db_multirow -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_projects {} {
     set filter_name "Projects"
 
-    set url ".?[export_vars -override { { selected_project_id $unique_id } } $filter_var_list]"
-    set entry_add_url "log?[export_vars { { project_id $unique_id } {variable_id $selected_variable_id}}]"
+    set url ".?[export_vars -no_empty -override { { selected_project_id $unique_id } } $filter_var_list]"
+    set entry_add_url "log?[export_vars -no_empty { { project_id $unique_id } {variable_id $selected_variable_id}}]"
     set selected_p [string equal $selected_project_id $unique_id]
     set name [string_truncate -len 25 $name]
     set clear_url $all_projects_url
@@ -208,10 +218,10 @@ if { ![empty_string_p $selected_project_id] } {
 
 db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_variables {} {
     set filter_name "Variables"
-    set url ".?[export_vars -override { {selected_variable_id $unique_id} } $filter_var_list]"
+    set url ".?[export_vars -no_empty -override { {selected_variable_id $unique_id} } $filter_var_list]"
     if { ![empty_string_p $selected_project_id] } {
         # A project is selected - enable logging
-        set entry_add_url "log?[export_vars { { variable_id $unique_id } {project_id $selected_project_id}}]"
+        set entry_add_url "log?[export_vars -no_empty { { variable_id $unique_id } {project_id $selected_project_id}}]"
     } else {
         # No project selected - we wont enable those url:s
         set entry_add_url ""
@@ -227,7 +237,7 @@ db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url
 ###########
 
 if { [exists_and_not_null selected_user_id] } {
-    set all_users_url ".?[export_vars -exclude { selected_user_id } $filter_var_list]"
+    set all_users_url ".?[export_vars -no_empty -exclude { selected_user_id } $filter_var_list]"
 } else {
     set all_users_url {}
 }
@@ -249,7 +259,7 @@ if { ![empty_string_p $selected_project_id] } {
 
 db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url start_date end_date } filters select_users {} {
     set filter_name "Users"
-    set url ".?[export_vars -override { {selected_user_id $unique_id} } $filter_var_list]"
+    set url ".?[export_vars -no_empty -override { {selected_user_id $unique_id} } $filter_var_list]"
     set entry_add_url {}
     set selected_p [string equal $selected_user_id $unique_id]
     set clear_url $all_users_url
@@ -265,7 +275,7 @@ db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url
 if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variable_id] } {
 
     if { [exists_and_not_null selected_projection_id] } {
-        set clear_projections_url ".?[export_vars -exclude { selected_projection_id } $filter_var_list]"
+        set clear_projections_url ".?[export_vars -no_empty -exclude { selected_projection_id } $filter_var_list]"
     } else {
         set clear_projections_url {}
     }
@@ -273,7 +283,7 @@ if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variab
     db_multirow -append -extend { filter_name url entry_add_url selected_p clear_url } filters select_projections {} {
         set filter_name "Projections"
         set name [string_truncate -len 25 $name]
-        set url ".?[export_vars -override { {selected_projection_id $unique_id} { selected_start_date $start_date } { selected_end_date $end_date } } $filter_var_list]"
+        set url ".?[export_vars -no_empty -override { {selected_projection_id $unique_id} { selected_start_date $start_date } { selected_end_date $end_date } } $filter_var_list]"
         set entry_add_url {}
         set selected_p [string equal $selected_projection_id $unique_id]
         set clear_url $clear_projections_url
@@ -288,7 +298,7 @@ if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variab
 #####
 
 if { [exists_and_not_null selected_start_date] || [exists_and_not_null selected_end_date] } {
-    set date_clear_url ".?[export_vars -exclude { selected_start_date selected_end_date } $filter_var_list]"
+    set date_clear_url ".?[export_vars -no_empty -exclude { selected_start_date selected_end_date } $filter_var_list]"
 } else {
     set date_clear_url {}
 }
@@ -344,7 +354,7 @@ foreach type { today yesterday this_week last_week past_7 this_month last_month 
         }
     }
 
-    set url ".?[export_vars -override { { selected_start_date $new_start_date } { selected_end_date $new_end_date }} $filter_var_list]"
+    set url ".?[export_vars -no_empty -override { { selected_start_date $new_start_date } { selected_end_date $new_end_date }} $filter_var_list]"
 
     set selected_p [expr [string equal $selected_start_date $new_start_date] && [string equal $selected_end_date $new_end_date]]
 
@@ -357,5 +367,37 @@ foreach type { today yesterday this_week last_week past_7 this_month last_month 
 
 # Custom
 if { $custom_p } {
+    # unique_id name filter_name url entry_add_url selected_p clear_url
     multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url {} {}
+}
+
+#####
+#
+# Group by filter
+#
+#####
+
+# TODO:
+# Flag to export_vars -no_empty which doesn't export empty strings
+
+if { [exists_and_not_null selected_group_by] } {
+    set group_clear_url ".?[export_vars -no_empty -exclude { selected_group_by } $filter_var_list]"
+} else {
+    set group_clear_url {}
+}
+
+array set group_label {
+    time_stamp "Day"
+    time_stamp_week "Week"
+    project_name "Project"
+    user_id "User"
+}
+
+foreach unique_id { time_stamp_week time_stamp project_name user_id } {
+    set url ".?[export_vars -no_empty -override { { selected_group_by $unique_id } } $filter_var_list]"
+
+    set selected_p [string equal $selected_group_by $unique_id]
+
+    # unique_id name filter_name url entry_add_url selected_p clear_url
+    multirow append filters $unique_id $group_label($unique_id) "Group by" $url "" $selected_p $group_clear_url
 }

@@ -8,6 +8,7 @@
 #   start_date_ansi
 #   end_date_ansi 
 #   projection_value
+#   group_by:optional
 
 set current_user_id [ad_conn user_id]
 set package_id [ad_conn package_id]
@@ -48,10 +49,27 @@ if { ![exists_and_not_null selected_entry_id] } {
     set selected_entry_id {}
 }
 
+set order_by "le.time_stamp desc, ao.creation_date desc"
+
+# If we're grouping by, we should sort by that column first
+if { [exists_and_not_null group_by] } {
+    switch -exact $group_by {
+        user_id {
+            set order_by "user_name asc, $order_by"
+        }
+        project_name {
+            set order_by "project_name asc, $order_by"
+        }
+    }
+}
+
 set value_total 0
 set value_count 0
 
-db_multirow -extend { view_url edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
+set last_group_by_value {}
+set value_subtotal 0
+
+db_multirow -extend { subtotal view_url edit_url delete_url delete_onclick user_chunk selected_p } entries select_entries {} {
     set description [string_truncate -len 50 $description]
     set project_name [string_truncate -len 20 $project_name]
     set selected_p [string equal $id $selected_entry_id]
@@ -66,6 +84,20 @@ db_multirow -extend { view_url edit_url delete_url delete_onclick user_chunk sel
     }
     
     set user_chunk [ad_present_user $user_id $user_name]
+
+    if { [exists_and_not_null group_by] } {
+        # Should we reset the subtotal?
+        if { ![string equal $last_group_by_value [set $group_by]] } {
+            set value_subtotal 0
+        }
+        
+        # Calculate new subtotal
+        set value_subtotal [expr $value_subtotal + $value]
+        # and store it in the column
+        set subtotal $value_subtotal
+
+        set last_group_by_value [set $group_by]
+    }
 
     set value_total [expr $value_total + $value]
     incr value_count
