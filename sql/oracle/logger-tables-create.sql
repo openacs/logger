@@ -34,6 +34,9 @@ comment on table logger_projects is '
   but instead reference acs_objects.
 ';
 
+-- By making projects acs objects we can use permissioning and also by
+-- referencing acs objects we make any future transition to project objects in a
+-- project management package easier.
 begin
     acs_object_type.create_type (
 	'logger_project',
@@ -162,7 +165,10 @@ create sequence logger_projections_seq;
 create table logger_measurements (
   measurement_id        integer
                         constraint logger_measurements_pk
-                        primary key,
+                        primary key
+                        constraint logger_measurements_mid_fk
+                        references acs_objects(object_id)
+                        on delete cascade,
   project_id            integer
                         constraint logger_measurements_pid_fk
                         references acs_objects(object_id)
@@ -177,7 +183,8 @@ create table logger_measurements (
   time_stamp            date
                         default sysdate
                         constraint logger_measurements_ts_nn
-                        not null                        
+                        not null,
+  description           varchar(4000)
 );
 
 comment on table logger_measurements is '
@@ -192,3 +199,22 @@ comment on table logger_measurements is '
  and a value). Support for those remaining HR-XML use cases can be added on later without
  much difficulty.
 ';
+
+-- Measurments need to be acs objects if we are to categorize the with the categories
+-- package
+begin
+    acs_object_type.create_type (
+	'logger_measurement',
+	'Logger measurement',
+	'Logger measurements',
+	'acs_object',
+	'logger_measurements',
+	'measurement_id',
+	null,
+	'f',
+	null,
+	'logger_measurement.name'
+	);
+end;
+/
+show errors

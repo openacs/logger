@@ -33,6 +33,31 @@ end logger_project;
 /
 show errors;
 
+create or replace package logger_measurement
+as
+  function new (
+        measurement_id      in logger_measurements.measurement_id%TYPE default null,
+        project_id          in logger_measurements.project_id%TYPE,
+        variable_id         in logger_measurements.variable_id%TYPE,
+        value               in logger_measurements.value%TYPE,
+        time_stamp          in logger_measurements.time_stamp%TYPE,
+        description         in logger_measurements.description%TYPE default null,
+        creation_user       in acs_objects.creation_user%TYPE,
+        creation_ip         in acs_objects.creation_ip%TYPE default null
+  ) return integer;
+
+  procedure delete (
+        measurement_id      in integer
+  );
+
+  function name (
+      measurement_id        in integer
+   ) return varchar2;
+
+end logger_measurement;
+/
+show errors;
+
 ------------------------------------
 -- Package body implementations
 ------------------------------------
@@ -111,5 +136,63 @@ as
   end name;
 
 end logger_project;
+/
+show errors;
+
+create or replace package body logger_measurement
+as
+  function new (
+        measurement_id      in logger_measurements.measurement_id%TYPE default null,
+        project_id          in logger_measurements.project_id%TYPE,
+        variable_id         in logger_measurements.variable_id%TYPE,
+        value               in logger_measurements.value%TYPE,
+        time_stamp          in logger_measurements.time_stamp%TYPE,
+        description         in logger_measurements.description%TYPE default null,
+        creation_user       in acs_objects.creation_user%TYPE,
+        creation_ip         in acs_objects.creation_ip%TYPE default null
+  ) return integer
+  is
+        v_measurement_id               integer;
+  begin
+        v_measurement_id := acs_object.new(
+            object_id   => measurement_id,
+            object_type => 'logger_measurement',
+            context_id  => project_id,
+            creation_ip => creation_ip,
+            creation_user => creation_user
+        );
+       
+       insert into logger_measurements (measurement_id, project_id, variable_id, value, 
+                                        time_stamp, description)
+           values (v_measurement_id, project_id, variable_id, value, time_stamp, description);
+
+       return v_measurement_id;  
+
+  end new;
+
+  procedure delete (
+        measurement_id      in integer
+  )
+  is
+  begin
+        -- The row in the measurements table will cascade
+        acs_object.delete(measurement_id);
+  end delete;
+
+  function name (
+      measurement_id        in integer
+   ) return varchar2
+  is
+      v_name          logger_projects.name%TYPE;  
+  begin
+        -- TODO: Should we only return the say 20 first characters here?
+        select description into v_name
+        from logger_measurements
+        where measurement_id = logger_measurement.name.measurement_id;
+
+        return v_name;
+  end name;
+
+end logger_measurement;
 /
 show errors;

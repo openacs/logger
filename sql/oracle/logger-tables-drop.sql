@@ -10,6 +10,14 @@
 
 drop table logger_measurements;
 
+begin
+    acs_object_type.drop_type (
+	'logger_measurement'
+    );
+end;
+/
+show errors
+
 drop table logger_projections;
 
 drop sequence logger_projections_seq;

@@ -5,4 +5,6 @@
 -- @author Peter Marklund (peter@collaboraid.biz)
 -- @creation-date 2003-03-28
 
+drop package logger_measurement;
+
 drop package logger_project;
