@@ -223,7 +223,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\"added." [export_vars -base [ad_conn url] { project_id variable_id }]
+    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id }]
     ad_script_abort
 
 } -edit_data {
