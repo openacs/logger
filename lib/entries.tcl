@@ -274,7 +274,7 @@ foreach id $tree_ids {
     # Filters
     set values_${id} [list]
     foreach elm [category_tree::get_tree $id] {
-        foreach { category_id category_name deprecated_p level } $elm {}
+        util_unlist $elm category_id category_name deprecated_p level
         lappend values_${id} [list "[string repeat "..." [expr $level-1]]$category_name" $category_id]
     }
     set tree_name_${id} [category_tree::get_name $id]
