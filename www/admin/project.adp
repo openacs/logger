@@ -8,7 +8,9 @@
 </blockquote>
 
 <if @project_exists_p@ and @edit_mode_p@ eq 0>
-  <a href="@category_map_url@" class="action">Define categories</a>
+  <ul class="action-links">
+    <li><a href="@category_map_url@">Define categories</a></li>
+  </ul>
 
   <h2>Variables</h2>
 
