@@ -215,5 +215,6 @@ template::list::create \
     }
 
 
-# TODO: Get category base URL dynamically
-set category_map_url [export_vars -base "/categories/cadmin/one-object" { { object_id $project_id } }]
+if { [info exists project_id] } {
+    set category_map_url [export_vars -base "[site_node::get_package_url -package_key categories]cadmin/one-object" { { object_id $project_id } }]
+}
