@@ -7,24 +7,24 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="1.0b7" url="http://openacs.org/repository/download/apm/logger-1.0b7.apm">
+    <version name="1.1b1" url="http://openacs.org/repository/download/apm/logger-1.1b1.apm">
         <owner url="mailto:lars@collaboraid.biz">Lars Pind</owner>
         <owner url="mailto:peter@collaboraid.biz">Peter Marklund</owner>
         <owner url="mailto:jade@rubick.com">Jade Rubick</owner>
         <summary>Time and expenses reporting.</summary>
-        <release-date>2004-09-17</release-date>
+        <release-date>2004-11-17</release-date>
         <vendor url="http://www.collaboraid.biz">Collaboraid</vendor>
         <description format="text/html">Logger lets you keep track of measurements over time. The primary use case is time and expenses reporting, an area where we are being guided by the HR-XML Time Expense Reporting 2.0 standard. However, the intention is to allow for reporting of arbitrary types of numerical data such as financial results - account balance, revenue etc. You could even use this application to monitor your weight.  The full specification is here: &lt;a href=&quot;http://www.collaboraid.biz/developer/logger-spec&quot;&gt;http://www.collaboraid.biz/developer/logger-spec&lt;a&gt;
 
 Logger can be optionally integrated with project-manager, for logging of time against projects and tasks.</description>
 
-        <provides url="logger" version="1.0b7"/>
+        <provides url="logger" version="1.1b1"/>
         <requires url="acs-tcl" version="4.6.2"/>
         <requires url="categories" version="1.0d3"/>
 
         <callbacks>
-            <callback type="after-install"  proc="logger::apm::after_install"/>
             <callback type="before-uninstall"  proc="logger::apm::before_uninstall"/>
+            <callback type="after-install"  proc="logger::apm::after_install"/>
             <callback type="before-uninstantiate"  proc="logger::apm::before_uninstantiate"/>
         </callbacks>
         <parameters>

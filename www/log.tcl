@@ -1,3 +1,12 @@
+ns_log notice it's my page!
+set mypage [ns_getform]
+if {[string equal "" $mypage]} {
+    ns_log notice no form was submitted on my page
+} else {
+    ns_log notice the following form was submitted on my page
+    ns_set print $mypage
+}
+
 ad_page_contract {
     Add/edit/display a log entry.
     
@@ -29,6 +38,7 @@ ad_page_contract {
 
 set package_id [ad_conn package_id]
 set current_user_id [ad_maybe_redirect_for_registration]
+set peeraddr   [ad_conn peeraddr]
 
 if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p]} {
     set entry_exists_p [db_string entry_exists_p {}]                         
@@ -182,8 +192,17 @@ if {[logger::util::project_manager_linked_p]} {
 
     set task_options [list]
 
-    set task_options [pm::task::options_list \
-                          -project_item_id $pm_project_id]
+    if {[exists_and_not_null pm_task_id]} {
+
+        set task_options [pm::task::options_list \
+                              -project_item_id $pm_project_id \
+                              -dependency_task_ids [list $pm_task_id]]
+    } else {
+
+        set task_options [pm::task::options_list \
+                              -project_item_id $pm_project_id]
+
+    }
 }
 
 # Add form elements common to all modes
@@ -205,29 +224,20 @@ ad_form -extend -name log_entry_form -form {
 } 
 
 # Additions to form if project-manager is involved.
-if {[exists_and_not_null pm_task_id]} {
+if {[exists_and_not_null pm_project_id]} {
 
     # do I really need this both here and in the -on_refresh block? -jr
 
-    db_1row get_task_values "
-        SELECT
-        title as task_title, 
-        case when percent_complete is null then 0 
-        else percent_complete end as percent_complete, 
-        estimated_hours_work,
-        estimated_hours_work_min,
-        estimated_hours_work_max,
-        s.description as status_description
-        FROM
-        pm_tasks_revisionsx p,
-        cr_items i,
-        pm_task_status s,
-        pm_tasks t
-        WHERE i.item_id = p.item_id and
-        p.item_id = :pm_task_id and 
-        i.item_id = t.task_id and
-        t.status  = s.status_id and 
-        p.revision_id = i.live_revision"
+    if {[exists_and_not_null pm_task_id]} {
+        db_1row get_task_values { }
+
+        set my_task_id $pm_task_id
+    } else {
+
+        set my_task_id ""
+
+    }
+
 
     ad_form -extend -name log_entry_form -form {
         
@@ -239,7 +249,7 @@ if {[exists_and_not_null pm_task_id]} {
             {label "Subject"}
             {options {$task_options}}
             {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
-            {value $pm_task_id}
+            {value $my_task_id}
             {help}
             {help_text "If you change this, please wait for the page to refresh"}
         }
@@ -248,18 +258,24 @@ if {[exists_and_not_null pm_task_id]} {
         }
     } 
 
-    set display_hours [pm::task::hours_remaining \
-                           -estimated_hours_work $estimated_hours_work \
-                           -estimated_hours_work_min $estimated_hours_work_min \
-                           -estimated_hours_work_max $estimated_hours_work_max \
-                           -percent_complete $percent_complete \
-                      ]
-
-    set total_hours_work [pm::task::estimated_hours_work \
-                              -estimated_hours_work $estimated_hours_work \
-                              -estimated_hours_work_min $estimated_hours_work_min \
-                              -estimated_hours_work_max $estimated_hours_work_max \
-                             ]
+    if {[exists_and_not_null pm_task_id]} {
+        set display_hours [pm::task::hours_remaining \
+                               -estimated_hours_work $estimated_hours_work \
+                               -estimated_hours_work_min $estimated_hours_work_min \
+                               -estimated_hours_work_max $estimated_hours_work_max \
+                               -percent_complete $percent_complete \
+                              ]
+        
+        set total_hours_work [pm::task::estimated_hours_work \
+                                  -estimated_hours_work $estimated_hours_work \
+                                  -estimated_hours_work_min $estimated_hours_work_min \
+                                  -estimated_hours_work_max $estimated_hours_work_max \
+                                 ]
+    } else {
+        set display_hours 0
+        set total_hours_work 0
+        set percent_complete 0
+    }
 
     ad_form -extend -name log_entry_form -form {
         
@@ -335,6 +351,17 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         } -default "0"]
         
         if { !$exists_p } {
+
+            # we want to keep track of what has changed if we are
+            # logging against project manager
+            if {[exists_and_not_null pm_task_id]} {
+
+                set old_percent_complete $percent_complete
+                logger::entry::pm_before_change \
+                    -task_item_id $pm_task_id
+
+            }
+
             logger::entry::new \
                 -entry_id $entry_id \
                 -project_id $project_id \
@@ -347,13 +374,25 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 
             if {[exists_and_not_null pm_task_id]} {
 
-                pm::task::update_percent \
+                logger::entry::pm_after_change \
                     -task_item_id $pm_task_id \
-                    -percent_complete $percent_complete
+                    -new_percent_complete $percent_complete \
+                    -old_percent_complete $old_percent_complete
 
             }
 
         } else {
+
+            # we want to keep track of what has changed if we are
+            # logging against project manager
+            if {[exists_and_not_null pm_task_id]} {
+                
+                set old_percent_complete $percent_complete
+                logger::entry::pm_before_change \
+                    -task_item_id $pm_task_id
+
+            }
+
             logger::entry::edit \
                 -entry_id $entry_id \
                 -value $value \
@@ -363,11 +402,12 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                 -project_item_id "$pm_project_id"
 
             if {[exists_and_not_null pm_task_id]} {
-                
-                pm::task::update_percent \
-                    -task_item_id "$pm_task_id" \
-                    -percent_complete "$percent_complete"
-                
+
+                pm::task::pm_after_change \
+                    -task_item_id $pm_task_id \
+                    -new_percent_complete $percent_complete \
+                    -old_percent_complete $old_percent_complete
+
             }
             
         }
@@ -382,14 +422,29 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     # Remember this date, as the next entry is likely to be for the same date
     ad_set_client_property logger time_stamp $time_stamp
 
-    # Present the user with an add form again for quick logging
-    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
-    ad_script_abort
+    if {[exists_and_not_null return_url]} {
+        ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." $return_url
+        ad_script_abort
+    } else {
+        # Present the user with an add form again for quick logging
+        ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+        ad_script_abort
+    }
 
 } -edit_data {
     db_transaction {
 
         if {[info exists pm_task_id] && [info exists pm_project_id]} {
+
+            if {[exists_and_not_null pm_task_id]} {
+
+                set old_percent_complete $percent_complete
+                logger::entry::pm_before_change \
+                    -task_item_id $pm_task_id
+
+            }
+
+
             logger::entry::edit \
                 -entry_id $entry_id \
                 -value $value \
@@ -397,6 +452,16 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                 -description $description \
                 -task_item_id "$pm_task_id" \
                 -project_item_id "$pm_project_id"
+
+            if {[exists_and_not_null pm_task_id]} {
+
+                logger::entry::pm_after_change \
+                    -task_item_id $pm_task_id \
+                    -new_percent_complete $percent_complete \
+                    -old_percent_complete $old_percent_complete
+
+            }
+
         } else {
             logger::entry::edit \
                 -entry_id $entry_id \
@@ -420,10 +485,6 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 
     if {![string equal $this_task_id -1] && [exists_and_not_null percent_complete]} {
 
-        pm::task::update_percent \
-            -task_item_id "$this_task_id" \
-            -percent_complete "$percent_complete"
-
         pm::task::update_hours \
             -task_item_id $this_task_id \
             -update_tasks_p t
@@ -441,42 +502,34 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_script_abort
 } -on_refresh {
     
-    db_1row get_task_values "
-        SELECT
-        title as task_title, 
-        case when percent_complete is null then 0 
-        else percent_complete end as percent_complete, 
-        estimated_hours_work,
-        estimated_hours_work_min,
-        estimated_hours_work_max,
-        s.description as status_description
-        FROM
-        pm_tasks_revisionsx p,
-        cr_items i,
-        pm_task_status s,
-        pm_tasks t
-        WHERE i.item_id = p.item_id and
-        p.item_id = :pm_task_id and 
-        i.item_id = t.task_id and
-        t.status  = s.status_id and 
-        p.revision_id = i.live_revision"
+    if {[exists_and_not_null pm_task_id]} {
+        db_1row get_task_values { }
+    } else {
+        set my_task_id ""
+    }
 
     foreach element [list percent_complete status_description] {
         template::element set_value log_entry_form $element [set $element]
     }
 
-    set display_hours [pm::task::hours_remaining \
-                           -estimated_hours_work $estimated_hours_work \
-                           -estimated_hours_work_min $estimated_hours_work_min \
-                           -estimated_hours_work_max $estimated_hours_work_max \
-                           -percent_complete $percent_complete \
-                          ]
-
-    set total_hours_work [pm::task::estimated_hours_work \
-                              -estimated_hours_work $estimated_hours_work \
-                              -estimated_hours_work_min $estimated_hours_work_min \
-                              -estimated_hours_work_max $estimated_hours_work_max \
-                             ]
+    if {[exists_and_not_null pm_task_id]} {
+        set display_hours [pm::task::hours_remaining \
+                               -estimated_hours_work $estimated_hours_work \
+                               -estimated_hours_work_min $estimated_hours_work_min \
+                               -estimated_hours_work_max $estimated_hours_work_max \
+                               -percent_complete $percent_complete \
+                              ]
+        
+        set total_hours_work [pm::task::estimated_hours_work \
+                                  -estimated_hours_work $estimated_hours_work \
+                                  -estimated_hours_work_min $estimated_hours_work_min \
+                                  -estimated_hours_work_max $estimated_hours_work_max \
+                                 ]
+    } else {
+        set display_hours 0
+        set total_hours_work 0
+        set percent_complete 0
+    }
 
     template::element set_value log_entry_form remaining_work $display_hours
     template::element set_value log_entry_form total_hours_work $total_hours_work
