@@ -47,7 +47,7 @@ set start_day [clock format $start_day_seconds -format "%Y %m %d"]
 set end_day_seconds [expr $start_day_seconds + 60*60*24*31]
 set end_day [clock format $end_day_seconds -format "%Y %m %d"]
 
-set actions_list [list [list Edit "formbuilder::edit"] [list Done done]]
+set actions_list [list [list Edit "edit"] [list Done done]]
 ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $actions_list -form {
     projection_id:key(logger_projections_seq)
 

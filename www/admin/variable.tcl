@@ -28,7 +28,7 @@ if { [exists_and_not_null variable_id] } {
 
 set context [list $page_title]
 
-set actions_list [list [list Edit "formbuilder::edit"] [list Done done]]
+set actions_list [list [list Edit "edit"] [list Done done]]
 ad_form -name variable_form -cancel_url index -mode $ad_form_mode -actions $actions_list -form {
     variable_id:key(acs_object_id_seq)
 

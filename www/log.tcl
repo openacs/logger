@@ -108,7 +108,7 @@ set context [list $page_title]
 # Build the log entry form elements
 set actions [list]
 if { $edit_p } {
-    lappend actions { Edit formbuilder::edit }
+    lappend actions { Edit edit }
 }
 lappend actions { Done done }
 
