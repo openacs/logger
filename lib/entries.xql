@@ -49,7 +49,7 @@
   <fullquery name="select_users">
     <querytext>
     	    select submitter.first_names || ' ' || submitter.last_name as label,
-                       submitter.person_id as user_id
+                   submitter.person_id as user_id
     	    from   persons submitter,
     	           logger_entries le,
     	           acs_objects ao
@@ -60,6 +60,7 @@
                                where  project_id = le.project_id
                                and    package_id = :package_id)
     	    group  by submitter.person_id, submitter.first_names, submitter.last_name
+            order by submitter.first_names, submitter.last_name 
     </querytext>
   </fullquery>
 
