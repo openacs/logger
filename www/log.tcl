@@ -31,7 +31,7 @@ set package_id [ad_conn package_id]
 set current_user_id [ad_maybe_redirect_for_registration]
 set peeraddr   [ad_conn peeraddr]
 
-if { [exists_and_not_null entry_id] && [logger::util::project_manager_linked_p]} {
+if { [exists_and_not_null entry_id] } {
     set entry_exists_p [db_string entry_exists_p {}]                         
 } else {
     set entry_exists_p 0
