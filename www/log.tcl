@@ -19,6 +19,17 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
+set user_id [ad_conn user_id]
+
+if { [exists_and_not_null entry_id] } {
+    set entry_exists_p [db_string entry_exists_p {
+        select count(*)
+        from logger_entries
+        where entry_id = :entry_id
+    }]                         
+} else {
+    set entry_exists_p 0
+}
 
 if { [string equal [form get_action log_entry_form] "done"] } {
     # User is done editing - redirect back to index page
@@ -41,8 +52,14 @@ if { [exists_and_not_null entry_id] } {
 set context [list $page_title]
 
 # Build the log entry form elements
+set actions [list]
+if { $entry_exists_p && [permission::permission_p -object_id $entry_id -privilege write] } {
+    lappend actions { Edit formbuilder::edit }
+}
+lappend actions { Done done }
+
 ad_form -name log_entry_form -cancel_url index -mode $ad_form_mode \
-    -actions { { Edit formbuilder::edit } { Done done } } -form {
+    -actions $actions -form {
     entry_id:key(acs_object_id_seq)
 }
 
@@ -50,12 +67,29 @@ ad_form -name log_entry_form -cancel_url index -mode $ad_form_mode \
 # form or an initial request (could also be with error message after unaccepted submit)
 set submit_p [form is_valid log_entry_form]
 
-# Add project and variable elements to the form
+
+###########
+#
+# Get project and variable info
+#
+###########
+
+# Get project and variable id
+if { $entry_exists_p } {
+    permission::require_permission -object_id $entry_id -privilege read
+
+    # We have the entry_id so try to get project and variable_id from the database
+    # for that entry    
+    logger::entry::get -entry_id $entry_id -array entry_array
+    set project_id $entry_array(project_id)
+    set variable_id $entry_array(variable_id)
+} 
+  
 # Get project_id if it's not provided
 if { ![exists_and_not_null project_id] } {
     logger::entry::get -entry_id $entry_id -array entry
     set project_id $entry(project_id)
-}    
+}
 
 # Default the variable we are logging in to the primary variable of the project
 if { ![exists_and_not_null variable_id] } {
@@ -65,6 +99,13 @@ if { ![exists_and_not_null variable_id] } {
 # We need project and variable names
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
+
+###########
+#
+# Build the form
+#
+###########
+
 ad_form -extend -name log_entry_form -form {
     {project:text(inform)
         {label Project}
@@ -81,26 +122,33 @@ ad_form -extend -name log_entry_form -form {
 }    
 
 # Add form elements common to all modes
-# The form builder date datatype doesn't understand standard ANSI format date strings
-regsub -all -- {-} [dt_systime] { } default_date
+# The form builder date datatype doesn't take ANSI format date strings
+# but wants dates in list format
+set default_date [clock format [clock seconds] -format "%Y %m %d"]
 ad_form -extend -name log_entry_form -form {
     {value:float
         {label $variable_array(name)}
         {after_html $variable_array(unit)}
-    }
-
-    {time_stamp:date
-        {label Date}
-        {value $default_date}
+	{html {size 10}}
     }
 
     {description:text,optional
         {label Description} 
         {html {size 50}}
     }
+
+    {time_stamp:date
+        {label Date}
+        {value $default_date}
+    }
 } 
 
+###########
+#
 # Execute the form
+#
+###########
+
 ad_form -extend -name log_entry_form -select_query {
     select project_id,
            variable_id,
@@ -122,19 +170,18 @@ ad_form -extend -name log_entry_form -select_query {
                              -value $value \
                              -time_stamp $time_stamp_ansi \
                              -description $description
+
+    # Present the user with an add form again for quick logging
+    ad_returnredirect "[ad_conn url]?[export_vars {project_id variable_id}]"
+    ad_script_abort
+
 } -edit_data {
     set time_stamp_ansi "[lindex $time_stamp 0]-[lindex $time_stamp 1]-[lindex $time_stamp 2]"
     logger::entry::edit -entry_id $entry_id \
                               -value $value \
                               -time_stamp $time_stamp_ansi \
                               -description $description
-} -on_submit {
-
-    ns_log Notice "pm debug on_submit" 
-
 } -after_submit {
-
-    ns_log Notice "pm debug after_submit"
 
     ad_returnredirect "[ad_conn url]?entry_id=$entry_id"
     ad_script_abort

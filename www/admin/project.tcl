@@ -37,9 +37,13 @@ ad_form -name project_form \
 
     project_id:key(acs_object_id_seq)
 
-    name:text
+    {name:text
+      {html {size 50}}
+    }
 
-    description:text(textarea),optional
+    {description:text(textarea),optional
+	{html {cols 60 rows 13}} 
+    }
 }
 
 if { [exists_and_not_null project_id] } {

@@ -23,11 +23,15 @@ if { [exists_and_not_null variable_id] } {
 set context [list $page_title]
 
 ad_form -name variable_form -cancel_url index -mode $ad_form_mode -form {
-    variable_id:key(logger_variables_seq)
+    variable_id:key(acs_object_id_seq)
 
-    name:text
+    {name:text
+      {html {size 50}}
+    }
 
-    unit:text
+    {unit:text
+      {html {size 50}}
+    }
 
     {type:text(radio)
         {options {{Additive additive} {Non-Additive non-additive}}}

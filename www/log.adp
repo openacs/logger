@@ -3,5 +3,9 @@
 <property name="context">@context@</property>
 
 <blockquote>
-  <formtemplate id="log_entry_form"></formtemplate>
+  <formtemplate id="log_entry_form" style="standard-lars"></formtemplate>
 </blockquote>
+
+<h3>Log History for last 31 Days</h3>
+
+<include src="lib/entries-table" selected_user_id="@user_id@" selected_project_id="@project_id@" selected_variable_id="@variable_id@" selected_variable_unit="@variable_array.unit@"/>

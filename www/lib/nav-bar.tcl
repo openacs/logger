@@ -32,7 +32,6 @@ foreach {url label} $link_list {
         set selected_p [logger::ui::navbar_link_selected_p $url]
     }
 
-    ns_log Notice "pm debug appending navbar link $label $url $selected_p"
     multirow append links $label $url $selected_p
 }
 

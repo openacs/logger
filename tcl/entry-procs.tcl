@@ -42,6 +42,9 @@ ad_proc -public logger::entry::new {
     
     set entry_id [db_exec_plsql insert_entry {}]
 
+    # The creator can admin his own entry
+    permission::grant -party_id [ad_conn user_id] -object_id $entry_id -privilege admin
+
     return $entry_id
 }
 

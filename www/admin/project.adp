@@ -3,5 +3,5 @@
 <property name="context">@context@</property>
 
 <blockquote>
-  <formtemplate id="project_form"></formtemplate>
+  <formtemplate id="project_form" style="standard-lars"></formtemplate>
 </blockquote>

@@ -1,7 +1,6 @@
 <!-- Shall we lift these classes to the OpenACS level? -->
 .no_items_text {
     font-style: italic;
-    font-weight: bold;
 }
 
 .logger_explanation_text {
