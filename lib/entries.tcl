@@ -351,7 +351,7 @@ set orderbys {
 }
 
 # the calling include may not want to show links to sort
-if {[exists_and_not_null show_orderby_p] && !$show_orderby_p} {
+if {[exists_and_not_null show_orderby_p] && [string is false $show_orderby_p]} {
     set orderbys ""
 }
 
