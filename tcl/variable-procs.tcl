@@ -31,7 +31,7 @@ ad_proc -public logger::variable::new {
 } {
     ad_assert_arg_value_in_list type {additive non-additive}
 
-    # Default variable_id to next id in sequence
+    # Default variable_id to next id in a sequence
     if { [empty_string_p $variable_id] } {
         set variable_id [db_nextval logger_variables_seq]
     }
@@ -59,7 +59,7 @@ ad_proc -public logger::variable::get {
     {-variable_id:required}
     {-array:required}
 } {
-    Retrieve info about the variable with given id into an 
+    Retrieve attributes of the variable with given id into an 
     array (using upvar) in the callers scope. The
     array will contain the keys variable_id, name, unit, and type.
 
@@ -71,7 +71,7 @@ ad_proc -public logger::variable::get {
 
     @author Peter Marklund
 } {
-    upvar $array project_array
+    upvar $array variable_array
 
-    db_1row select_variable {} -column_array project_array
+    db_1row select_variable {} -column_array variable_array
 }

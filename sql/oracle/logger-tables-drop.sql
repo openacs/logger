@@ -12,6 +12,8 @@ drop table logger_measurements;
 
 drop table logger_projections;
 
+drop sequence logger_projections_seq;
+
 drop table logger_project_var_map;
 
 drop table logger_variables;

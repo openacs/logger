@@ -157,6 +157,8 @@ comment on column logger_projections.value is '
   represent an average.
 ';
 
+create sequence logger_projections_seq;
+
 create table logger_measurements (
   measurement_id        integer
                         constraint logger_measurements_pk

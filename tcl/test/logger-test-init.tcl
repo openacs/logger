@@ -38,6 +38,9 @@ aa_register_case logger_create_package {
             unit EUR
             type additive
         }
+        set projection_start_time "2003-04-10"
+        set projection_end_time "2003-04-20"
+        set projection_value "10"
 
         # Create a package
         set package_id [apm_package_instance_new -instance_name $package_name \
@@ -50,14 +53,14 @@ aa_register_case logger_create_package {
         # Assert that the name of the project can be retrieved
         logger::project::get -project_id $project_id \
                              -array project_array
-        aa_equals "Checking that name of project is correct" $project_array(name) $project_name
+        aa_equals "Names of projects can be retrieved after creation" $project_array(name) $project_name
 
         # Assert that the project is mapped to the package and not mapped to any other packages
         set all_projects_list [logger::package::all_projects_in_package -package_id $package_id]
         set only_projects_list [logger::package::projects_only_in_package -package_id $package_id]
         foreach list_var_name {all_projects_list only_projects_list} {
             set list_var_value [set $list_var_name]
-            aa_true "The correct project is mapped to the package ($list_var_name)" \
+            aa_true "Projects can be retrieved for package ($list_var_name)" \
                 [expr [llength $list_var_value] == 1 && [string equal [lindex $list_var_value 0] $project_id]]
         }
 
@@ -86,18 +89,31 @@ aa_register_case logger_create_package {
                                       -variable_id $expense_var_id
 
         # Assert that variables are retrievable
-        logger::variable::get -variable_id $hours_var_id -array hours_var
-        logger::variable::get -variable_id $minutes_var_id -array minutes_var
-        logger::variable::get -variable_id $expense_var_id -array expense_var
+        logger::variable::get -variable_id $hours_var_id -array hours_var_retr
+        logger::variable::get -variable_id $minutes_var_id -array minutes_var_retr
+        logger::variable::get -variable_id $expense_var_id -array expense_var_retr
+        set expected_var_names [list $hours_var(name) $minutes_var(name) $expense_var(name)]
+        set retrieved_var_names [list $hours_var_retr(name) $minutes_var_retr(name) $expense_var_retr(name)]
+        aa_true "Names of variables can be retrieved after creation" [util_sets_equal_p $expected_var_names \
+                                                                         $retrieved_var_names]
 
         # Assert that variables are mapped to the project
         set expected_var_list [list $hours_var_id $minutes_var_id $expense_var_id]
         set actual_var_list [logger::project::get_variables -project_id $project_id]
-        aa_true "checking that variables are mapped to project" [util_sets_equal_p $expected_var_list \
+        aa_true "Variables can be retrieved for project" [util_sets_equal_p $expected_var_list \
                                                                                    $actual_var_list]
-        # Create projections
 
-        # Check that the projections can be retrieved
+        # Create a projection
+        set projection_id [logger::projection::new -project_id $project_id \
+                                                   -variable_id $hours_var_id \
+                                                   -start_time $projection_start_time \
+                                                   -end_time $projection_end_time \
+                                                   -value $projection_value]
+
+        # Assert that projection values can be retrieved
+        logger::projection::get -projection_id $projection_id -array projection
+        aa_equals "Projection values can be retrieved after creation" $projection(value) \
+                                                                      $projection_value
 
         # Create mesurements
 

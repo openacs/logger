@@ -32,7 +32,9 @@
 
   <fullquery name="logger::project::get_variables.select_variables">
     <querytext>
-
+      select variable_id
+      from logger_project_var_map
+      where project_id = :project_id
     </querytext>
   </fullquery>
 
