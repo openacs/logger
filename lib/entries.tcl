@@ -27,6 +27,19 @@ logger::variable::get -variable_id $variable_id -array variable
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
+# Projections
+set projection_values [list]
+if { [exists_and_not_null project_id] } {
+    db_foreach select_projections {} -column_array row {
+        lappend projection_values \
+            [list $row(name) [list [list projection_id $row(projection_id)] \
+                                  [list time_stamp:multiple [list $row(start_date_ansi) $row(end_date_ansi)]]]]
+    }
+}
+
+ds_comment $projection_values
+
+
 # Define the list
 
 list::create \
@@ -112,6 +125,11 @@ list::create \
             }
             add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "log" { project_id { variable_id $__filter_value } }] ""]}
             has_default_p t
+        }
+        projection_id {
+            label "Projections"
+            type multivar
+            values $projection_values
         }
         user_id {
             label "Users"

@@ -13,6 +13,7 @@ ad_page_contract {
     {time_stamp:multiple,optional {[clock format [clock scan "-[clock format [clock seconds] -format %w] days"] -format "%Y-%m-%d"] [clock format [clock scan "[expr 6-[clock format [clock seconds] -format %w]] days"] -format "%Y-%m-%d"]}}
     groupby:optional
     orderby:optional
+    projection_id:optional
     {format "normal"}
     page:integer,optional
 } -validate {
@@ -39,3 +40,10 @@ ad_page_contract {
 }
 
 set instance_name [ad_conn instance_name]
+
+if { ![exists_and_not_null project_id] } {
+    set package_projects [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
+    if { [llength $package_projects] == 1 } {
+        set project_id $package_projects
+    }
+}

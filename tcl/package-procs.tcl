@@ -37,7 +37,7 @@ ad_proc -public logger::package::projects_only_in_package {
 }
 
 ad_proc -public logger::package::all_projects_in_package {
-    {-package_id:required}    
+    {-package_id:required}
 } {
     Return a list of ids for all logger projects mapped to the given package.x
 

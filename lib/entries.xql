@@ -68,13 +68,13 @@
 
   <fullquery name="select_projections">
     <querytext>
-        select lpe.projection_id as unique_id,
-               lpe.name,
-               to_char(lpe.start_time, 'YYYY-MM-DD') as start_date,
-               to_char(lpe.end_time, 'YYYY-MM-DD') as end_date
-        from logger_projections lpe
-        where lpe.project_id = :selected_project_id
-          and lpe.variable_id = :selected_variable_id
+        select p.projection_id, 
+               p.name,
+               to_char(p.start_time, 'YYYY-MM-DD') as start_date_ansi,
+               to_char(p.end_time, 'YYYY-MM-DD') as end_date_ansi
+        from   logger_projections p
+        where  p.project_id = :project_id
+        order  by p.start_time, p.end_time, lower(p.name)
     </querytext>
   </fullquery>
 
