@@ -6,7 +6,7 @@
   <formtemplate id="project_form" style="standard-lars"></formtemplate>
 </blockquote>
 
-<if @project_exists_p@>
+<if @project_exists_p@ and @edit_mode_p@ eq 0>
   <h2>Variables</h2>
 
   <if @variables:rowcount@ gt 0>
@@ -39,8 +39,6 @@
       [ <a href="map-variable-to-project?project_id=@project_id@">add variable</a> ] 
     </p>
   </if>
-
-</if>
 
 <h2>Projections</h2>
 
@@ -82,3 +80,5 @@
 <p>
   [ <a href="projection?project_id=@project_id@">add projection</a> ]
 </p>
+
+</if>

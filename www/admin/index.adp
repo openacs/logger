@@ -42,7 +42,7 @@
 </else>
 
 <p>
-  <a href="project">Add new project</a>
+  [ <a href="project">add new project</a> ]
 </p>
 
 <h2>Variables</h2>
@@ -78,11 +78,11 @@
 </else>
 
 <p>
-  <a href="variable">Add new variable</a>
+  [ <a href="variable">add new variable</a> ]
 </p>
 
 <h2>Package</h2>
 <p>
-  <a href="@package_permissions_url@">Set permissions of this package</a>
+  [ <a href="@package_permissions_url@">set permissions of this package</a> ]
 </p>
 </div>

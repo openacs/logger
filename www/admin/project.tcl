@@ -11,10 +11,18 @@ ad_page_contract {
 set package_id [ad_conn package_id]
 set user_id [ad_conn user_id]
 
-if { [string equal [form get_action project_form] "done"] } {
-    # User is done editing - redirect back to index page
-    ad_returnredirect .
-    ad_script_abort
+switch -- [form get_action project_form] {
+    "done" {
+        # User is done editing - redirect back to index page
+        ad_returnredirect .
+        ad_script_abort
+    }
+    "formbuilder::edit" {
+        set edit_mode_p 1
+    }
+    default {
+        set edit_mode_p 0
+    }
 }
 
 if { [exists_and_not_null project_id] } {
@@ -148,4 +156,4 @@ if { $project_exists_p } {
           and lpe.variable_id = lv.variable_id
     }   
 
-} 
+}

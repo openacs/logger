@@ -87,7 +87,7 @@ ad_proc -public logger::projection::get {
     Retrieve attributes of the projection with given id into an 
     array (using upvar) in the callers scope. The
     array will contain the keys projection_id, project_id, variable_id, start_time,
-    end_time, value.
+    end_time, value, name, and description.
 
     @param projection_id The id of the projection to retrieve information about
     @param array The name of the array in the callers scope where the information will

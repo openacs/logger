@@ -77,6 +77,43 @@
           </table>
         </p>
 
+        <!-- Projection Section -->
+      <if @selected_project_id@ not nil and @selected_variable_id@ not nil>
+        <p>
+          <table border="0" cellspacing="0" cellpadding="2" width="100%">
+            <tr>
+              <td colspan="2">
+                <p class="logger_filter_bar_section_header">
+                  Projections
+                </p>
+              </td>
+            </tr>
+
+            <if @projections:rowcount@ ne 0>
+              <multiple name="projections">
+            <tr>
+              <td>
+                <if @selected_projection_id@ eq @projections.projection_id@>
+                  <span class="logger_filter_bar_selected_link">@projections.name@</span>
+                </if>
+                <else>
+                  <a href="@projections.url@" title="Show log entries for projection @projections.name@">@projections.name@</a>
+                </else>
+              </td>
+            </tr>
+              </multiple>
+            </if>
+            <else>
+            <tr>
+              <td class="no_items_text">             
+                No projections
+              </td>
+            </tr>
+            </else>
+          </table>        
+        </p>
+      </if>
+
         <!-- User Section -->
         <p> 
           <table border="0" cellspacing="0" cellpadding="2" width="100%">
@@ -141,6 +178,13 @@
               <br />
             </if>
 
+            <if @selected_projection_id@ not nil>
+              <span class="logger_explanation_text">Projection:</span> 
+              <span class="logger_emphasized_text">@selected_projection_name@</span>
+
+              <br />
+            </if>
+
             <if @selected_user_id@ not nil>
               <span class="logger_explanation_text">User:</span> 
               <span class="logger_emphasized_text">@selected_user_name@</span>
@@ -157,9 +201,10 @@
       </table>
 
       <hr />
-
+      
       <include src="lib/entries-table" selected_project_id="@selected_project_id@" 
-                                       selected_variable_id="@selected_variable_id@" 
+                                       selected_variable_id="@selected_variable_id@"
+                                       projection_value="@selected_projection_value@" 
                                        selected_user_id="@selected_user_id@" 
                                        start_date_ansi="@start_date_ansi@" 
                                        end_date_ansi="@end_date_plus_one_ansi@" 

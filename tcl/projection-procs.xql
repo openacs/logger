@@ -48,9 +48,11 @@
         select projection_id, 
                project_id, 
                variable_id, 
-               start_time, 
-               end_time, 
-               value
+               to_char(start_time, 'YYYY-MM-DD') as start_time, 
+               to_char(end_time, 'YYYY-MM-DD') as end_time, 
+               value,
+               name,
+               description
         from logger_projections
         where projection_id = :projection_id
     </querytext>

@@ -7,6 +7,7 @@ ad_page_contract {
 } {
     {selected_project_id:integer ""}
     {selected_variable_id:integer ""}
+    {selected_projection_id:integer ""}
     {selected_user_id:integer ""}
     {start_date:array {}}
     {end_date:array {}}
@@ -18,36 +19,7 @@ set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
 ###########
 #
-# Date handling
-#
-###########
-
-# Set default values for start and end date if the form hasn't been submitted yet
-if { [array size start_date] == 0 } {
-    # Default end date is now (today)
-    set default_end_date_seconds [clock seconds]
-
-    set end_date(year) [clock format $default_end_date_seconds -format "%Y"]
-    set end_date(month) [clock format $default_end_date_seconds -format "%m"]
-    set end_date(day) [clock format $default_end_date_seconds -format "%d"]
-
-    # Default start date is N days back
-    set number_of_days_back 31
-    set seconds_per_day [expr 60*60*24]
-    set default_start_date_seconds [expr $default_end_date_seconds - 31 * $seconds_per_day]
-
-    set start_date(year) [clock format $default_start_date_seconds -format "%Y"]
-    set start_date(month) [clock format $default_start_date_seconds -format "%m"]
-    set start_date(day) [clock format $default_start_date_seconds -format "%d"]
-}
-
-# Get the ANSI representations of the dates
-set start_date_ansi "$start_date(year)-$start_date(month)-$start_date(day)"
-set end_date_ansi "$end_date(year)-$end_date(month)-$end_date(day)"
-
-###########
-#
-# Project and variable default values and names
+# Initialize project, variable, projection, and user names
 #
 ###########
 
@@ -57,11 +29,6 @@ if { ![empty_string_p $selected_project_id] } {
     set selected_project_name $project_array(name)
 } else {
     set selected_project_name ""
-}
-
-# Likewise, need the name of the selected user in the adp
-if { ![empty_string_p $selected_user_id] } {
-    set selected_user_name [person::name -person_id $selected_user_id]
 }
 
 # Find a suitable default variable_id
@@ -116,9 +83,66 @@ if { ![empty_string_p $selected_variable_id] } {
     set selected_variable_unit ""
 }
 
+if { ![empty_string_p $selected_projection_id] } {
+    # Projection selected - use the date range of that projection
+
+    logger::projection::get -projection_id $selected_projection_id -array projection_array
+
+    set selected_projection_name $projection_array(name)
+    set selected_projection_value $projection_array(value)
+} else {
+    set selected_projection_name ""
+    set selected_projection_value ""
+}
+
+# Need the name of the selected user in the adp
+if { ![empty_string_p $selected_user_id] } {
+    set selected_user_name [person::name -person_id $selected_user_id]
+}
+
 ###########
 #
-# Time Filter
+# Initialize dates
+#
+###########
+
+if { [array size start_date] == 0 } {
+    # Form was not submitted
+
+    if { ![empty_string_p $selected_projection_id] } {
+        # Projection selected - use the date range of that projection
+
+        set start_date_seconds [clock scan $projection_array(start_time)]
+        set end_date_seconds [clock scan $projection_array(end_time)]
+    } else {
+        # Use default date range
+
+        # Default end date is now (today)
+        set end_date_seconds [clock seconds]
+
+        # Default start date is N days back
+        set number_of_days_back 31
+        set seconds_per_day [expr 60*60*24]
+        set start_date_seconds [expr $end_date_seconds - 31 * $seconds_per_day]
+    }
+
+    # Initialize the start and end date arrays
+    set end_date(year) [clock format $end_date_seconds -format "%Y"]
+    set end_date(month) [clock format $end_date_seconds -format "%m"]
+    set end_date(day) [clock format $end_date_seconds -format "%d"]
+
+    set start_date(year) [clock format $start_date_seconds -format "%Y"]
+    set start_date(month) [clock format $start_date_seconds -format "%m"]
+    set start_date(day) [clock format $start_date_seconds -format "%d"]
+}
+
+# Get the ANSI representations of the dates
+set start_date_ansi "$start_date(year)-$start_date(month)-$start_date(day)"
+set end_date_ansi "$end_date(year)-$end_date(month)-$end_date(day)"
+
+###########
+#
+# Date Filter
 #
 ###########
 
@@ -131,6 +155,10 @@ template::element create time_filter selected_project_id \
 template::element create time_filter selected_variable_id \
     -widget hidden \
     -value $selected_variable_id
+# Reset projection choice if the dates are changed
+template::element create time_filter selected_projection_id \
+    -widget hidden \
+    -value ""
 template::element create time_filter selected_user_id \
     -widget hidden \
     -value $selected_user_id
@@ -151,7 +179,7 @@ element set_properties time_filter end_date \
 
 ###########
 #
-# Log entries
+# Select log entries
 #
 ###########
 
@@ -166,7 +194,7 @@ set end_date_plus_one_ansi [clock format $end_date_plus_one_seconds -format "%Y-
 
 ###########
 #
-# Projects
+# Select projects
 #
 ###########
 
@@ -193,7 +221,7 @@ db_multirow -extend { url log_url } projects select_projects {
 
 ###########
 #
-# Variables
+# Select variables
 #
 ###########
 
@@ -233,7 +261,7 @@ db_multirow -extend { url log_url } variables select_variables "
 
 ###########
 #
-# Users
+# Select users
 #
 ###########
 
@@ -269,4 +297,23 @@ db_multirow -extend { url } users select_users "
     group by submitter.user_id, submitter.first_names, submitter.last_name
 " {
     set url "index?[export_vars {{selected_user_id $user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"
+}
+
+###########
+#
+# Select projections
+#
+###########
+
+# Only makes sense to show projections for a selected project and variable
+if { ![empty_string_p $selected_project_id] && ![empty_string_p $selected_variable_id] } {
+    db_multirow -extend { url } projections select_projections {
+        select lpe.projection_id,
+               lpe.name
+        from logger_projections lpe
+        where lpe.project_id = :selected_project_id
+          and lpe.variable_id = :selected_variable_id
+    } {
+        set url "index?[export_vars {{selected_projection_id $projection_id} {selected_user_id $selected_user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"        
+    }
 }
