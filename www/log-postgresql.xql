@@ -2,6 +2,8 @@
 
 <queryset>
 
+  <rdbms><type>postgresql</type><version>7.2</version></rdbms>
+
   <fullquery name="get_task_values">
     <querytext>
         SELECT
