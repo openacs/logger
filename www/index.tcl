@@ -300,8 +300,18 @@ set filter_name "Date"
 set weekdayno [clock format [clock seconds] -format %w]
 set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 
-foreach type { this_week last_week past_7 this_month last_month past_30 } {
+foreach type { today yesterday this_week last_week past_7 this_month last_month past_30 } {
     switch $type {
+        today {
+            set name "Today"
+            set new_start_date [clock format [clock seconds] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock seconds] -format "%Y-%m-%d"]
+        }
+        yesterday {
+            set name "Yesterday"
+            set new_start_date [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+            set new_end_date [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
+        }
         this_week {
             set name "This week"
             set new_start_date [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
