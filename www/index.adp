@@ -5,13 +5,13 @@
 
   <tr>
 
-    <td class="logger_filter_bar" valign="top" width="200">
+    <td class="list-filter-pane" valign="top" width="200">
 
       <listfilters name="entries"></listfilters>
 
     </td>
 
-    <td class="logger_body" valign="top">
+    <td class="list-list-pane" valign="top">
 
       <listtemplate name="entries"></listtemplate>
 

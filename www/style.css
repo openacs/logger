@@ -45,23 +45,8 @@ td.logger_navbar {
     background-color: #bbbbff; 
 }
 
-.logger_filter_bar {
-  background-color: #ddddff;
-  vertical-align: top;
-}
-
 .logger_filter_bar_selected_link {
    font-weight: bold;
-}
-
-.logger_body {
-  background-color: white;
-  valign: center;
-  padding-left: 10px;
-}
-
-hr {
-  clear: both;
 }
 
 table.logger_table {
