@@ -52,32 +52,6 @@ db_multirow -extend { permissions_url } variables select_variables {
     set permissions_url "${permissions_uri}?[export_vars {{object_id $variable_id} application_url}]"
 }
 
-###########
-#
-# Projections
-#
-###########
-
-db_multirow projections select_variables {
-    select lpe.projection_id,
-           lpe.name,
-           lpe.description,
-           lpe.value,
-           lpo.name as project_name,
-           lv.name as variable_name,
-           acs_permission.permission_p(lpo.project_id, :user_id, 'admin') as admin_p
-    from logger_projections lpe,
-         logger_projects lpo,
-         logger_variables lv
-    where exists (select 1
-                  from logger_project_pkg_map lppm
-                  where lppm.package_id = :package_id
-                    and lppm.project_id = lpe.project_id
-                 ) 
-      and lpe.project_id = lpo.project_id
-      and lpe.variable_id = lv.variable_id
-} 
-
 set package_permissions_url "${permissions_uri}?[export_vars {{object_id $package_id} application_url}]"
 
 ad_return_template

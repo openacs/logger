@@ -51,73 +51,7 @@ ad_form -name project_form \
     {description:text(textarea),optional
 	{html {cols 60 rows 13}} 
     }
-}
-
-if { $project_exists_p } {
-    # We are in edit or display mode
-    # Display the variables linked to this project
-    set variables_list [list]
-    set variables_text ""
-    db_foreach variables_in_project {
-        select lv.variable_id,
-               lv.name,
-               lpvm.primary_p
-          from logger_project_var_map lpvm,
-               logger_variables lv
-          where lpvm.variable_id = lv.variable_id
-            and lpvm.project_id = :project_id
-    } {
-        set variable_link "<a href=\"variable?variable_id=$variable_id\">$name</a>"
-        if { [string equal $primary_p "f"] } {
-            append variable_link " &nbsp; \[ <a href=\"unmap-variable-from-project?[export_vars {project_id variable_id}]\">unmap</a> | <a href=\"set-primary-variable?[export_vars {project_id variable_id}]\">make primary</a> \]"
-        } else {
-            append variable_link " (primary)"
-        }
-
-        lappend variables_list $variable_link
-    } 
-
-    if { [llength $variables_list] != 0 } {
-        set variables_text "<ul><li><p>[join $variables_list "</p></li><li><p>"]</p></li></ul>"
-    } else {
-        set variables_text "<span class=\"no_items_text\">no variables</span>"
-    }
-    set n_can_be_mapped [db_string n_can_be_mapped {
-        select count(*)
-        from logger_variables lv
-        where (exists (select 1
-                    from logger_project_var_map lpvm,
-                         logger_project_pkg_map lppm
-                    where lv.variable_id = lpvm.variable_id
-                      and lpvm.project_id = lppm.project_id
-                      and lppm.package_id = :package_id
-                   )
-         or lv.package_id = :package_id
-         or lv.package_id is null)
-        and not exists (select 1
-                          from logger_project_var_map lpvm
-                          where lpvm.project_id = :project_id
-                            and lpvm.variable_id = lv.variable_id
-                          )
-        and acs_permission.permission_p(lv.variable_id, :user_id, 'read') = 't'
-    }]
-
-    if { $n_can_be_mapped > 0 } {
-        append variables_text "<p> \[<a href=\"map-variable-to-project?project_id=$project_id\">add variable</a>\] </p>"
-    }
-
-
-     ad_form -extend -name project_form -form {
-         {variables:text(inform)
- 	      {label Variables}
-             {value $variables_text}
-         }
-    }
-   
-} 
-
-# Finalize the form with the execution blocks
-ad_form -extend -name project_form -select_query {
+} -select_query {
             select name,
                description
         from logger_projects
@@ -150,3 +84,68 @@ ad_form -extend -name project_form -select_query {
 
     ad_script_abort
 }
+
+if { $project_exists_p } {
+    # We are in edit or display mode
+
+    ###########
+    #
+    # Variables
+    #
+    ###########
+
+    db_multirow variables variables_in_project {
+        select lv.variable_id,
+               lv.name,
+               lpvm.primary_p
+          from logger_project_var_map lpvm,
+               logger_variables lv
+          where lpvm.variable_id = lv.variable_id
+            and lpvm.project_id = :project_id
+    } 
+
+    set n_can_be_mapped [db_string n_can_be_mapped {
+        select count(*)
+        from logger_variables lv
+        where (exists (select 1
+                    from logger_project_var_map lpvm,
+                         logger_project_pkg_map lppm
+                    where lv.variable_id = lpvm.variable_id
+                      and lpvm.project_id = lppm.project_id
+                      and lppm.package_id = :package_id
+                   )
+         or lv.package_id = :package_id
+         or lv.package_id is null)
+        and not exists (select 1
+                          from logger_project_var_map lpvm
+                          where lpvm.project_id = :project_id
+                            and lpvm.variable_id = lv.variable_id
+                          )
+        and acs_permission.permission_p(lv.variable_id, :user_id, 'read') = 't'
+    }]
+
+    ###########
+    #
+    # Projections
+    #
+    ###########
+
+    db_multirow projections select_projections {
+        select lpe.projection_id,
+               lpe.name,
+               lpe.description,
+               lpe.value,
+               lpo.name as project_name,
+               lv.name as variable_name,
+               to_char(lpe.start_time, 'YYYY-MM-DD') start_day,
+               to_char(lpe.end_time, 'YYYY-MM-DD') end_day,
+               acs_permission.permission_p(lpo.project_id, :user_id, 'admin') as admin_p
+        from logger_projections lpe,
+             logger_projects lpo,
+             logger_variables lv
+        where lpe.project_id = :project_id
+          and lpe.project_id = lpo.project_id
+          and lpe.variable_id = lv.variable_id
+    }   
+
+} 

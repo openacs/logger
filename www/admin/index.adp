@@ -20,8 +20,7 @@
   <multiple name="projects">
     <tr class="logger_table_rows">
       <td>
-          <if @projects.admin_p@> [  <a href="projection?project_id=@projects.project_id@">new projection</a> | 
-            <a href="@projects.permissions_url@">permissions</a> | 
+          <if @projects.admin_p@> [ <a href="@projects.permissions_url@">permissions</a> | 
             <a href="project-delete?project_id=@projects.project_id@" 
             onclick="return confirm('Are you sure you want to delete project @projects.name@?');">delete</a> ]
           </if> 
@@ -81,41 +80,6 @@
 <p>
   <a href="variable">Add new variable</a>
 </p>
-
-<h2>Projections</h2>
-
-<if @projections:rowcount@ ne 0>
-  <table class="logger_table" cellpadding="4" cellspacing="1">
-    <tr class="logger_table_header">
-      <th>&nbsp;</th>
-      <th>Project</th>
-      <th>Variable</th>      
-      <th>Value</th>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-
-  <multiple name="projections">
-    <tr class="logger_table_rows">
-      <td>
-        <if @projections.admin_p@> [ <a href="projection-delete?projection_id=@projections.projection_id@" 
-          onclick="return confirm('Are you sure you want to delete projection @projections.name@?');">delete</a> ]
-        </if> 
-      </td>
-      <td><a href="projection?projection_id=@projections.projection_id@">@projections.project_name@</a></td>
-      <td>@projections.variable_name@</td>
-      <td>@projections.value@</td>
-      <td><a href="projection?projection_id=@projections.projection_id@">@projections.name@</a></td>
-      <td>@projections.description@</td>
-    </tr>
-  </multiple>
-
-  </table>    
-</if>
-<else>
-  <!-- There are no projections -->
-  <span class="no_items_text">There are no projections</span>
-</else>
 
 <h2>Package</h2>
 <p>
