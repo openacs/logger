@@ -1,0 +1,26 @@
+<!-- Shall we lift these classes to the OpenACS level? -->
+.no_items_text {
+    font-style: italic;
+    font-weight: bold;
+}
+
+table.logger_navbar {
+  background-color: #41329c;    
+}
+a.logger_navbar { 
+    color: white; 
+}
+a.logger_navbar:hover { 
+    color: white; 
+    text-decoration: underline;
+}
+.logger_navbar_selected_link {
+    font-weight: bold;    
+}
+.logger_filter_bar_header {
+    font-weight: bold;
+    text-align: center;
+}
+.logger_filter_bar_section_header {
+    font-weight: bold;
+}

@@ -11,75 +11,40 @@ namespace eval logger::project {}
 
 ad_proc -public logger::project::new {
     {-name:required}
-    {-project_id ""}
-    {-package_id ""}
     {-description ""}
     {-project_lead ""}
-    {-creation_user ""}
-    {-creation_ip ""}
+    {-project_id ""}
 } {
   <p>
   Create a logger project.
   </p>
  
   <p>
-  I've tried to design this proc so that it can be used also
-  if there is no HTTP (ad_conn) connection, for example during a data import.
+    This proc requires the ad_conn proc to be initialized (uses user_id, peeraddr, and package_id). 
+    The ad_conn proc is initialized
+    by the request processor during an HTTP request to an OpenACS server.
   </p>
 
   @param name          The name of the project.
-  @param project_id    Any pre-generated id of the new package. Optional.
-  @param package_id    The id of the Logger package in which the project is created. Defaults
-                       to ad_conn package_id. Also used as context_id.
   @param description   The description for the proct. Optional.
   @param project_lead  The user id of the project leader of the project. Defaults
                        to the currently logged in user.
-  @param creation_user The user creating the project. Defaults to ad_conn user_id.
-  @param creation_ip   The ip of the user creating the project. Defaults to ad_conn peeraddr
-  
+  @param project_id    Any pre-generated id of the new package. Optional.
+
   @return The project_id of the created project.
 
   @author Peter Marklund
 } {
-    # Use ad_conn to setup default values and check that required values are provided
-    # if there is no ad_conn
-    # The lists are on the array format 
+    # Use ad_conn to initialize variables
+    # The lists are on the following array format 
     # var_name1 ad_conn_arg_name1 var_name2 ad_conn_arg_name2 ...
-    set required_ad_conn_vars [list package_id package_id creation_user user_id]
-    set optional_ad_conn_vars [list creation_ip peeraddr]
+    set ad_conn_vars [list package_id package_id creation_user user_id creation_ip peeraddr]
     if { [ad_conn isconnected] } {
-        # HTTP connection available
-
-        # ad_conn provides default values for us
-        foreach {var_name ad_conn_name} [concat $required_ad_conn_vars $optional_ad_conn_vars] {
-            if { [empty_string_p [set $var_name]] } {
+        foreach {var_name ad_conn_name} $ad_conn_vars {
                 set $var_name [ad_conn $ad_conn_name]
-
-                # If we are using ad_conn package_id
-                # we might as well use ad_conn to check that its a logger package
-                if { [string equal $var_name package_id] } {
-                    if { ![string equal [ad_conn package_key] logger] } {
-                        error "logger::project::new Defaulting package_id to the current package with key [ad_conn package_key] but package must be a logger package"
-                    }
-                }
-            }
         }
-
-
     } else {
-        # No HTTP connection
-
-        # Default optional ad_conn vars to the empty string
-        foreach {var_name ad_conn_name} $optional_ad_conn_vars {
-            set $var_name ""
-        }
-
-        # Assert that required ad_conn variables are provided
-        foreach var_name $required_ad_conn_vars {
-            if { [empty_string_p [set $var_name]] } {
-                error "logger::project::new - the $var_name argument was not provided and there is no ad_conn (HTTP) connection so a default value cannot be set"
-            }
-        }
+        error "logger::project::new - this proc requires an ad_conn connection"
     }
 
     # Project lead defaults to creation user
@@ -87,9 +52,34 @@ ad_proc -public logger::project::new {
         set project_lead $creation_user
     }
 
+    # Insert the project
     set project_id [db_exec_plsql insert_project {}]
 
     return $project_id
+}
+
+ad_proc -public logger::project::edit {
+    {-project_id:required}
+    {-name:required}
+    {-description:required}
+    {-project_lead:required}
+    {-active_p:required}
+} {
+    Edit a Logger project. 
+
+    @param project_id The id of the project to edit
+    @param name The new name
+    @param description The new description
+    @param project_lead The new id of the project lead
+    @param active_p The new value for active_p, must be t (true) or f (false)
+
+    @return The return value from db_dml
+
+    @author Peter Marklund
+} {
+    ad_assert_arg_value_in_list active_p {t f}
+
+    db_dml update_project {}
 }
 
 ad_proc -public logger::project::delete {
@@ -189,4 +179,19 @@ ad_proc -public logger::project::get_variables {
     @author Peter Marklund
 } {
     return [db_list select_variables {}]
+}
+
+ad_proc -public logger::project::get_primary_variable {
+    {-project_id:required}
+} {
+    Return the id of the variable primarily logged in for a certain project.
+
+    @param project_id The id of the project to return the primary variable for.
+
+    @return The id of the primary variable. Returns the empty string if the
+            project has no primary variable.
+
+    @author Peter Marklund
+} {
+    return [db_string select_primary_variable {} -default ""]
 }

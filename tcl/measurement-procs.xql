@@ -15,4 +15,14 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::measurement::edit.update_measurement">
+    <querytext>
+        update logger_measurements
+                set value = :value,
+                    time_stamp = :time_stamp,
+                    description = :description
+           where measurement_id = :measurement_id
+    </querytext>
+  </fullquery>
+
 </queryset>

@@ -36,9 +36,35 @@ ad_proc -public logger::variable::new {
         set variable_id [db_nextval logger_variables_seq]
     }
 
+    set package_id [ad_conn package_id]
+
     db_dml insert_variable {}
 
     return $variable_id
+}
+
+ad_proc -public logger::variable::edit {
+    {-variable_id:required}
+    {-name:required}
+    {-unit:required}
+    {-type:required}
+} {
+    Edit a logger variable.
+
+    @param variable_id The id of the project to edit
+    @param name The new name of the variable
+    @param unit The new unit of the variable
+    @param type The new type of the variable (additive or non-additive)
+
+    @return The return value from db_dml
+
+    @author Peter Marklund
+} {
+    ad_assert_arg_value_in_list type {additive non-additive}
+    
+    set package_id [ad_conn package_id]
+
+    db_dml update_variable {}
 }
 
 ad_proc -public logger::variable::delete {

@@ -82,13 +82,20 @@ create table logger_variables (
                         constraint logger_variables_type_nn
                         not null
                         constraint logger_variables_type_ck
-                        check (type in ('additive', 'non-additive'))
+                        check (type in ('additive', 'non-additive')),
+  package_id            integer
+                        constraint logger_project_var_map_pi_fk
+                        references apm_packages(package_id)
 );
 
 comment on column logger_variables.type is '
   Indicates if measurements of this variable should be added together or not. 
   Examples of additive variables are time and money spent at different times during
   a project. A non-additive variable would be the amount of money in a bank account.
+';
+
+comment on column logger_variables.package_id is '
+  The id of the package that the variable was created in.
 ';
 
 create sequence logger_variables_seq;

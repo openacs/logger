@@ -46,6 +46,26 @@ ad_proc -public logger::measurement::new {
     return $measurement_id
 }
 
+ad_proc -public logger::measurement::edit {
+    {-measurement_id:required}
+    {-value:required}
+    {-time_stamp:required}
+    {-description ""}    
+} {
+    Edit a measurement.
+
+    @param measurement_id The id of the measurement to edit
+    @param value          The new value of the measurement
+    @param time_stamp     The new time stamp of the measurement
+    @param description    The new description of the measurement
+
+    @return The return value from db_dml
+
+    @author Peter Marklund
+} {
+    db_dml update_measurement {}
+}
+
 ad_proc -public logger::measurement::delete {
     {-measurement_id:required}
 } {

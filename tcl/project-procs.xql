@@ -30,11 +30,31 @@
     </querytext>
   </fullquery>
 
+  <fullquery name="logger::project::get_primary_variable.select_primary_variable">
+    <querytext>
+        select variable_id
+        from logger_project_var_map
+        where project_id = :project_id
+        and primary_p = 't'
+    </querytext>
+  </fullquery>
+    
   <fullquery name="logger::project::get_variables.select_variables">
     <querytext>
       select variable_id
       from logger_project_var_map
       where project_id = :project_id
+    </querytext>
+  </fullquery>
+
+  <fullquery name="logger::project::edit.update_project">
+    <querytext>
+        update logger_projects
+                set name = :name,
+                    description = :description, 
+                    project_lead = :project_lead,
+                    active_p = :active_p
+        where project_id = :project_id
     </querytext>
   </fullquery>
 
