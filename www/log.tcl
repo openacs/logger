@@ -136,12 +136,13 @@ if { $entry_exists_p } {
     set category_trees [category_tree::get_mapped_trees $project_id]
 }
 foreach elm $category_trees {
-    foreach { tree_id name dummy } $elm {}
+    foreach { tree_id name subtree_id } $elm {}
     ad_form -extend -name log_entry_form -form \
         [list [list category_id_${tree_id}:integer(category) \
                    {label $name} \
                    {html {single single}} \
                    {category_tree_id $tree_id} \
+                   {category_subtree_id $subtree_id} \
                    {category_object_id {[value_if_exists entry_id]}}]]
 }   
 
