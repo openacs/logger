@@ -240,6 +240,12 @@ set orderbys {
     default_value time_stamp,desc
 }
 
+set groupby_values {
+    { "Day" { { groupby time_stamp } { orderby time_stamp,desc } } }
+    { "Week" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
+    { "Project" { { groupby project_name } { orderby project_id,asc } } }
+    { "User" { { groupby user_id } { orderby user_id,asc } } }
+}
 
 set normal_row {
     checkbox {}
@@ -279,6 +285,11 @@ foreach id $tree_ids {
     # Orderby
     lappend orderbys c_${id}_category_id  \
         [list label \$tree_name_${id} multirow_cols c_${id}_category_id]
+
+    # Groupby
+    lappend groupby_values [list [category_tree::get_name $id] \
+                                [list [list groupby c_${id}_category_id] \
+                                     [list orderby c_${id}_category_id]]]
 }
 
 lappend normal_row value {} description {}
@@ -308,14 +319,9 @@ list::create \
     -groupby {
         label "Group by"
         type multivar
-        values {
-            { "Day" { { groupby time_stamp } { orderby time_stamp,desc } } }
-            { "Week" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
-            { "Project" { { groupby project_name } { orderby project_id,asc } } }
-            { "User" { { groupby user_id } { orderby user_id,asc } } }
-        }
+        values $groupby_values
     } -orderby $orderbys -formats {
-        normal {
+            normal {
             label "Table"
             layout table
             row $normal_row
@@ -372,9 +378,8 @@ list::create \
         }
     }
 
-# TODO: Order by category tree
-
 # TODO B: With multiple categories from the same tree, make sure they're listed in correct sort_order
+
 
 
 # We add a virtual column per category tree
