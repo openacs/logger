@@ -30,7 +30,10 @@ ad_proc -private logger::util::set_vars_from_ad_conn {
             set $variable_name [ad_conn $ad_conn_name]
         }
     } else {
-        error "logger::util::set_vars_from_ad_conn - this proc requires an ad_conn connection"
+        foreach variable_name $variable_names {
+            upvar $variable_name $variable_name
+            set $variable_name [db_null]
+        }
     }    
 }
 
