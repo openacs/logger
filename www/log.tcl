@@ -131,21 +131,16 @@ ad_form -extend -name log_entry_form -export { project_id variable_id return_url
 }
 
 if { $entry_exists_p } {
-    set category_trees [category_tree::get_mapped_trees $entry_array(project_id)]
+    set the_project_id $entry_array(project_id)
 } else {
-    set category_trees [category_tree::get_mapped_trees $project_id]
+    set the_project_id $project_id
 }
 
-foreach elm $category_trees {
-    util_unlist $elm tree_id name subtree_id assign_single_p
-    ad_form -extend -name log_entry_form -form \
-        [list [list category_id_${tree_id}:integer(category) \
-                   {label $name} \
-                   [ad_decode [template::util::is_true $assign_single_p] 1 {html {single single}} {}] \
-                   {category_tree_id $tree_id} \
-                   {category_subtree_id $subtree_id} \
-                   {category_object_id {[value_if_exists entry_id]}}]]
-}   
+category::ad_form::add_widgets \
+    -container_object_id $the_project_id \
+    -categorized_object_id [value_if_exists entry_id] \
+    -form_name log_entry_form
+
 
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
@@ -183,13 +178,6 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         set time_stamp [clock format [clock seconds] -format "%Y-%m-%d"]
     }
     set time_stamp [template::util::date::acquire ansi $time_stamp]
-} -on_submit {
-    # Collect categories from all the category widgets
-    set category_ids [list]
-    foreach elm $category_trees {
-        util_unlist $elm tree_id name subtree_id assign_single_p
-        set category_ids [concat $category_ids [set category_id_${tree_id}]]
-    }
 } -new_data {
     
     # jarkko: check to see if user has already added this entry and has come
@@ -218,11 +206,11 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                 -description $description
         }
         
-
         category::map_object \
             -remove_old \
             -object_id $entry_id \
-            $category_ids
+            [category::ad_form::get_categories \
+                 -container_object_id $the_project_id]
     }
     
     # Remember this date, as the next entry is likely to be for the same date
@@ -243,7 +231,8 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         category::map_object \
             -remove_old \
             -object_id $entry_id \
-            $category_ids
+            [category::ad_form::get_categories \
+                 -container_object_id $the_project_id]
     }
 
 } -after_submit {
