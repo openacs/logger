@@ -84,14 +84,35 @@ ad_proc -public logger::ui::variable_options {
     @author Peter Marklund
 } {
     if { [empty_string_p $project_id] } {
-        return ""
+        return {}
     }
 
-    set variable_options [list]
-    db_foreach variable_options {
+    return [db_list_of_lists variable_options {}]
+}
+
+ad_proc -public logger::ui::project_options {} {
+    Return a list suitable to be passed to the form builder
+    for the select box of the projects mapped to the
+    current package instance.
+
+    @return A list with variable options on the format 
+         [list [list variable_label1 variable_id1] [list variable_label2 variable_value2] ...]
+    
+    @author Peter Marklund
+} {
+    set package_id [ad_conn package_id]
+
+    set project_options [list]
+    db_foreach project_options {
+    select lp.project_id,
+           lp.name
+    from logger_projects lp,
+         logger_project_pkg_map lppm
+    where lp.project_id = lppm.project_id
+      and lppm.package_id = :package_id
     } {
-        lappend variable_options [list $name $variable_id] 
+        lappend project_options [list $name $project_id] 
     }
 
-    return $variable_options
+    return $project_options
 }

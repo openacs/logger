@@ -21,6 +21,9 @@ if { [string equal [form get_action projection_form] "done"] } {
 if { ![empty_string_p $project_id] } {
     logger::project::get -project_id $project_id -array project_array
     set project_name $project_array(name)
+} elseif { ![empty_string_p $projection_id] } {
+    db_1row select_project_info {}
+    # project_id, project_name
 } else {
     set project_name ""
 }
@@ -57,6 +60,7 @@ ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $ac
     {variable_id:integer(select)
         {label Variable}
         {options {[logger::ui::variable_options -project_id $project_id]}}
+        {mode display}
     }
 
     {value:text

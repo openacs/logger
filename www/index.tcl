@@ -348,6 +348,3 @@ foreach type { this_week last_week past_7 this_month last_month past_30 } {
 if { $custom_p } {
     multirow append filters "" "Custom range" $filter_name "" "" $custom_p $date_clear_url {} {}
 }
-
-
-

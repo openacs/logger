@@ -1,7 +1,7 @@
 ad_page_contract {
     Add/edit/display a log entry.
     
-    @author Peter marklund (peter@collaboraid.biz)
+    @author Peter Marklund (peter@collaboraid.biz)
     @creation-date 2003-04-16
     @cvs-id $Id$
 } {
@@ -150,14 +150,38 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         { [regexp {^([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
         {The value may not contain more than two decimals and must be between 0 and 999999.99}
     }
+
 } -new_data {
     set time_stamp_ansi "[lindex $time_stamp 0]-[lindex $time_stamp 1]-[lindex $time_stamp 2]"
+
+    # jarkko: check to see if user has already added this entry and has come
+    # back with her back button. If the entry exists, we give the user a complaint
+    # and a link to edit this particular entry.
+    if { [string match [db_string check_if_exists "
+	select 1
+	from logger_entries
+	where entry_id = :entry_id
+    " -default "0"] "0"]} {
     logger::entry::new -entry_id $entry_id \
                              -project_id $project_id \
                              -variable_id $variable_id \
                              -value $value \
                              -time_stamp $time_stamp_ansi \
                              -description $description
+    } else {
+	
+	doc_return 200 text/html "[ad_header_with_extra_stuff "Problem with Your Input" "" ""]
+<h2>Problem with Your Input</h2>
+
+to <a href=/>[ad_system_name]</a>
+
+<hr>    
+
+You have already added this entry once. If you want to edit this entry, click <a href='[ad_conn url]?[export_vars entry_id]'>here</a>.
+
+[ad_footer]
+"
+    }
 
     # Present the user with an add form again for quick logging
     ad_returnredirect "[ad_conn url]?[export_vars {project_id variable_id}]"

@@ -22,7 +22,7 @@ if { [ad_conn user_id] != 0 } {
     lappend link_list [list [list selected_user_id $user_id]]
     lappend link_list "My Entries"
 
-    lappend link_list [list "${package_url}log"]
+    lappend link_list [list "${package_url}project-select"]
     lappend link_list {}
     lappend link_list "Add Entry"
 }

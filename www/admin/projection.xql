@@ -2,6 +2,18 @@
 
 <queryset>
 
+  <fullquery name="select_project_info">
+    <querytext>
+        select p.project_id,
+               p.name as project_name
+        from   logger_projects p,
+               logger_projections pn
+        where  p.project_id = pn.project_id
+        and    pn.projection_id = :projection_id
+    </querytext>
+  </fullquery>
+
+
   <fullquery name="select_projections">
     <querytext>
 	  select lpe.name,
