@@ -62,7 +62,7 @@ ad_form -name projection_form -cancel_url index -mode $ad_form_mode -actions $ac
         {options {[logger::ui::variable_options -project_id $project_id]}}
     }
 
-    {value:text
+    {value:float
       {label Value}
       {html {size 50}}
     }

@@ -27,4 +27,14 @@
     </querytext>
   </fullquery>
  
+  <fullquery name="logger::project::users_get_options.select_project_leads">
+    <querytext>
+        select acs_object.name(p.project_lead), project_lead
+        from   logger_projects p,
+               logger_project_pkg_map ppm
+        where  ppm.project_id = p.project_id
+        and    ppm.package_id = :package_id
+    </querytext>
+  </fullquery>
+
 </queryset>
