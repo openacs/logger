@@ -14,10 +14,18 @@ ad_maybe_redirect_for_registration
 set page_title "Select Project to log entries in"
 set context [list $page_title]
 
+set project_options [logger::ui::project_options]
+
+if { [llength $project_options] == 1 } {
+    set project_id [lindex [lindex $project_options 0] 1]
+    ad_returnredirect [export_vars -base log { project_id }]
+    ad_script_abort
+}
+
 ad_form -name project_form -form {
     {project_id:integer(select)
         {label Project}
-        {options {[logger::ui::project_options]}}
+        {options {$project_options}}
     }
 } -on_submit {
     
