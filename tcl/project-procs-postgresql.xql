@@ -25,7 +25,7 @@
  
   <fullquery name="logger::project::users_get_options.select_project_leads">
     <querytext>
-        select acs_object__name(p.project_lead), project_lead
+        select distinct acs_object__name(p.project_lead), project_lead
         from   logger_projects p,
                logger_project_pkg_map ppm
         where  ppm.project_id = p.project_id
