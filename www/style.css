@@ -32,12 +32,17 @@ a.logger_navbar:hover {
 }
 .logger_filter_bar_section_header {
     font-weight: bold;
+    background-color: #bbbbff; 
 }
 
 .logger_filter_bar {
   background-color: #ddddff;
-  float: left;
+  vertical-align: top;
   width: 25%;
+}
+
+.logger_filter_bar_selected_link {
+   font-weight: bold;
 }
 
 .logger_body {

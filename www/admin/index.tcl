@@ -12,7 +12,9 @@ set page_title "Logger Administration"
 
 set home_url [ad_parameter -package_id [ad_acs_kernel_id] HomeURL]
 
-db_multirow projects select_projects {}
+db_multirow projects select_projects {} {
+    set description [string_truncate -len 50 $description]
+}
 
 logger::package::variables_multirow
 

@@ -181,7 +181,13 @@ db_multirow -extend { url log_url } projects select_projects {
       and lppm.package_id = :package_id
     order by lp.name
 } {
-    set url "index?[export_vars {{selected_project_id $project_id}}]"
+    # We always show the current user in the user filter so if we are showing "my entries" carry over the selected_user_id
+    # when selecting a project
+    set url_export_list {{selected_project_id $project_id}}
+    if { [string equal $selected_user_id $user_id] } {
+        lappend url_export_list selected_user_id
+    }
+    set url "index?[export_vars $url_export_list]"
     set log_url "log?[export_vars { project_id {variable_id $selected_variable_id}}]"
 }
 
@@ -257,7 +263,9 @@ db_multirow -extend { url } users select_users "
          acs_objects ao
     where ao.object_id = le.entry_id
       and submitter.user_id = ao.creation_user
-    [ad_decode $where_clauses "" "" "and [join $where_clauses "\n    and "]"]
+      and ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
+           or submitter.user_id = :user_id
+          )
     group by submitter.user_id, submitter.first_names, submitter.last_name
 " {
     set url "index?[export_vars {{selected_user_id $user_id} {selected_project_id $selected_project_id} {selected_variable_id $selected_variable_id}}]"

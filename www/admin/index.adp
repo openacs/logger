@@ -7,8 +7,9 @@
 <if @projects:rowcount@ ne 0>
   <% # Project table header %>
 
-  <table border="1" cellpadding="4">
-    <tr>
+  <table class="logger_table" cellpadding="4" cellspacing="1">
+    <tr class="logger_table_header">
+      <th>&nbsp;</th>
       <th>Project Name</th>
       <th>Project Description</th>
       <th>Active</th>
@@ -17,11 +18,13 @@
 
   <% # Project table rows %>
   <multiple name="projects">
-    <tr>
-      <td><a href="project?project_id=@projects.project_id@">@projects.name@</a>
+    <tr class="logger_table_rows">
+      <td>
           <if @projects.admin_p@> [ <a href="project-delete?project_id=@projects.project_id@" 
-            onclick="return confirm('Are you sure you want to delete project @projects.name@?');">Delete</a> ]
-           </if> 
+            onclick="return confirm('Are you sure you want to delete project @projects.name@?');">delete</a> ]
+          </if> 
+      </td>
+      <td><a href="project?project_id=@projects.project_id@">@projects.name@</a>
       </td>
       <td>@projects.description@</td>
       <td><if @projects.active_p@ eq t>yes</if><else>no</else> </td>
@@ -44,15 +47,15 @@
 <h2>Variables</h2>
 
 <if @variables:rowcount@ ne 0>
-  <table border="1" cellpadding="4">
-    <tr>
+  <table class="logger_table" cellpadding="4" cellspacing="1">
+    <tr class="logger_table_header">
       <th>Name</th>
       <th>Unit</th>
       <th>Additive</th>
     </tr>
 
   <multiple name="variables">
-    <tr>
+    <tr class="logger_table_rows">
       <td><a href="variable?variable_id=@variables.variable_id@">@variables.name@</a></td>
       <td>@variables.unit@</td>
       <td><if @variables.type@ eq additive>yes</if><else>no</else></td>
