@@ -42,7 +42,7 @@
 </if>
 
 <blockquote>
-  <formtemplate id="log_entry_form" style="standard-lars"></formtemplate>
+  <formtemplate id="log_entry_form"></formtemplate>
 </blockquote>
 
 <if @show_log_history_p@ true>

@@ -4,7 +4,7 @@
 <property name="focus">project_form.name</property>
 
 <blockquote>
-  <formtemplate id="project_form" style="standard-lars"></formtemplate>
+  <formtemplate id="project_form"></formtemplate>
 </blockquote>
 
 <if @project_exists_p@ and @edit_mode_p@ eq 0>
