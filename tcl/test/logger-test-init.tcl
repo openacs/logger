@@ -49,12 +49,16 @@ aa_register_case logger_create_package {
         
 
         # Create a package
-        set package_id [apm_package_instance_new -instance_name $package_name \
-                                                 -package_key logger]
+        # Using the old depreceated proc here because apm_package_instance_new have different
+        # arg lists on cvs head and 4.6 branch
+        set package_id [apm_package_create_instance $package_name [ad_conn package_id] logger]
 
         # Create a project in that package
-        set project_id [logger::project::new -name $project_name \
-                                             -package_id $package_id]
+        logger::util::set_vars_from_ad_conn {creation_user creation_ip}        
+        set project_id [logger::project::insert -name $project_name \
+                                                -package_id $package_id \
+                                                -creation_user $creation_user \
+                                                -creation_ip $creation_ip]
 
         # Assert that the name of the project can be retrieved
         logger::project::get -project_id $project_id \
@@ -79,9 +83,7 @@ aa_register_case logger_create_package {
 
         # Create and map the minutes variable
         # (variate by pre-generating the variable id this time)
-        set minutes_var_id [db_nextval logger_variables_seq]
-        set minutes_var_id [logger::variable::new -variable_id $minutes_var_id \
-                                                  -name $minutes_var(name) \
+        set minutes_var_id [logger::variable::new -name $minutes_var(name) \
                                                   -unit $minutes_var(unit) \
                                                   -type $minutes_var(type)]
         logger::project::add_variable -project_id $project_id \

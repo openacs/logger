@@ -13,7 +13,7 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
-set user_id [ad_conn user_id]
+set current_user_id [ad_conn user_id]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
 ###########
@@ -184,7 +184,7 @@ db_multirow -extend { url log_url } projects select_projects {
     # We always show the current user in the user filter so if we are showing "my entries" carry over the selected_user_id
     # when selecting a project
     set url_export_list {{selected_project_id $project_id}}
-    if { [string equal $selected_user_id $user_id] } {
+    if { [string equal $selected_user_id $current_user_id] } {
         lappend url_export_list selected_user_id
     }
     set url "index?[export_vars $url_export_list]"
@@ -264,7 +264,7 @@ db_multirow -extend { url } users select_users "
     where ao.object_id = le.entry_id
       and submitter.user_id = ao.creation_user
       and ([ad_decode $where_clauses "" "" "[join $where_clauses "\n    and "]"]
-           or submitter.user_id = :user_id
+           or submitter.user_id = :current_user_id
           )
     group by submitter.user_id, submitter.first_names, submitter.last_name
 " {

@@ -9,6 +9,32 @@ ad_library {
 
 namespace eval logger::project {}
 
+ad_proc -private logger::project::insert {
+    {-name:required}
+    {-description ""}
+    {-project_lead ""}
+    {-project_id ""}
+    {-package_id:required}
+    {-creation_user:required}
+    {-creation_ip:required}
+} {
+    Inserts a logger project into the database. This proc is only used internally.
+    Should not be used by applications.
+  
+    @return The project_id of the created project.
+
+    @author Peter Marklund
+} {
+    # Project lead defaults to creation user
+    if { [empty_string_p $project_lead] } {
+        set project_lead $creation_user
+    }
+
+    set project_id [db_exec_plsql insert_project {}]
+
+    return $project_id
+}
+
 ad_proc -public logger::project::new {
     {-name:required}
     {-description ""}
@@ -22,7 +48,7 @@ ad_proc -public logger::project::new {
   <p>
     This proc requires the ad_conn proc to be initialized (uses user_id, peeraddr, and package_id). 
     The ad_conn proc is initialized
-    by the request processor during an HTTP request to an OpenACS server.
+    by the request processor during an HTTP request to an OpenACS server. Invokes logger::project::insert
   </p>
 
   @param name          The name of the project.
@@ -33,20 +59,21 @@ ad_proc -public logger::project::new {
 
   @return The project_id of the created project.
 
+  @see logger::project::insert
+
   @author Peter Marklund
 } {
     # Use ad_conn to initialize variables
     logger::util::set_vars_from_ad_conn {package_id creation_user creation_ip}
 
-    # Project lead defaults to creation user
-    if { [empty_string_p $project_lead] } {
-        set project_lead $creation_user
-    }
-
-    # Insert the project
-    set project_id [db_exec_plsql insert_project {}]
-
-    return $project_id
+    return [logger::project::insert \
+                -name $name \
+                -description $description \
+                -project_lead $project_lead \
+                -project_id $project_id \
+                -package_id $package_id \
+                -creation_user $creation_user \
+                -creation_ip $creation_ip]
 }
 
 ad_proc -public logger::project::edit {

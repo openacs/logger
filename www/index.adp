@@ -29,7 +29,9 @@
                   <else>
                     <span class="logger_filter_bar_selected_link">@projects.name@</span>
                   </else>
-                   <a href="@projects.log_url@" title="<if @selected_variable_name@ not nil>Log @selected_variable_name@ in project @projects.name@</if><else>Add log entry in project @projects.name@</else>">+</a>
+                  <if @current_user_id@ ne 0>
+                    <a href="@projects.log_url@" title="<if @selected_variable_name@ not nil>Log @selected_variable_name@ in project @projects.name@</if><else>Add log entry in project @projects.name@</else>">+</a>
+                  </if>
                 </td>
               </tr>
             </multiple>
@@ -58,7 +60,7 @@
                   <a href="@variables.url@" title="Show log entries for variable @variables.name@">@variables.name@ (@variables.unit@)</a>
                 </else>
 
-                <if @selected_project_id@ not nil>
+                <if @selected_project_id@ not nil and @current_user_id@ ne 0>
                   <a href="@variables.log_url@" title="Log @variables.name@ in project @selected_project_name@">+</a>
                 </if>
               </td>

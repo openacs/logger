@@ -149,6 +149,8 @@ as
 
         -- Delete the project acs object. This will cascade the row in the logger_projects table
         -- as well as all projections in the project
+        -- acs_object.delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = project_id;
         acs_object.delete(project_id);
 
   end del;
@@ -205,6 +207,8 @@ as
   is
   begin
         -- Everything should be set up to cascade
+        -- acs_object.delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = variable_id;
         acs_object.delete(variable_id);
   end del;
 
@@ -263,6 +267,8 @@ as
   is
   begin
         -- The row in the entries table will cascade
+        -- acs_object.delete should delete permissions for us but this change is not on cvs head yet
+        delete from acs_permissions where object_id = entry_id;
         acs_object.delete(entry_id);
   end del;
 

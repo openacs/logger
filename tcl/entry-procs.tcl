@@ -89,7 +89,7 @@ ad_proc -public logger::entry::get {
     Retrieve info about the entry with given id into an 
     array (using upvar) in the callers scope. The
     array will contain the keys measruement_id, project_id, variable_id,
-    value, time_stamp, description.
+    value, time_stamp, description, creation_user, and creation_date.
 
     @param entry_id The id of the entry to retrieve information about
     @param array The name of the array in the callers scope where the information will

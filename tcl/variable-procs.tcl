@@ -42,7 +42,7 @@ ad_proc -public logger::variable::new {
         set package_id [db_null]
     }
 
-    db_exec_plsql insert_variable {}
+    set variable_id [db_exec_plsql insert_variable {}]
 
     return $variable_id
 }

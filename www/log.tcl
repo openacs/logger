@@ -19,7 +19,7 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
-set user_id [ad_conn user_id]
+set current_user_id [ad_conn user_id]
 
 if { [exists_and_not_null entry_id] } {
     set entry_exists_p [db_string entry_exists_p {
@@ -186,3 +186,19 @@ ad_form -extend -name log_entry_form -select_query {
     ad_returnredirect "[ad_conn url]?entry_id=$entry_id"
     ad_script_abort
 }
+
+###########
+#
+# Log history
+#
+###########
+
+# Show the log history if the user is looking at /editing his own entry or if
+# the user is adding a new entry
+if { $entry_exists_p && [string equal $current_user_id $entry_array(creation_user)] } {
+    set entry_edited_by_owner_p 1
+} else {
+    set entry_edited_by_owner_p 0
+}
+
+set show_log_history_p [expr $entry_edited_by_owner_p || ! $entry_exists_p]

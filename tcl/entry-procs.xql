@@ -4,14 +4,18 @@
 
   <fullquery name="logger::entry::get.select_entry">
     <querytext>
-        select entry_id,
-               project_id, 
-               variable_id,
-               value,
-               time_stamp,
-               description
-        from logger_entries
-        where entry_id = :entry_id
+        select le.entry_id,
+               le.project_id, 
+               le.variable_id,
+               le.value,
+               le.time_stamp,
+               le.description,
+               ao.creation_user,
+               ao.creation_date
+        from logger_entries le,
+             acs_objects ao
+        where le.entry_id = :entry_id
+          and le.entry_id = ao.object_id
     </querytext>
   </fullquery>
 
