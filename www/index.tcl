@@ -51,9 +51,11 @@ if { ![exists_and_not_null project_id] } {
     if { $num_package_projects == 1 } {
         set project_id $package_projects
     }
+    set passed_project_id 0
 } else {
     # Assume at least one project, if one is selected
     set num_package_projects 1
+    set passed_project_id $project_id
 }
 
 # Default to the current projection

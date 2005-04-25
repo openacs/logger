@@ -14,9 +14,10 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 </property>
 
-<include src="nav-bar">
+<include src="nav-bar" project_id="@project_id@">
 
 <slave>
 
-<include src="nav-bar">
+<include src="nav-bar" project_id="@project_id@">
+
 

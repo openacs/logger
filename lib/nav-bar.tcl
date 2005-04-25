@@ -29,17 +29,35 @@ if { [ad_conn user_id] != 0 } {
     lappend link_list "Add Entry"
 
     if {![empty_string_p $project_manager_url]} {
-        lappend link_list [list "${project_manager_url}"]
-        lappend link_list {}
-        lappend link_list "Projects"
+	
+	if {[empty_string_p project_id]} {
+	    lappend link_list [list "${project_manager_url}"]
+	    lappend link_list {}
+	    lappend link_list "Projects"
 
-        lappend link_list [list "${project_manager_url}processes"]
-        lappend link_list {}
-        lappend link_list "Processes"
+	    lappend link_list [list "${project_manager_url}processes"]
+	    lappend link_list {}
+	    lappend link_list "Processes"
 
-        lappend link_list [list "${project_manager_url}tasks"]
-        lappend link_list {}
-        lappend link_list "Tasks"
+	    lappend link_list [list "${project_manager_url}tasks"]
+	    lappend link_list {}
+	    lappend link_list "Tasks"
+
+        } else {
+	    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
+
+	    lappend link_list [list [export_vars -base "${project_manager_url}one" {project_item_id}]]
+	    lappend link_list {}
+	    lappend link_list "View Project"
+
+	    lappend link_list [list "${project_manager_url}processes"]
+	    lappend link_list {}
+	    lappend link_list "Processes"
+
+	    lappend link_list [list [export_vars -base "${project_manager_url}tasks" {project_item_id}]]
+	    lappend link_list {}
+	    lappend link_list "Tasks"
+	}
 
     }
 }

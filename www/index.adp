@@ -1,6 +1,8 @@
 <master src="/packages/logger/lib/master">
 <property name="title">@instance_name@</property>
-
+<if @passed_project_id@ ne 0>
+    <property name="project_id">@passed_project_id@</property>
+</if>
 <if @num_package_projects@ eq 0>
   <p>
     There are no projects in this instance of logger.
