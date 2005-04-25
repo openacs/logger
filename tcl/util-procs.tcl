@@ -156,3 +156,18 @@ ad_proc -public logger::util::project_manager_linked_p {
         return 1
     }
 }
+
+ad_proc -public logger::util::project_manager_project_id {
+    -project_id:required
+} {
+    return [db_string get_pm_project {
+	SELECT
+        item_id
+	FROM
+	pm_projects, cr_items
+	WHERE
+	logger_project = :project_id AND
+	live_revision = project_id
+    } -default 0
+	   ]
+}

@@ -160,7 +160,7 @@ set elements {
         }
     }
     project_id {
-        display_col project_name
+        display_template {<a href="@entries.project_url@">@entries.project_name@</a>}
         label "Project"
         hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
     }
@@ -543,7 +543,7 @@ list::create \
 
 # some more documentation of what's going on here would be helpful. 
 
-set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url }
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url project_url }
 foreach id $tree_ids {
     lappend extend c_${id}_category_id
 }
@@ -556,6 +556,8 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
     set my_base_url $base_url 
     set my_project_manager_url $project_manager_url
 
+    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
+    set project_url [export_vars -base "[logger::util::project_manager_url]one" {project_item_id}]
     if { ![empty_string_p $tree_id] && ![empty_string_p $category_id] } {
         lappend row_categories($tree_id) $category_id
     }
