@@ -84,7 +84,19 @@ ad_proc -public logger::entry::new {
                 (:task_item_id,
                  :entry_id)
              "
-        
+
+        logger::variable::get -variable_id [logger::project::get_primary_variable -project_id $project_id] -array variable_array
+
+        pm::util::general_comment_add \
+            -object_id $task_item_id \
+            -title "Logged $value $variable_array(unit)" \
+            -comment $description \
+            -mime_type "text/html" \
+            -user_id [ad_conn user_id] \
+            -peeraddr [ad_conn peeraddr] \
+            -type "task" \
+            -send_email_p t
+
         pm::task::update_hours \
             -task_item_id $task_item_id \
             -update_tasks_p t
