@@ -30,7 +30,7 @@ if { [ad_conn user_id] != 0 } {
 
     if {![empty_string_p $project_manager_url]} {
 	
-	if {[empty_string_p project_id]} {
+	if {[empty_string_p $project_id]} {
 	    lappend link_list [list "${project_manager_url}"]
 	    lappend link_list {}
 	    lappend link_list "Projects"
