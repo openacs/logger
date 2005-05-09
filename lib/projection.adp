@@ -1,12 +1,12 @@
 <table>
   <tr>
-    <td>Dates</td>
+    <td>#logger.Dates#</td>
     <td>
       <img src="/shared/1pixel?r=0&g=0&b=255" width="@progress_time_pct2@" height="16" alt="@progress_time_pct@%"
       ><img src="/shared/1pixel?r=200&g=200&b=200" width="@progress_time_pct_inverse2@" height="16">
     </td>
     <td align="right">
-      &nbsp;&nbsp;&nbsp;@progress_days@/@total_days@ days
+      #logger.lt_progress_total_days#
     </td>
     <td align="right">
       &nbsp;&nbsp;&nbsp;@progress_time_pct@%
@@ -32,3 +32,4 @@
     </td>
   </tr>
 </table>
+

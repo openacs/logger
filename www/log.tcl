@@ -19,7 +19,7 @@ ad_page_contract {
         # For the sake of simplicity of the form 
         # we are requiring a project_id to be provided in add mode
         if { ![exists_and_not_null entry_id] && ![exists_and_not_null project_id] } {
-            ad_complain "When adding a log entry a project_id must be provided (either entry_id or project_id must be present)."
+            ad_complain "[_ logger.lt_When_adding_a_log_ent]"
         }
     }
 }
@@ -71,7 +71,7 @@ if { ![exists_and_not_null variable_id] } {
     set variable_id [logger::project::get_primary_variable -project_id $project_id]
 
     if { [empty_string_p $variable_id] } {
-        ad_return_error "Project has no variable" "An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done."
+        ad_return_error "[_ logger.lt_Project_has_no_variab]" "[_ logger.lt_An_administrator_need]"
         ad_script_abort
     }
 }
@@ -112,7 +112,7 @@ if { $entry_exists_p } {
 # versus displaying/editing one
 if { [exists_and_not_null entry_id] || ${__refreshing_p} } {
     # Initial request in display or edit mode or a submit of the form
-    set page_title "Edit Log Entry"
+    set page_title "[_ logger.Edit_Log_Entry]"
 
     if { [string equal $edit "t"] && $edit_p } {
         set ad_form_mode edit
@@ -126,7 +126,7 @@ if { [exists_and_not_null entry_id] || ${__refreshing_p} } {
 
 } else {
     # Initial request in add mode
-    set page_title "Add Log Entry"
+    set page_title "[_ logger.Add_Log_Entry]"
     set ad_form_mode edit
 }
 
@@ -151,8 +151,8 @@ set submit_p [form is_valid log_entry_form]
 
 ad_form -extend -name log_entry_form -export { project_id variable_id return_url } -form {
     {project:text(inform)
-        {section "Project"}
-        {label Project}
+        {section "[_ logger.Project]"}
+        {label "[_ logger.Project]"}
         {value $project_array(name)}
     }
 }
@@ -206,11 +206,11 @@ ad_form -extend -name log_entry_form -form {
 	{html {size 7 maxlength 7}}
     }
     {description:text,optional
-        {label Description} 
+        {label "[_ logger.Description]"} 
         {html {size 50}}
     }
     {time_stamp:date(date),to_sql(ansi),from_sql(ansi)
-        {label Date}
+        {label "[_ logger.Date]"}
     }
 } 
 
@@ -237,15 +237,15 @@ if {[exists_and_not_null pm_project_id]} {
         }
         {pm_task_id:integer(select),optional
             {section "Task"}
-            {label "Subject"}
+            {label "[_ logger.Subject]"}
             {options {$task_options}}
             {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
             {value $my_task_id}
             {help}
-            {help_text "If you change this, please wait for the page to refresh"}
+            {help_text "[_ logger.lt_If_you_change_this_pl]"}
         }
         {status_description:text(inform)
-            {label "Status"}
+            {label "[_ logger.Status]"}
         }
     } 
 
@@ -271,27 +271,27 @@ if {[exists_and_not_null pm_project_id]} {
     ad_form -extend -name log_entry_form -form {
         
         {remaining_work:text(inform)
-            {label "Remaining work"}
+            {label "[_ logger.Remaining_work]"}
             {value $display_hours}
-            {after_html "hours"}
+            {after_html "[_ logger.hours]"}
         }
 
         {total_hours_work:text(inform)
-            {label "Total work"}
+            {label "[_ logger.Total_work]"}
             {value $total_hours_work}
-            {after_html "hours"}
+            {after_html "[_ logger.hours]"}
         }
     } 
 
     ad_form -extend -name log_entry_form -form {
 
         {percent_complete:float
-            {label "Complete"}
+            {label "[_ logger.Complete]"}
             {value $percent_complete}
             {after_html "%"}
             {html {size 5 maxlength 5}}
             {help}
-            {help_text "Set to 100% to close the task, less to open it"}
+            {help_text "[_ logger.lt_Set_to_100_to_close_t]"}
         }
         
     } 
@@ -414,7 +414,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+    ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
     ad_script_abort
 
 } -edit_data {
@@ -479,7 +479,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 
 } -after_submit {
 
-    ad_returnredirect -message "Log entry modified." $return_url
+    ad_returnredirect -message "[_ logger.Log_entry_modified]" $return_url
 
     if {![string equal $pm_task_id -1]} {
         pm::project::compute_status $pm_project_id

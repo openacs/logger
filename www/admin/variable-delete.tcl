@@ -17,7 +17,7 @@ permission::require_permission -object_id $variable_id -party_id $user_id -privi
 set n_log_entries [db_string n_log_entries {}]
 
 if { $n_log_entries > 0 } {
-    ad_return_complaint 1 "Variable is in use: you cannot delete this variable as it is being used by log entries"
+    ad_return_complaint 1 "[_ logger.lt_Variable_is_in_use_yo]"
     ad_script_abort
 }
 

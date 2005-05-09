@@ -1,17 +1,18 @@
 <master>
-<property name="title">Logger Application</property>
+<property name="title">#logger.Logger_Application#</property>
 <p>
-  Before anyone can start working with the Logger application an administrator needs to setup a project.
+  #logger.lt_Before_anyone_can_sta#
 </p>    
 <if @admin_p@>
   <!-- User is an admin so offer him/her to map or create projects -->
   <p>    
-    Since you are an administrator you may <a href="admin">visit the admin pages</a> to do so now.
+    #logger.lt_Since_you_are_an_admi#
   </p>
 </if>
 <else>
   <p>
-    Please contact an administrator about this. Thank you.
+    #logger.lt_Please_contact_an_adm#
   </p>
 </else>
+
 

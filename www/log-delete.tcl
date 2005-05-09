@@ -31,7 +31,7 @@ foreach entry_id $entry_id {
     logger::entry::delete -entry_id $entry_id
 }
     
-ad_returnredirect -message "Entry deleted" $return_url
+ad_returnredirect -message "[_ logger.Entry_deleted]" $return_url
 
 # should update project-manager if appropriate
 

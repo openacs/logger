@@ -130,7 +130,7 @@ if {[string is true $filters_p]} {
         append project_where " and lp.active_p = :project_status "
     }
 
-    set project_status_values [list [list "Open" "t"] [list "Closed" "f"]]
+    set project_status_values [list [list "[_ logger.Open]" "t"] [list "[_ logger.Closed]" "f"]]
 } else {
     set project_where "and lp.project_id = :project_id"
 
@@ -153,54 +153,54 @@ set elements {
         label {}
         display_template {
            <if @entries.edit_p@ true>
-            <a href="@entries.edit_url@" title="Edit this log entry"
+            <a href="@entries.edit_url@" title="[_ logger.Edit_this_log_entry]"
             ><img src="/shared/images/Edit16.gif" height="16" width="16" 
-            alt="Edit" border="0"></a>
+            alt="[_ logger.Edit]" border="0"></a>
             </if>        
         }
     }
     project_id {
         display_template {<a href="@entries.project_url@">@entries.project_name@</a>}
-        label "Project"
+        label "[_ logger.Project]"
         hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
     }
     user_id {
-        label "User"
+        label "[_ logger.User]"
         display_col user_name
         link_url_eval {[acs_community_member_url -user_id $user_id]}
         csv_col user_name
         hide_p {[ad_decode [exists_and_not_null user_id] 1 1 0]}
     }
     time_stamp {
-        label "Date"
+        label "[_ logger.Date]"
         display_col time_stamp_pretty
-        aggregate_label {[ad_decode $variable(type) "additive" "Total" "Average"]}
-        aggregate_group_label {[ad_decode $variable(type) "additive" "Group total" "Group Average"]}
+        aggregate_label {[ad_decode $variable(type) "additive" "[_ logger.Total_1]" "[_ logger.Average]"]}
+        aggregate_group_label {[ad_decode $variable(type) "additive" "[_ logger.Group_total]" "[_ logger.Group_Average]"]}
     }
     value {
         label $variable(name)
         link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
-        link_html { title "View this entry" }
+        link_html { title "[_ logger.View_this_entry]" }
         aggregate {[ad_decode $variable(type) "additive" sum average]}
         html { align right }
         display_eval {[lc_numeric $value]}
     }
     description {
-        label "Description"
+        label "[_ logger.Description]"
         display_eval {[string_truncate -len 50 -- $description]}
         link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
-        link_html { title "View this entry" }
+        link_html { title "[_ logger.View_this_entry]" }
     }
     task_name {
-        label "Task"
+        label "[_ logger.Task]"
         link_url_eval {[export_vars -base "${my_project_manager_url}task-one" { task_id }]}
 }
     description_long {
-        label "Description"
+        label "[_ logger.Description]"
         display_eval {[string_truncate -len 400 -- $description]}
         hide_p 1
         link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
-        link_html { title "View this entry" }
+        link_html { title "[_ logger.View_this_entry]" }
     }
 }
 
@@ -210,7 +210,7 @@ set elements {
 
 set filters {
     project_id {
-        label "Projects"
+        label "[_ logger.Projects]"
         values $project_values
         where_clause {
             le.project_id = :project_id
@@ -219,14 +219,14 @@ set filters {
         has_default_p {[ad_decode [llength $project_values] 1 1 0]}
     }
     project_status {
-        label "Project status"
+        label "[_ logger.Project_status]"
         values $project_status_values
         where_clause {
             lp.active_p = :project_status
         }
     }
     variable_id {
-        label "Variables"
+        label "[_ logger.Variables]"
         values {[db_list_of_lists select_variables {}]}
         where_clause {
             le.variable_id = :variable_id
@@ -235,77 +235,77 @@ set filters {
         has_default_p t
     }
     projection_id {
-        label "Projections"
+        label "[_ logger.Projections]"
         type multivar
         values $projection_values
         has_default_p 1
     }
     user_id {
-        label "Users"
+        label "[_ logger.Users]"
         values {[db_list_of_lists select_users {}]}
         where_clause {
             submitter.person_id = :user_id
         }
     }
     time_stamp {
-        label "Date"
+        label "[_ logger.Date]"
         where_clause {
             le.time_stamp >= to_date(:start_date,'YYYY-MM-DD') and le.time_stamp <= to_date(:end_date,'YYYY-MM-DD')
         }
-        other_label "Custom"
+        other_label "[_ logger.Custom]"
         type multival
         has_default_p 1
         values {
             {
-                "Today" {
+                "[_ logger.Today]" {
                     [clock format [clock seconds] -format "%Y-%m-%d"]
                     [clock format [clock seconds] -format "%Y-%m-%d"]
                 }
             }
             {
-                "Yesterday" {
+                "[_ logger.Yesterday]" {
                     [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
                     [clock format [clock scan "-1 days"] -format "%Y-%m-%d"]
                 }
             }
             {
-                "This week" {
+                "[_ logger.This_week]" {
                     [clock format [clock scan "-$weekdayno days"] -format "%Y-%m-%d"]
                     [clock format [clock scan "[expr 6-$weekdayno] days"] -format "%Y-%m-%d"]
                 }
             }
             {
-                "Last week" {
+                "[_ logger.Last_week]" {
                     [clock format [clock scan "[expr -7-$weekdayno] days"] -format "%Y-%m-%d"]
                     [clock format [clock scan "[expr -1-$weekdayno] days"] -format "%Y-%m-%d"]
                 }
             }
             {
-                "Past 7 days" {
+                "[_ logger.Past_7_days]" {
                     [clock format [clock scan "-1 week 1 day"] -format "%Y-%m-%d"]
                     [clock format [clock seconds] -format "%Y-%m-%d"]
                 }
             }
             {
-                "This month" {
+                "[_ logger.This_month]" {
                     [clock format [clock scan "[expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
                     [clock format [clock scan "1 month -1 day" -base [clock scan "[expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
                 }
             }
             {
-                "Last month" {
+                "[_ logger.Last_month]" {
                     [clock format [clock scan "-1 month [expr 1-$monthdayno] days"] -format "%Y-%m-%d"]
                     [clock format [clock scan "1 month -1 day" -base [clock scan "-1 month [expr 1-$monthdayno] days"]] -format  "%Y-%m-%d"]
                 }
             }
             {
-                "Past 30 days" {
+                "[_ logger.Past_30_days]" {
                     [clock format [clock scan "-1 month 1 day"] -format "%Y-%m-%d"]
                     [clock format [clock seconds] -format "%Y-%m-%d"]
                 }
             }
             {
-                "Always" {
+                "[_ logger.Always]" {
                     [clock format 0 -format "%Y-%m-%d"]
                     [clock format [clock scan "+10 year"] -format "%Y-%m-%d"]
                 }
@@ -313,7 +313,7 @@ set filters {
         }
     }
     pm_task_id {
-        label "Tasks"
+        label "[_ logger.Tasks]"
         where_clause {
             task.item_id = :pm_task_id
         }
@@ -322,18 +322,18 @@ set filters {
 
 set orderbys {
     time_stamp {
-        label "Date"
+        label "[_ logger.Date]"
         orderby_desc "le.time_stamp desc, ao.creation_date desc"
         orderby_asc "le.time_stamp asc, ao.creation_date asc"
         default_direction desc
     }
     project_id {
-        label "Project" 
+        label "[_ logger.Project]" 
         orderby_asc "project_name asc, le.time_stamp desc, ao.creation_date desc"
         orderby_desc "project_name desc, le.time_stamp desc, ao.creation_date desc"
     }
     user_id {
-        label "User"
+        label "[_ logger.User]"
         orderby_asc "user_name asc, le.time_stamp desc, ao.creation_date desc"
         orderby_desc "user_name desc, le.time_stamp desc, ao.creation_date desc"
     }
@@ -343,7 +343,7 @@ set orderbys {
         orderby_desc "value desc, le.time_stamp desc, ao.creation_date desc"
     }
     description {
-        label "Description"
+        label "[_ logger.Description]"
         orderby_asc "description asc, le.time_stamp desc, ao.creation_date desc"
         orderby_desc "description desc, le.time_stamp desc, ao.creation_date desc"
     }
@@ -357,10 +357,10 @@ if {[exists_and_not_null show_orderby_p] && [string is false $show_orderby_p]} {
 
 
 set groupby_values {
-    { "Day" { { groupby time_stamp } { orderby time_stamp,desc } } }
-    { "Week" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
-    { "Project" { { groupby project_name } { orderby project_id,asc } } }
-    { "User" { { groupby user_id } { orderby user_id,asc } } }
+    { "#logger.Day#" { { groupby time_stamp } { orderby time_stamp,desc } } }
+    { "#logger.Week#" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
+    { "#logger.Project#" { { groupby project_name } { orderby project_id,asc } } }
+    { "#logger.User#" { { groupby user_id } { orderby user_id,asc } } }
 }
 
 set normal_row {
@@ -449,17 +449,17 @@ if {![info exists add_link]} {
     set add_link "${base_url}project-select"
 }
 
-set actions_list [list "Add Entry" $add_link "Add new log entry"] 
+set actions_list [list "[_ logger.Add_Entry]" $add_link "[_ logger.Add_new_log_entry]"] 
 
 set delete_link "${base_url}log-delete"
 
-set bulk_actions_list [list "Delete" $delete_link "Delete checked entries"] 
+set bulk_actions_list [list "[_ logger.Delete]" $delete_link "[_ logger.lt_Delete_checked_entrie]"] 
 
 list::create \
     -name entries \
     -multirow entries \
     -key entry_id \
-    -row_pretty_plural "entries" \
+    -row_pretty_plural "[_ logger.entries]" \
     -checkbox_name checkbox \
     -selected_format $format \
     -class "list" \
@@ -474,17 +474,17 @@ list::create \
     } \
     -elements $elements -filters $filters \
     -groupby {
-        label "Group by"
+        label "[_ logger.Group_by]"
         type multivar
         values $groupby_values
     } -orderby $orderbys -formats {
             normal {
-            label "Table"
+            label "[_ logger.Table]"
             layout table
             row $normal_row
         }
         detailed {
-            label "Detailed table"
+            label "[_ logger.Detailed_table]"
             layout table
             row {
                 checkbox {
@@ -504,7 +504,7 @@ list::create \
             }
         }
         list {
-            label "List"
+            label "[_ logger.List]"
             layout list
             template {
                 <table cellpadding="0" cellspacing="4">
@@ -519,17 +519,16 @@ list::create \
 
                       <listelement name="description_long"><br>
 
-                      <span class="list-label">Project:</span> <listelement name="project_id"><br>
+                      <span class="list-label">[_ logger.Project]:</span> <listelement name="project_id"><br>
 
-                      <span class="list-label">By</span> <listelement name="user_id">
-                      <span class="list-label">on</span> <listelement name="time_stamp">
+                      [_ logger.lt_span_classlist-labelB]
                     </td>
                   </tr>
                 </table>
             }
         }
         csv {
-            label "CSV"
+            label "[_ logger.CSV]"
             output csv
             page_size 0
         }
@@ -573,7 +572,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
         set edit_p [expr $project_write_p($project_id) || ($user_id == [ad_conn user_id])]
         set delete_p $edit_p
         if { $delete_p } {
-            set delete_onclick "return confirm('Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?');"
+            set delete_onclick "return confirm('[_ logger.lt_Are_you_sure_you_want_5]');"
             set delete_url [export_vars -base "${base_url}log-delete" { entry_id }]
         } else {
             set delete_url {}

@@ -16,47 +16,47 @@ set link_list {}
 set index_urls [list "${package_url}" "${package_url}."]
 lappend link_list $index_urls
 lappend link_list {}
-lappend link_list "List"
+lappend link_list "[_ logger.List]"
 
 # My log entry page
 if { [ad_conn user_id] != 0 } {
     lappend link_list $index_urls
     lappend link_list [list [list user_id $user_id]]
-    lappend link_list "My Entries"
+    lappend link_list "[_ logger.My_Entries]"
 
     lappend link_list [list "${package_url}project-select"]
     lappend link_list {}
-    lappend link_list "Add Entry"
+    lappend link_list "[_ logger.Add_Entry]"
 
     if {![empty_string_p $project_manager_url]} {
 	
 	if {[empty_string_p $project_id]} {
 	    lappend link_list [list "${project_manager_url}"]
 	    lappend link_list {}
-	    lappend link_list "Projects"
+	    lappend link_list "[_ logger.Projects]"
 
 	    lappend link_list [list "${project_manager_url}processes"]
 	    lappend link_list {}
-	    lappend link_list "Processes"
+	    lappend link_list "[_ logger.Processes]"
 
 	    lappend link_list [list "${project_manager_url}tasks"]
 	    lappend link_list {}
-	    lappend link_list "Tasks"
+	    lappend link_list "[_ logger.Tasks]"
 
         } else {
 	    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
 
 	    lappend link_list [list [export_vars -base "${project_manager_url}one" {project_item_id}]]
 	    lappend link_list {}
-	    lappend link_list "View Project"
+	    lappend link_list "[_ logger.View_Project]"
 
 	    lappend link_list [list "${project_manager_url}processes"]
 	    lappend link_list {}
-	    lappend link_list "Processes"
+	    lappend link_list "[_ logger.Processes]"
 
 	    lappend link_list [list [export_vars -base "${project_manager_url}tasks" {project_item_id}]]
 	    lappend link_list {}
-	    lappend link_list "Tasks"
+	    lappend link_list "[_ logger.Tasks]"
 	}
 
     }
@@ -66,7 +66,7 @@ if { [ad_conn user_id] != 0 } {
 if { $admin_p } {
     lappend link_list [list "${package_url}admin/"]
     lappend link_list {}
-    lappend link_list "Admin"
+    lappend link_list "[_ logger.Admin]"
 }
 
 # Convert the list to a multirow and add the selected_p attribute

@@ -27,12 +27,12 @@ switch -- [form get_action project_form] {
 
 if { [exists_and_not_null project_id] } {
     # Initial request in display or edit mode or a submit of the form
-    set page_title "One Project"
+    set page_title "[_ logger.One_Project]"
     set ad_form_mode display
     set project_exists_p [db_string project_exists_p {}]                         
 } else {
     # Initial request in add mode
-    set page_title "Add a Project"
+    set page_title "[_ logger.Add_a_Project]"
     set ad_form_mode edit
     set project_exists_p 0
 }
@@ -50,12 +50,12 @@ ad_form -name project_form \
 
     {name:text
         {html {size 50}}
-        {label "Name"}
+        {label "[_ logger.Name]"}
     }
 
     {description:text(textarea),optional
 	{html {cols 60 rows 13}} 
-        {label "Description"}
+        {label "[_ logger.Description]"}
     }
 
     {project_lead:search,optional
@@ -69,7 +69,7 @@ ad_form -name project_form \
 if { ![ad_form_new_p -key project_id] } {
     ad_form -extend -name project_form -form {
         {active_p:text(radio)
-            {label "Active"}
+            {label "[_ logger.Active]"}
             {options {{Yes t} {No f}}}
         }
     }
@@ -113,9 +113,9 @@ ad_form -extend -name project_form -select_query {
 
 } -after_submit {
     if { [ad_form_new_p -key project_id] } {
-        set message "Project \"$name\" has been created."
+        set message "[_ logger.lt_Project_name_has_been]"
     } else {
-        set message "Project \"$name\" has been modified."
+        set message "[_ logger.lt_Project_name_has_been_1]"
     }
 
     ad_returnredirect -message $message [export_vars -base [ad_conn url] { project_id }]
@@ -157,24 +157,24 @@ set add_variable_url [export_vars -base map-variable-to-project { project_id }]
 
 template::list::create \
     -name variables \
-    -actions [list "Add variable" [export_vars -base map-variable-to-project { project_id }] {}] \
+    -actions [list "[_ logger.Add_variable]" [export_vars -base map-variable-to-project { project_id }] {}] \
     -elements {
         name {
-            label "Variable Name"
+            label "[_ logger.Variable_Name]"
             link_url_col display_url
         }
         unit {
-            label "Unit"
+            label "[_ logger.Unit]"
         }
         type {
-            label "Additive"
+            label "[_ logger.Additive]"
             display_template {
                 <if @variables.type@ eq additive>Yes</if><else>No</else>
             }
             html { align center }
         }
         primary_p {
-            label "Primary"
+            label "[_ logger.Primary]"
             display_template {
                 <if @variables.primary_p@ true><b>*</b></if>
                 <else><a href="@variables.set_primary_url@">set</a></else>
@@ -190,31 +190,31 @@ template::list::create \
 
 
 template::list::create \
-    -name "projections" \
-    -actions [list "Create new projection" [export_vars -base projection { project_id }] {}] \
+    -name "[_ logger.projections]" \
+    -actions [list "[_ logger.lt_Create_new_projection]" [export_vars -base projection { project_id }] {}] \
     -elements {
         name {
-            label "Projection Name"
+            label "[_ logger.Projection_Name]"
             link_url_col display_url
         }
         start_date_pretty {
-            label "Start"
+            label "[_ logger.Start]"
         }
         end_date_pretty {
-            label "End"
+            label "[_ logger.End]"
         }
         variable_name {
-            label "Variable"
+            label "[_ logger.Variable]"
         }
         value_pretty {
-            label "Value"
+            label "[_ logger.Value]"
             html { align right }
         }
         delete {
             sub_class narrow
             display_template {
-                <a href="@projections.delete_url@" title="Delete this projection"
-                onclick="return confirm('Are you sure you want to delete the projection @projections.name@?');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                <a href="@projections.delete_url@" title="[_ logger.lt_Delete_this_projectio]"
+                onclick="return confirm('[_ logger.lt_Are_you_sure_you_want_4]');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="[_ logger.Delete]" border="0"></a>
                 </if>
             }            
             html { align center }

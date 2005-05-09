@@ -5,11 +5,11 @@
 </if>
 <if @num_package_projects@ eq 0>
   <p>
-    There are no projects in this instance of logger.
+    #logger.lt_There_are_no_projects#
   </p>
   <if @admin_p@ true>
     <ul class="action-links">
-      <li><a href="admin/">Setup logger projects now</a></li>
+      <li><a href="admin/">#logger.lt_Setup_logger_projects#</a></li>
     </ul>
   </if>
 </if>
@@ -50,3 +50,4 @@
       &="show_tasks_p">
   </else>
 </else>
+

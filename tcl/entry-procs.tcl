@@ -85,11 +85,13 @@ ad_proc -public logger::entry::new {
                  :entry_id)
              "
 
-        logger::variable::get -variable_id [logger::project::get_primary_variable -project_id $project_id] -array variable_array
+        logger::project::get -project_id $project_id -array project_array
+	logger::variable::get -variable_id [logger::project::get_primary_variable -project_id $project_id] -array variable_array
+        set log_title "$project_array(name)\: [pm::task::name -task_item_id $task_item_id]: logged $value $variable_array(unit)"
 
         pm::util::general_comment_add \
             -object_id $task_item_id \
-            -title "Logged $value $variable_array(unit)" \
+            -title $log_title \
             -comment $description \
             -mime_type "text/html" \
             -user_id [ad_conn user_id] \

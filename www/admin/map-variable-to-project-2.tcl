@@ -14,4 +14,4 @@ logger::project::map_variable -project_id $project_id -variable_id $variable_id
 logger::variable::get -variable_id $variable_id -array variable
 logger::project::get -project_id $project_id -array project
 
-ad_returnredirect -message "Variable \"$variable(name)\" has been added to \"$project(name)\"." [export_vars -base "project" { project_id }]
+ad_returnredirect -message "[_ logger.lt_Variable_variablename]" [export_vars -base "project" { project_id }]

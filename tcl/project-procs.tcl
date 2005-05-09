@@ -286,7 +286,7 @@ ad_proc -private logger::project::users_get_options {} {
 
     set users_list [db_list_of_lists select_project_leads {}]
 
-    lappend users_list { "Search..." ":search:"}
+    lappend users_list { "[_ logger.Search]..." ":search:"}
     
     return $users_list
 }

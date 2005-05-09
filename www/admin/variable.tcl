@@ -19,33 +19,33 @@ if { [string equal [form get_action variable_form] "done"] } {
 
 if { [exists_and_not_null variable_id] } {
     # Initial request in display or edit mode or a submit of the form
-    set page_title "One variable"
+    set page_title "[_ logger.One_variable]"
     set ad_form_mode display
 } else {
     # Initial request in add mode
-    set page_title "Add a variable"
+    set page_title "[_ logger.Add_a_variable]"
     set ad_form_mode edit
 }
 
 set context [list $page_title]
 
-set actions_list [list [list Edit "edit"] [list Done done]]
+set actions_list [list [list Edit "[_ acs-kernel.common_edit]"] [list Done [_ acs-kernel.common_done]]]
 ad_form -name variable_form -cancel_url index -export { project_id } -mode $ad_form_mode -actions $actions_list -form {
     variable_id:key(acs_object_id_seq)
 
     {name:text
         {html {size 50}}
-        {label "Name"}
+        {label "[_ logger.Name]"}
     }
 
     {unit:text
         {html {size 50}}
-        {label "Unit"}
+        {label "[_ logger.Unit]"}
     }
 
     {type:text(radio)
         {options {{Additive additive} {Non-Additive non-additive}}}
-        {label "Type"}
+        {label "[_ logger.Type]"}
     }
 
 } -select_query_name select_variable -validate {

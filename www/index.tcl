@@ -19,7 +19,7 @@ ad_page_contract {
 } -validate {
     time_stamps_valid {
         if { [llength $time_stamp] != 0 && [llength $time_stamp] != 2 } {
-            ad_complain "You must supply either two or no time_stamp values"
+            ad_complain "[_ logger.lt_You_must_supply_eithe]"
         } else {
             if { [catch { 
                 set time_stamp_secs [list]
@@ -30,7 +30,7 @@ ad_page_contract {
                 # We sort the time stamps here. Plain integer sort should be what we want
                 set time_stamp_secs [lsort -integer $time_stamp_secs]
             }] } {
-                ad_complain "Time stamps not valid"
+                ad_complain "[_ logger.lt_Time_stamps_not_valid]"
             } else {
                 set start_date [clock format [lindex $time_stamp_secs 0] -format "%Y-%m-%d"]
                 set end_date [clock format [lindex $time_stamp_secs 1] -format "%Y-%m-%d"]
