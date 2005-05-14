@@ -7,7 +7,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="1.1b3" url="http://openacs.org/repository/download/apm/logger-1.1b3.apm">
+    <version name="1.2b1" url="http://openacs.org/repository/download/apm/logger-1.2b1.apm">
         <owner url="mailto:lars@collaboraid.biz">Lars Pind</owner>
         <owner url="mailto:peter@collaboraid.biz">Peter Marklund</owner>
         <owner url="mailto:jade@rubick.com">Jade Rubick</owner>
@@ -18,7 +18,7 @@
 
 Logger can be optionally integrated with project-manager, for logging of time against projects and tasks.</description>
 
-        <provides url="logger" version="1.1b3"/>
+        <provides url="logger" version="1.2b1"/>
         <maturity>1</maturity>
         <requires url="acs-tcl" version="4.6.2"/>
         <requires url="categories" version="1.0d3"/>

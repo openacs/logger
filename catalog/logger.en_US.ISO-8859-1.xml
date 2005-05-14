@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="logger" package_version="1.1b3" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Active">Active</msg>
+  <msg key="Add">Add</msg>
+  <msg key="Add_a_Project">Add a Project</msg>
+  <msg key="Add_a_projection">Add a projection</msg>
+  <msg key="Add_a_variable">Add a variable</msg>
+  <msg key="Add_Entry">Add Entry</msg>
+  <msg key="Add_Log_Entry">Add Log Entry</msg>
+  <msg key="Add_new_log_entry">Add new log entry</msg>
+  <msg key="Add_variable">Add variable</msg>
+  <msg key="Additive">Additive</msg>
+  <msg key="Admin">Admin</msg>
+  <msg key="Always">Always</msg>
+  <msg key="Average">Average</msg>
+  <msg key="Cancel_do_not_delete">Cancel, do not delete</msg>
+  <msg key="Closed">Closed</msg>
+  <msg key="Complete">Complete</msg>
+  <msg key="Create_new_project">Create new project</msg>
+  <msg key="Create_new_variable">Create new variable</msg>
+  <msg key="CSV">CSV</msg>
+  <msg key="Custom">Custom</msg>
+  <msg key="Date">Date</msg>
+  <msg key="Dates">Dates</msg>
+  <msg key="Day">Day</msg>
+  <msg key="Define_categories">Define categories</msg>
+  <msg key="Delete">Delete</msg>
+  <msg key="Delete_this_project">Delete this project</msg>
+  <msg key="Delete_this_variable">Delete this variable</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Detailed_table">Detailed table</msg>
+  <msg key="Edit">Edit</msg>
+  <msg key="Edit_Log_Entry">Edit Log Entry</msg>
+  <msg key="Edit_this_log_entry">Edit this log entry</msg>
+  <msg key="End">End</msg>
+  <msg key="entries">entries</msg>
+  <msg key="Entry_deleted">Entry deleted</msg>
+  <msg key="Group_Average">Group Average</msg>
+  <msg key="Group_by">Group by</msg>
+  <msg key="Group_total">Group total</msg>
+  <msg key="Help">Help</msg>
+  <msg key="hours">hours</msg>
+  <msg key="Important_Message">Important Message</msg>
+  <msg key="Last_month">Last month</msg>
+  <msg key="Last_week">Last week</msg>
+  <msg key="Link_in">Link in</msg>
+  <msg key="Link_to_instance">Link to instance</msg>
+  <msg key="List">List</msg>
+  <msg key="Log_entry_modified">Log entry modified.</msg>
+  <msg key="Logger_Application">Logger Application</msg>
+  <msg key="lt_A_bvariableb_is_somet">A &lt;b&gt;variable&lt;/b&gt; is something you wish to track, for example:</msg>
+  <msg key="lt_Add_a_variable_to_pro">Add a variable to project \&quot;$project(name)\&quot;</msg>
+  <msg key="lt_Add_Entry_add_link___">Add Entry&quot; $add_link &quot;&lt;#_ Add new log entry&quot;] 
+
+set delete_link &quot;${base_url}log-delete&quot;
+
+set bulk_actions_list [list &quot;&lt;#_ Delete&quot; $delete_link &quot;&lt;#_ Delete checked entries&quot;] 
+
+list::create \
+    -name entries \
+    -multirow entries \
+    -key entry_id \
+    -row_pretty_plural &quot;entries&quot; \
+    -checkbox_name checkbox \
+    -selected_format $format \
+    -class &quot;list&quot; \
+    -main_class &quot;list&quot; \
+    -sub_class &quot;narrow&quot; \
+    -pass_properties {
+        variable
+    } -actions $actions_list \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars {
+        return_url
+    } \
+    -elements $elements -filters $filters \
+    -groupby {
+        label &quot;&lt;#_ Group by&quot;
+        type multivar
+        values $groupby_values
+    } -orderby $orderbys -formats {
+            normal {
+            label &quot;&lt;#_ Table&quot;
+            layout table
+            row $normal_row
+        }
+        detailed {
+            label &quot;&lt;#_ Detailed table&quot;
+            layout table
+            row {
+                checkbox {
+                    html { rowspan 2 }
+                }
+                edit {} 
+                project_id {}
+                user_id {}
+                time_stamp {}
+                value {}
+            }
+            row {
+                description_long {
+                    html { colspan 5 }
+                    hide_p 0
+                }
+            }
+        }
+        list {
+            label &quot;&lt;#_ List&quot;
+            layout list
+            template {
+                &lt;table cellpadding=&quot;0&quot; cellspacing=&quot;4&quot;&gt;
+                  &lt;tr&gt;
+                    &lt;td valign=&quot;top&quot;&gt;
+                      &lt;listelement name=&quot;checkbox&quot;&gt; 
+                    &lt;/td&gt;
+                    &lt;td valign=&quot;top&quot;&gt;
+                      &lt;span class=&quot;list-label&quot;&gt;@variable.name@:&lt;/span&gt;
+                      &lt;listelement name=&quot;value&quot;&gt;
+                      &lt;span class=&quot;list-label&quot;&gt;@variable.unit@&lt;/span&gt;&lt;br&gt;
+
+                      &lt;listelement name=&quot;description_long&quot;&gt;&lt;br&gt;
+
+                      &lt;span class=&quot;list-label&quot;&gt;Project:&lt;/span&gt; &lt;listelement name=&quot;project_id&quot;&gt;&lt;br&gt;
+
+                      &lt;span class=&quot;list-label&quot;&gt;By&lt;/span&gt; &lt;listelement name=&quot;user_id&quot;&gt;
+                      &lt;span class=&quot;list-label&quot;&gt;on&lt;/span&gt; &lt;listelement name=&quot;time_stamp&quot;&gt;
+                    &lt;/td&gt;
+                  &lt;/tr&gt;
+                &lt;/table&gt;
+            }
+        }
+        csv {
+            label &quot;&lt;#_ CSV&quot;
+            output csv
+            page_size 0
+        }
+    }
+
+# TODO B: With multiple categories from the same tree, make sure they're listed in correct sort_order
+
+
+
+# We add a virtual column per category tree
+
+# some more documentation of what's going on here would be helpful. 
+
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url project_url }
+foreach id $tree_ids {
+    lappend extend c_${id}_category_id
+}
+
+array set row_categories [list]
+array set project_write_p [list]
+
+db_multirow -extend $extend -unclobber entries select_entries2 { } {
+
+    set my_base_url $base_url 
+    set my_project_manager_url $project_manager_url
+
+    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
+    set project_url [export_vars -base &quot;[logger::util::project_manager_url]one&quot; {project_item_id}]
+    if { ![empty_string_p $tree_id] &amp;&amp; ![empty_string_p $category_id] } {
+        lappend row_categories($tree_id) $category_id
+    }
+    
+    if { ![db_multirow_group_last_row_p -column entry_id] } {
+        continue
+    } else {
+        set selected_p [string equal [ns_queryget entry_id] $entry_id]
+        set edit_url [export_vars -base &quot;${base_url}log&quot; { entry_id { edit t } { return_url [ad_return_url] } }]
+        if { ![exists_and_not_null project_write_p($project_id)] } {
+            set project_write_p($project_id) [template::util::is_true [permission::permission_p -object_id $project_id -privilege write]]
+        }
+        set edit_p [expr $project_write_p($project_id) || ($user_id == [ad_conn user_id])]
+        set delete_p $edit_p
+        if { $delete_p } {
+            set delete_onclick &quot;return confirm('&lt;#_ Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?</msg>
+  <msg key="lt_Add_variablesname_to_">Add @variables.name@ to $project(name)</msg>
+  <msg key="lt_An_administrator_need">An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done.</msg>
+  <msg key="lt_An_example_of_why_thi">An example of why this is useful is if you work for a company,
+    which works on many different projects for different clients. In
+    that scenario, you would mount a logger instance in your intranet,
+    where people log the hours they spend on projects. Then if you
+    want to give your clients access to your logs, you can mount an
+    instance per client in the client's extranet area. These client
+    loggers would only have access to the projects that pertain to the
+    given client.</msg>
+  <msg key="lt_Are_you_sure_you_want">Are you sure you want to delete</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Are you sure you want to delete log entry with $value $unit $variable_name on $time_stamp?</msg>
+  <msg key="lt_Are_you_sure_you_want_2">Are you sure you want to delete project @projects.name@?</msg>
+  <msg key="lt_Are_you_sure_you_want_3">Are you sure you want to delete variable @variables.name@?</msg>
+  <msg key="lt_Are_you_sure_you_want_4">Are you sure you want to delete the projection @projections.name@?</msg>
+  <msg key="lt_Are_you_sure_you_want_5">Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?</msg>
+  <msg key="lt_Before_anyone_can_sta">Before anyone can start working with the Logger application an administrator needs to setup a project.</msg>
+  <msg key="lt_Create_new_projection">Create new projection</msg>
+  <msg key="lt_Delete_checked_entrie">Delete checked entries</msg>
+  <msg key="lt_Delete_this_projectio">Delete this projection</msg>
+  <msg key="lt_Expenses_currency_USD">Expenses (currency, USD, EUR, whatever)</msg>
+  <msg key="lt_If_you_change_this_pl">If you change this, please wait for the page to refresh</msg>
+  <msg key="lt_Log_entry_for_value_v">Log entry for $value $variable_array(unit) with description \&quot;$description\&quot; added.</msg>
+  <msg key="lt_Logger_Application_In">Logger Application Instance</msg>
+  <msg key="lt_Make_this_project_act">Make this project active</msg>
+  <msg key="lt_Make_this_project_ina">Make this project inactive</msg>
+  <msg key="lt_No_projects_in_this_i">No projects in this instance of logger.</msg>
+  <msg key="lt_No_variables_not_alre">No variables not already part of this project</msg>
+  <msg key="lt_Please_contact_an_adm">Please contact an administrator about this. Thank you.</msg>
+  <msg key="lt_progress_total_days">&amp;nbsp;&amp;nbsp;&amp;nbsp;%progress_days%/%total_days% days</msg>
+  <msg key="lt_Project_has_no_variab">Project has no variable</msg>
+  <msg key="lt_Project_name_has_been">Project \&quot;$name\&quot; has been created.</msg>
+  <msg key="lt_Project_name_has_been_1">Project \&quot;$name\&quot; has been modified.</msg>
+  <msg key="lt_Projects_not_in_this_">Projects not in this logger application instance which can be linked in:</msg>
+  <msg key="lt_Set_permissions_for_t">Set permissions for this logger application instance</msg>
+  <msg key="lt_Set_to_100_to_close_t">Set to 100% to close the task, less to open it</msg>
+  <msg key="lt_Setup_logger_projects">Setup logger projects now</msg>
+  <msg key="lt_Since_you_are_an_admi">Since you are an administrator you may &lt;a href=&quot;admin&quot;&gt;visit the admin pages&lt;/a&gt; to do so now.</msg>
+  <msg key="lt_Some_variables_will_b">Some variables will be &lt;b&gt;additive&lt;/b&gt;, meaning that it makes
+    sense to add them together and look at the total. An example of an
+    additive variable is time spent. Others are &lt;b&gt;non-additive&lt;/b&gt;,
+    which means the opposite. Instead, you would typically average
+    over them. An example is measuring your personal weight, or the
+    account balance of your bank account. It doesn't make sense to add
+    those numbers together, they're snapshots at a given point in
+    time, and just because you check your account balance 10 times a
+    day doesn't (necessarily) mean you're getting richer and richer.</msg>
+  <msg key="lt_span_classlist-labelB">&lt;span class=&quot;list-label&quot;&gt;By&lt;/span&gt; &lt;listelement name=&quot;user_id&quot;&gt;
+                      &lt;span class=&quot;list-label&quot;&gt;on&lt;/span&gt; &lt;listelement name=&quot;time_stamp&quot;&gt;</msg>
+  <msg key="lt_The_logger_can_track_">The logger can track a number of &lt;b&gt;variables&lt;/b&gt; in different &lt;b&gt;projects&lt;/b&gt;</msg>
+  <msg key="lt_There_are_no_matching">There are no matching log entries</msg>
+  <msg key="lt_There_are_no_projects">There are no projects in this instance of logger.</msg>
+  <msg key="lt_these_num_entries_log">these %num_entries% log entries</msg>
+  <msg key="lt_Time_stamps_not_valid">Time stamps not valid</msg>
+  <msg key="lt_Variable_is_in_use_yo">Variable is in use: you cannot delete this variable as it is being used by log entries</msg>
+  <msg key="lt_Variable_variablename">Variable \&quot;$variable(name)\&quot; has been added to \&quot;$project(name)\&quot;.</msg>
+  <msg key="lt_Variables_are_bshared">Variables are &lt;b&gt;shared between all projects&lt;/b&gt;, so that you can
+    summarize the variable across projects. However, if you have many
+    diverse projects going on, only certain variables will make sense
+    for any given project, hence we let you &lt;b&gt;map variables to
+    projects&lt;/b&gt;.</msg>
+  <msg key="lt_Weight_of_goods_shipp">Weight of goods shipped (lbs, kgs)</msg>
+  <msg key="lt_When_adding_a_log_ent">When adding a log entry a project_id must be provided (either entry_id or project_id must be present).</msg>
+  <msg key="lt_You_can_mount_multipl">You can mount multiple &lt;b&gt;instances of the logger
+    application&lt;/b&gt;. The projects you define are shared between all
+    logger application instances, subject to the permissions you grant
+    on them. Each instance of logger will be setup to display a
+    certain subset of the projects available, as defined by the
+    administrator of that instance.</msg>
+  <msg key="lt_You_must_a_hrefadd_va">You must &lt;a
+  href=&quot;%add_variable_url%&quot;&gt;add a variable&lt;/a&gt; to
+  your project before you will be able to log entries to it.</msg>
+  <msg key="lt_You_must_supply_eithe">You must supply either two or no time_stamp values</msg>
+  <msg key="lt_Your_personal_weight_">Your personal weight (lbs, kgs). Non-additive.</msg>
+  <msg key="My_Entries">My Entries</msg>
+  <msg key="Name">Name</msg>
+  <msg key="One_Project">One Project</msg>
+  <msg key="One_projection">One projection</msg>
+  <msg key="One_variable">One variable</msg>
+  <msg key="Open">Open</msg>
+  <msg key="Past_7_days">Past 7 days</msg>
+  <msg key="Past_30_days">Past 30 days</msg>
+  <msg key="Permissions">Permissions</msg>
+  <msg key="Primary">Primary</msg>
+  <msg key="Processes">Processes</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Project_Lead">Project Lead</msg>
+  <msg key="Project_Name">Project Name</msg>
+  <msg key="Project_status">Project status</msg>
+  <msg key="Projection">Projection:</msg>
+  <msg key="Projection_Name">Projection Name</msg>
+  <msg key="Projections">Projections</msg>
+  <msg key="projections">projections</msg>
+  <msg key="Projects">Projects</msg>
+  <msg key="Recent_Entries">Recent Entries</msg>
+  <msg key="Remaining_work">Remaining work</msg>
+  <msg key="Search">Search</msg>
+  <msg key="Start">Start</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Subject">Subject</msg>
+  <msg key="Table">Table</msg>
+  <msg key="Task">Task</msg>
+  <msg key="Tasks">Tasks</msg>
+  <msg key="this_log_entry">this log entry</msg>
+  <msg key="This_month">This month</msg>
+  <msg key="This_week">This week</msg>
+  <msg key="Time_spent_hours">Time spent (hours)</msg>
+  <msg key="Today">Today</msg>
+  <msg key="Total">Total:</msg>
+  <msg key="Total_1">Total</msg>
+  <msg key="Total_work">Total work</msg>
+  <msg key="Type">Type</msg>
+  <msg key="Unit">Unit</msg>
+  <msg key="Unlink">Unlink</msg>
+  <msg key="User">User</msg>
+  <msg key="Users">Users</msg>
+  <msg key="Value">Value</msg>
+  <msg key="Variable">Variable</msg>
+  <msg key="Variable_Name">Variable Name</msg>
+  <msg key="Variables">Variables</msg>
+  <msg key="variables">variables</msg>
+  <msg key="View_Project">View Project</msg>
+  <msg key="View_this_entry">View this entry</msg>
+  <msg key="Week">Week</msg>
+  <msg key="Yesterday">Yesterday</msg>
+</message_catalog>
