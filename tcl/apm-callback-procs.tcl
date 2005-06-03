@@ -49,3 +49,110 @@ ad_proc -public logger::apm::before_uninstantiate {
         logger::project::delete -project_id $project_id
     }
 }
+
+ad_proc -public -callback pm::project_new -impl logger {
+    {-package_id:required}
+    {-project_id:required}
+    {-data:required}
+} {
+    Create a new logger project for each new project manager project
+} {
+    array set callback_data $data
+
+    db_1row project_data {
+	select creation_user, title, description, project_id as project_rev_id
+	from pm_projectsx
+	where item_id = :project_id
+    }
+
+    if {[exists_and_not_null callback_data(organization_id)]} {
+	set customer_name [organizations::name -organization_id $callback_data(organization_id)]
+	if {![empty_string_p $customer_name]} {
+	    append title "$customer_name - $title"
+	}
+    }
+
+    # create a logger project
+    set logger_project [logger::project::new \
+			    -name $title \
+			    -description $description \
+			    -project_lead $creation_user]
+
+    application_data_link::new -this_object_id $project_id -target_object_id $logger_project
+
+    if {[exists_and_not_null callback_data(variables)]} {
+	foreach var $callback_data(variables) {
+	    logger::project::map_variable -project_id $logger_project -variable_id $var
+	}
+    } else {
+	# add in the default variable
+	logger::project::map_variable -project_id $logger_project -variable_id [logger::variable::get_default_variable_id]
+    }
+
+    # we want the logger project to show up in logger!
+    foreach logger_package_id [application_link::get_linked -from_package_id $package_id -to_package_key "logger"] {
+        logger::package::map_project \
+            -project_id $logger_project \
+            -package_id $logger_package_id
+    }
+}
+
+ad_proc -public -callback pm::project_edit -impl logger {
+    {-package_id:required}
+    {-project_id:required}
+    {-data:required}
+} {
+    array set callback_data $data
+    set project_rev_id [pm::project::get_project_id -project_item_id $project_id]
+
+    db_1row project_data {
+	select creation_user, title, description, status_id
+	from pm_projectsx
+	where project_id = :project_rev_id
+    }
+
+    # if we edit the name of the project, we need to edit the logger
+    # project name too.
+
+    set logger_project [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type logger_project] 0]
+    set active_p [pm::status::open_p -task_status_id $status_id]
+
+    if {[exists_and_not_null callback_data(organization_id)]} {
+	set customer_name [organizations::name -organization_id $callback_data(organization_id)]
+	if {![empty_string_p $customer_name]} {
+	    append title "$customer_name - $title"
+	}
+    }
+
+    logger::project::edit \
+        -project_id $logger_project \
+        -name $title \
+        -description "$description" \
+        -project_lead $creation_user \
+        -active_p $active_p
+
+    if {[exists_and_not_null callback_data(variables)]} {
+	logger::project::remap_variables -project_id $logger_project -new_variable_list $callback_data(variables)
+    } else {
+	logger::project::remap_variables -project_id $logger_project -new_variable_list [logger::variable::get_default_variable_id]
+    }
+}
+
+ad_proc -public -callback pm::task_edit -impl logger {
+    {-package_id:required}
+    {-task_id:required}
+} {
+    # we have to update all logged hours to make sure the hours are
+    # set to the correct project whenever the project is changed.
+
+    set logger_project [lindex [application_data_link::get_linked -from_object_id $project_item_id -to_object_type logger_project] 0]
+
+    db_dml update_logger_entries {
+	update logger_entries 
+	set project_id = :logger_project 
+	where entry_id in (select object_id_two
+			   from acs_rels
+			   where object_id_one = :task_id
+			   and rel_type = 'application_data_link')
+    }
+}
