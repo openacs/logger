@@ -102,6 +102,9 @@ ad_proc -public -callback pm::project_edit -impl logger {
     {-project_id:required}
     {-data:required}
 } {
+    If we edit the name of the project, we need to edit the logger
+    project name too.
+} {
     array set callback_data $data
     set project_rev_id [pm::project::get_project_id -project_item_id $project_id]
 
@@ -110,9 +113,6 @@ ad_proc -public -callback pm::project_edit -impl logger {
 	from pm_projectsx
 	where project_id = :project_rev_id
     }
-
-    # if we edit the name of the project, we need to edit the logger
-    # project name too.
 
     set logger_project [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type logger_project] 0]
     set active_p [pm::status::open_p -task_status_id $status_id]
@@ -142,9 +142,9 @@ ad_proc -public -callback pm::task_edit -impl logger {
     {-package_id:required}
     {-task_id:required}
 } {
-    # we have to update all logged hours to make sure the hours are
-    # set to the correct project whenever the project is changed.
-
+    Update all logged hours to make sure the hours are
+    set to the correct project whenever the project is changed.
+} {
     set logger_project [lindex [application_data_link::get_linked -from_object_id $project_item_id -to_object_type logger_project] 0]
 
     db_dml update_logger_entries {
