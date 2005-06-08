@@ -145,6 +145,8 @@ ad_proc -public -callback pm::task_edit -impl logger {
     Update all logged hours to make sure the hours are
     set to the correct project whenever the project is changed.
 } {
+    set project_item_id [pm::task::project_item_id -task_item_id $task_id]
+
     set logger_project [lindex [application_data_link::get_linked -from_object_id $project_item_id -to_object_type logger_project] 0]
 
     db_dml update_logger_entries {
