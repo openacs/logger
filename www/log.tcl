@@ -79,18 +79,19 @@ if { ![exists_and_not_null variable_id] } {
 # We need project and variable names
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
-
+set unit $variable_array(unit)
 # get the project_manager_url if this is related to project manager
 set project_manager_url [logger::util::project_manager_url]
 
 if {![empty_string_p $project_manager_url]} {
     # project manager is installed, so we set the corresponding project
-    set pm_project_id [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type "pm_project"] 0]
-
+    if {[empty_string_p $pm_project_id]} {
+	set pm_project_id [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type "pm_project"] 0]
+    }
     #we only call this if project_manager is installed (the url is
     #not empty)
     if { [exists_and_not_null entry_id] && [empty_string_p $pm_task_id]} {
-        set pm_task_id [logger::entry::task_id -entry_id $entry_id]
+        set pm_task_id [lindex [application_data_link::get_linked -from_object_id $entry_id -to_object_type "pm_task"] 0]
     }
 
 
@@ -172,7 +173,7 @@ set submit_p [form is_valid log_entry_form]
 ad_form -extend -name log_entry_form -export { project_id variable_id return_url } -form {
     {project:text(inform)
         {section "[_ logger.Project]"}
-        {label Project}
+        {label "[_ logger.Project]"}
         {value $project_array(name)}
     }
 }
@@ -201,15 +202,15 @@ category::ad_form::add_widgets \
 ad_form -extend -name log_entry_form -form {
     {value:float
         {label $variable_array(name)}
-        {after_html $variable_array(unit)}
+        {after_html $unit}
 	{html {size 7 maxlength 7}}
     }
     {description:text,optional
-        {label Description} 
+        {label "[_ logger.Description]"} 
         {html {size 50}}
     }
     {time_stamp:date(date),to_sql(ansi),from_sql(ansi)
-        {label Date}
+        {label "[_ logger.Date]"}
     }
 } 
 
@@ -235,8 +236,8 @@ if {[exists_and_not_null pm_project_id]} {
             {value $pm_project_id}
         }
         {pm_task_id:integer(select),optional
-            {section "[_ logger.Task]"}
-            {label "[_ logger.Subject]"}
+            {section "[_ project-manager.Task]"}
+            {label "[_ project-manager.Subject]"}
             {options {$task_options}}
             {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
             {value $my_task_id}
@@ -244,7 +245,7 @@ if {[exists_and_not_null pm_project_id]} {
             {help_text "[_ logger.lt_If_you_change_this_pl]"}
         }
         {status_description:text(inform)
-            {label "[_ logger.Status]"}
+            {label "[_ project-manager.Status]"}
         }
     } 
 
@@ -270,27 +271,27 @@ if {[exists_and_not_null pm_project_id]} {
     ad_form -extend -name log_entry_form -form {
         
         {remaining_work:text(inform)
-            {label "[_ logger.Remaining_work]"}
+            {label "[_ project-manager.Remaining_work]"}
             {value $display_hours}
-            {after_html "[_ logger.hours]"}
+            {after_html "[_ project-manager.hours]"}
         }
 
         {total_hours_work:text(inform)
-            {label "[_ logger.Total_work]"}
+            {label "[_ project-manager.Total_work]"}
             {value $total_hours_work}
-            {after_html "[_ logger.hours]"}
+            {after_html "[_ project-manager.hours]"}
         }
     } 
 
     ad_form -extend -name log_entry_form -form {
 
         {percent_complete:float
-            {label "[_ logger.Complete]"}
+            {label "[_ project-manager.Complete]"}
             {value $percent_complete}
             {after_html "%"}
             {html {size 5 maxlength 5}}
             {help}
-            {help_text "[_ logger.lt_Set_to_100_to_close_t]"}
+            {help_text "[_ project-manager.lt_Set_to_100_to_close_t]"}
         }
         
     } 
@@ -360,11 +361,11 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
                 -value $value \
                 -time_stamp $time_stamp \
                 -description $description \
-                -task_item_id $pm_task_id \
                 -project_item_id $pm_project_id
 
             if {[exists_and_not_null pm_task_id]} {
-
+		
+		application_data_link::new -this_object_id $entry_id -target_object_id $pm_task_id 
                 logger::entry::pm_after_change \
                     -task_item_id $pm_task_id \
                     -new_percent_complete $percent_complete \
