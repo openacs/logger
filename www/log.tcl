@@ -19,7 +19,7 @@ ad_page_contract {
         # For the sake of simplicity of the form 
         # we are requiring a project_id to be provided in add mode
         if { ![exists_and_not_null entry_id] && ![exists_and_not_null project_id] } {
-            ad_complain "When adding a log entry a project_id must be provided (either entry_id or project_id must be present)."
+            ad_complain "[_ logger.lt_When_adding_a_log_ent]"
         }
     }
 }
@@ -71,7 +71,7 @@ if { ![exists_and_not_null variable_id] } {
     set variable_id [logger::project::get_primary_variable -project_id $project_id]
 
     if { [empty_string_p $variable_id] } {
-        ad_return_error "Project has no variable" "An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done."
+        ad_return_error "[_ logger.lt_Project_has_no_variab]" "[_ logger.lt_An_administrator_need]"
         ad_script_abort
     }
 }
@@ -85,13 +85,33 @@ set project_manager_url [logger::util::project_manager_url]
 
 if {![empty_string_p $project_manager_url]} {
     # project manager is installed, so we set the corresponding project
-    set pm_project_id [pm::project::get_project -logger_project $project_id]
+    set pm_project_id [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type "pm_project"] 0]
 
     #we only call this if project_manager is installed (the url is
     #not empty)
     if { [exists_and_not_null entry_id] && [empty_string_p $pm_task_id]} {
         set pm_task_id [logger::entry::task_id -entry_id $entry_id]
     }
+
+
+    # we want to give the option of choosing task if you have chosen a
+    # project. When a new task is chosen, we want to change the
+    # information shown about that task
+
+    set task_options [list]
+
+    if {[exists_and_not_null pm_task_id]} {
+
+        set task_options [pm::task::options_list \
+                              -project_item_id $pm_project_id \
+                              -dependency_task_ids [list $pm_task_id]]
+    } else {
+
+        set task_options [pm::task::options_list \
+                              -project_item_id $pm_project_id]
+
+    }
+
 }
 
 ###########
@@ -112,7 +132,7 @@ if { $entry_exists_p } {
 # versus displaying/editing one
 if { [exists_and_not_null entry_id] || ${__refreshing_p} } {
     # Initial request in display or edit mode or a submit of the form
-    set page_title "Edit Log Entry"
+    set page_title "[_ logger.Edit_Log_Entry]"
 
     if { [string equal $edit "t"] && $edit_p } {
         set ad_form_mode edit
@@ -126,7 +146,7 @@ if { [exists_and_not_null entry_id] || ${__refreshing_p} } {
 
 } else {
     # Initial request in add mode
-    set page_title "Add Log Entry"
+    set page_title "[_ logger.Add_Log_Entry]"
     set ad_form_mode edit
 }
 
@@ -151,7 +171,7 @@ set submit_p [form is_valid log_entry_form]
 
 ad_form -extend -name log_entry_form -export { project_id variable_id return_url } -form {
     {project:text(inform)
-        {section "Project"}
+        {section "[_ logger.Project]"}
         {label Project}
         {value $project_array(name)}
     }
@@ -174,27 +194,6 @@ category::ad_form::add_widgets \
     -categorized_object_id [value_if_exists entry_id] \
     -form_name log_entry_form
 
-
-# we want to give the option of choosing task if you have chosen a
-# project. When a new task is chosen, we want to change the
-# information shown about that task
-
-if {[logger::util::project_manager_linked_p]} {
-
-    set task_options [list]
-
-    if {[exists_and_not_null pm_task_id]} {
-
-        set task_options [pm::task::options_list \
-                              -project_item_id $pm_project_id \
-                              -dependency_task_ids [list $pm_task_id]]
-    } else {
-
-        set task_options [pm::task::options_list \
-                              -project_item_id $pm_project_id]
-
-    }
-}
 
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
@@ -236,16 +235,16 @@ if {[exists_and_not_null pm_project_id]} {
             {value $pm_project_id}
         }
         {pm_task_id:integer(select),optional
-            {section "Task"}
-            {label "Subject"}
+            {section "[_ logger.Task]"}
+            {label "[_ logger.Subject]"}
             {options {$task_options}}
             {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
             {value $my_task_id}
             {help}
-            {help_text "If you change this, please wait for the page to refresh"}
+            {help_text "[_ logger.lt_If_you_change_this_pl]"}
         }
         {status_description:text(inform)
-            {label "Status"}
+            {label "[_ logger.Status]"}
         }
     } 
 
@@ -271,27 +270,27 @@ if {[exists_and_not_null pm_project_id]} {
     ad_form -extend -name log_entry_form -form {
         
         {remaining_work:text(inform)
-            {label "Remaining work"}
+            {label "[_ logger.Remaining_work]"}
             {value $display_hours}
-            {after_html "hours"}
+            {after_html "[_ logger.hours]"}
         }
 
         {total_hours_work:text(inform)
-            {label "Total work"}
+            {label "[_ logger.Total_work]"}
             {value $total_hours_work}
-            {after_html "hours"}
+            {after_html "[_ logger.hours]"}
         }
     } 
 
     ad_form -extend -name log_entry_form -form {
 
         {percent_complete:float
-            {label "Complete"}
+            {label "[_ logger.Complete]"}
             {value $percent_complete}
             {after_html "%"}
             {html {size 5 maxlength 5}}
             {help}
-            {help_text "Set to 100% to close the task, less to open it"}
+            {help_text "[_ logger.lt_Set_to_100_to_close_t]"}
         }
         
     } 
@@ -303,6 +302,7 @@ if {[exists_and_not_null pm_project_id]} {
 
 if { [exists_and_not_null pm_task_id] } {
 
+    set task_title [pm::task::name -task_item_id $pm_task_id]
     set context [list [list "${project_manager_url}task-one?task_id=$pm_task_id" "$task_title"] $page_title]
 
 } elseif { [exists_and_not_null pm_project_id] } {
@@ -414,7 +414,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect -message "Log entry for $value $variable_array(unit) with description \"$description\" added." [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+    ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
     ad_script_abort
 
 } -edit_data {
@@ -479,7 +479,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 
 } -after_submit {
 
-    ad_returnredirect -message "Log entry modified." $return_url
+    ad_returnredirect -message "[_ logger.Log_entry_modified]" $return_url
 
     if {![string equal $pm_task_id -1]} {
         pm::project::compute_status $pm_project_id
