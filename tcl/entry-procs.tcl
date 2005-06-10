@@ -17,7 +17,6 @@ ad_proc -public logger::entry::new {
     {-time_stamp:required}
     {-description ""}
     {-party_id ""}
-    {-task_item_id ""}
     {-project_item_id ""}
     {-update_status:boolean}
 } {
@@ -40,9 +39,6 @@ ad_proc -public logger::entry::new {
     @param party_id       The party that is entering the 
     logged entry. Defaults to ad_conn user_id if nothing is passed in
 
-    @param task_item_id If passed in, the project-manager task
-    to log time against
-
     @param project_item_id If passed in, the project-manager project
 
     @param update_status_p If set, updates the project manager project
@@ -64,50 +60,6 @@ ad_proc -public logger::entry::new {
 
     # The creator can admin his own entry
     permission::grant -party_id $creation_user -object_id $entry_id -privilege admin
-
-    # if we have a task_id, then we need to note that this
-    # entry is logged to a particular task.
-    if {[exists_and_not_null task_item_id]} {
-        db_dml delete_logger_map {
-            DELETE FROM
-            pm_task_logger_proj_map
-            WHERE
-            logger_entry = :entry_id
-        }
-
-        db_dml add_logger_map "
-                INSERT INTO
-                pm_task_logger_proj_map
-                (task_item_id,
-                 logger_entry)
-                VALUES
-                (:task_item_id,
-                 :entry_id)
-             "
-        
-	logger::project::get -project_id $project_id -array project_array
-	logger::variable::get -variable_id [logger::project::get_primary_variable -project_id $project_id] -array variable_array
-	set log_title "$project_array(name)\: [pm::task::name -task_item_id $task_item_id]: logged $value $variable_array(unit)"
-
-        pm::util::general_comment_add \
-            -object_id $task_item_id \
-            -title $log_title \
-            -comment $description \
-            -mime_type "text/html" \
-            -user_id [ad_conn user_id] \
-            -peeraddr [ad_conn peeraddr] \
-            -type "task" \
-            -send_email_p t
-
-        pm::task::update_hours \
-            -task_item_id $task_item_id \
-            -update_tasks_p t
-
-        if { $update_status_p } {
-            pm::project::compute_status $project_item_id
-        }
-    }
-
 
     return $entry_id
 }
