@@ -14,9 +14,9 @@ ad_proc -public logger::apm::after_install {} {
 
     @author Peter Marklund
 } {
-    logger::variable::new -name "Time" -unit "hours" -pre_installed_p 1
+    logger::variable::new -name "[_ logger.Time]" -unit "[_ logger.hours]" -pre_installed_p 1
 
-    logger::variable::new -name "Expense" -unit "Euro" -pre_installed_p 1
+    logger::variable::new -name "[_ logger.Expense]" -unit "[_ logger.Euro]" -pre_installed_p 1
 }
 
 ad_proc -public logger::apm::before_uninstall {} {

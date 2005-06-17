@@ -40,8 +40,8 @@ returns integer as '
 begin
 PERFORM acs_object_type__create_type (
 	''logger_project'',            -- object_type          
-	''Logger project'',            -- pretty_name          
-	''Logger projects'',           -- pretty_plural        
+	''#logger.Logger_project#'',            -- pretty_name          
+	''#logger.Logger_projects#'',           -- pretty_plural        
 	''acs_object'',                -- supertype            
 	''logger_projects'',           -- table_name           
 	''project_id'',                -- id_column            
@@ -108,8 +108,8 @@ returns integer as '
 begin
 PERFORM acs_object_type__create_type (
 	''logger_variable'',            -- object_type          
-	''Logger variable'',            -- pretty_name          
-	''Logger variables'',           -- pretty_plural        
+	''#logger.Logger_variable#'',            -- pretty_name          
+	''#logger.Logger_variables#'',           -- pretty_plural        
 	''acs_object'',                -- supertype            
 	''logger_variables'',           -- table_name           
 	''variable_id'',                -- id_column            
@@ -236,8 +236,8 @@ returns integer as '
 begin
 PERFORM  acs_object_type__create_type (
 	''logger_entry'',        -- object_type          
-	''Logger entry'',        -- pretty_name          
-	''Logger entries'',      -- pretty_plural        
+	''#logger.Logger_entry#'',        -- pretty_name          
+	''#logger.Logger_entries#'',      -- pretty_plural        
 	''acs_object'',          -- supertype            
 	''logger_entries'',      -- table_name           
 	''entry_id'',            -- id_column            

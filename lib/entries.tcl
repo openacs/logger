@@ -425,14 +425,14 @@ if { $show_tasks_p || [exists_and_not_null pm_task_id]} {
     set task_left_join {
         LEFT JOIN  (select 
                     r.title, 
-                    m.logger_entry,
+                    ar.object_id_two as logger_entry,
                     i.item_id 
                     from 
                     cr_items i, 
                     cr_revisions r,
-                    pm_task_logger_proj_map m 
-                    where 
-                    r.item_id = m.task_item_id and
+		    acs_rels ar
+		    where r.item_id = ar.object_id_one and
+		    ar.rel_type = 'application_data_link' and
                     i.live_revision = r.revision_id) task 
         ON le.entry_id = task.logger_entry,
     }
