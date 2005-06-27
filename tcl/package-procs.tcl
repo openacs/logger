@@ -137,3 +137,33 @@ ad_proc -public logger::package::unmap_project {
 
     return 1
 }
+
+ad_proc -private logger::package::select_users_not_cached {
+    {-package_id:required}
+} {
+    Return a list of users that have used the logger
+
+    @param package_id The id of the package to return projects for
+
+    @return A list of user_id:s. An empty list if there are no users.
+
+    @author Alex Kroman
+} {
+    return [db_list_of_lists select_users {}]
+}
+
+ad_proc -public logger::package::select_users {
+    {-package_id:required}
+} {
+    Return a list of users that have used the logger, use the cache
+
+    @param package_id The id of the package to return projects for
+
+    @return A list of user_id:s. An empty list if there are no users.
+
+    @author Alex Kroman
+} {
+    return [util_memoize [list logger::package::select_users_not_cached -package_id $package_id] 3600]
+}
+
+

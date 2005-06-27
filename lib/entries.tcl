@@ -242,7 +242,7 @@ set filters {
     }
     user_id {
         label "[_ logger.Users]"
-        values {[db_list_of_lists select_users {}]}
+        values {[logger::package::select_users -package_id $package_id]}
         where_clause {
             submitter.person_id = :user_id
         }

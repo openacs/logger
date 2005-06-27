@@ -107,8 +107,15 @@ ad_proc -public logger::entry::new {
             pm::project::compute_status $project_item_id
         }
     }
-
-
+    
+    # Check cache, expire if it is a new user
+    if {![regexp [ad_conn user_id] [util_memoize [list logger::package::select_users_not_cached -package_id [ad_conn package_id]] 5600] match]} {
+        ns_log notice "Flushed Cache"
+        util_memoize_flush [list logger::package::select_users_not_cached -package_id [ad_conn package_id]]
+    } else {
+        ns_log notice "did not flush cache"
+    }
+    
     return $entry_id
 }
 
