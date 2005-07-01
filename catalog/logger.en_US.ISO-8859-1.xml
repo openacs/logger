@@ -198,7 +198,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
   <msg key="lt_Delete_this_projectio">Delete this projection</msg>
   <msg key="lt_Expenses_currency_USD">Expenses (currency, USD, EUR, whatever)</msg>
   <msg key="lt_If_you_change_this_pl">If you change this, please wait for the page to refresh</msg>
-  <msg key="lt_Log_entry_for_value_v">Log entry for $value $variable_array(unit) with description \&quot;$description\&quot; added.</msg>
+  <msg key="lt_Log_entry_for_value_v">Log entry for %value% %variable_array.unit% with description &quot;%description%&quot; added.</msg>
   <msg key="lt_Logger_Application_In">Logger Application Instance</msg>
   <msg key="lt_Make_this_project_act">Make this project active</msg>
   <msg key="lt_Make_this_project_ina">Make this project inactive</msg>
