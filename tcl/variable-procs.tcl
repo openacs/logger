@@ -33,6 +33,9 @@ ad_proc -public logger::variable::new {
     @author Peter Marklund
 } {
     ad_assert_arg_value_in_list type {additive non-additive}
+    
+    set name [lang::util::convert_to_i18n -package_key "logger" -prefix "name" -text $name]
+    set unit [lang::util::convert_to_i18n -package_key "logger" -prefix "unit" -text $unit]
 
     # Use ad_conn to initialize variables    
     logger::util::set_vars_from_ad_conn {package_id creation_user creation_ip}
