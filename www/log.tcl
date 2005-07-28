@@ -10,7 +10,7 @@ ad_page_contract {
     project_id:integer,optional
     variable_id:integer,optional
     {edit:boolean "f"}
-    {return_url "."}
+    {return_url ""}
     {pm_project_id:integer ""}
     {pm_task_id:integer ""}
     {__refreshing_p "0"}
@@ -415,7 +415,11 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     ad_set_client_property logger time_stamp $time_stamp
 
     # Present the user with an add form again for quick logging
-    ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+    if {[exists_and_not_null return_url]} {
+	ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" $return_url
+    } else {	
+	ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
+    }
     ad_script_abort
 
 } -edit_data {
