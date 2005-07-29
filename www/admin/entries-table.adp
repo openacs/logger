@@ -1,22 +1,22 @@
 <!-- Log entries table start -->
 
 <if @entries:rowcount@ eq 0>
-  <span class="no_items_text">There are no matching log entries</span>
+  <span class="no_items_text">#logger.lt_There_are_no_matching#</span>
 </if>
 <else>
   <table class="logger_table" cellpadding="4" cellspacing="1">
     <tr class="logger_table_header">
       <th>&nbsp;</th>
     <if @selected_project_id@ nil>
-      <th>Project</th>  
+      <th>#logger.Project#</th>  
     </if>
     <if @selected_user_id@ nil>
-      <th>User</th>  
+      <th>#logger.User#</th>  
     </if>        
-      <th>Date</th>
-      <th>Variable</th>
-      <th>Value</th>
-      <th>Description</th>
+      <th>#logger.Date#</th>
+      <th>#logger.Variable#</th>
+      <th>#logger.Value#</th>
+      <th>#logger.Description#</th>
     </tr>
   <multiple name="entries">
     <tr class="logger_table_rows">
@@ -36,7 +36,7 @@
 
     <!-- Row for the grand total -->
     <tr class="logger_table_rows">
-      <td class="logger_emphasized_text">Total:</td>
+      <td class="logger_emphasized_text">#logger.Total#</td>
     <if @selected_project_id@ nil>
       <td>&nbsp;</td>
     </if>
@@ -52,7 +52,7 @@
     <!-- Row for projected value -->
   <if @projection_value@ not nil>
     <tr class="logger_table_rows">
-      <td class="logger_emphasized_text">Projection:</td>
+      <td class="logger_emphasized_text">#logger.Projection#</td>
     <if @selected_project_id@ nil>
       <td>&nbsp;</td>
     </if>
@@ -70,3 +70,4 @@
 </else>
 
 <!-- Log entries table end -->
+

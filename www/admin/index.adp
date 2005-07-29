@@ -3,7 +3,7 @@
 
 <div class="logger_body">
 
-  <h2 class="logger">Projects</h2>
+  <h2 class="logger">#logger.Projects#</h2>
 
   <listtemplate name="projects"></listtemplate>
   
@@ -11,67 +11,55 @@
 
   <if @mappable_projects:rowcount@ gt 0>
     <p>
-      Projects not in this logger application instance which can be linked in:
+      #logger.lt_Projects_not_in_this_#
     </p>
     <listtemplate name="mappable_projects"></listtemplate>
     <p></p>
 
   </if>  
 
-  <h2 class="logger">Variables</h2>
+  <h2 class="logger">#logger.Variables#</h2>
 
   <listtemplate name="variables"></listtemplate>
   <p></p>
 
-  <h2 class="logger">Logger Application Instance</h2>
+  <h2 class="logger">#logger.lt_Logger_Application_In#</h2>
 
   <ul class="action-links">
-    <li><a href="@package_permissions_url@">Set permissions for this logger application instance</a></li>
+    <li><a href="@package_permissions_url@">#logger.lt_Set_permissions_for_t#</a></li>
   </ul>
 
-  <h2 class="logger">Help</h2>
+  <h2 class="logger">#logger.Help#</h2>
 
   <p class="logger_font">
-    The logger can track a number of <b>variables</b> in different <b>projects</b>.
+    #logger.lt_The_logger_can_track_# <b>#logger.variables#</b> #logger.in_different# <b>#logger.projects#</b>.
   </p>
 
   <p class="logger_font">
-    A <b>variable</b> is something you wish to track, for example:
+    #logger.A# <b>#logger.variable#</b> #logger.lt_is_something_you_wish#
   </p>
 
   <ul class="logger_font">
     <li>
-      Time spent (hours)
+      #logger.Time_spent_hours#
     </li>
     <li>
-      Expenses (currency, USD, EUR, whatever)
+      #logger.lt_Expenses_currency_USD#
     </li>
     <li>
-      Weight of goods shipped (lbs, kgs)
+      #logger.lt_Weight_of_goods_shipp#
     </li>
     <li>
-      Your personal weight (lbs, kgs). Non-additive.
+      #logger.lt_Your_personal_weight_#
     </li>
   </ul>
 
   <p class="logger_font">
-    Variables are <b>shared between all projects</b>, so that you can
-    summarize the variable across projects. However, if you have many
-    diverse projects going on, only certain variables will make sense
-    for any given project, hence we let you <b>map variables to
-    projects</b>.
+    #logger.Variables_are# <b>#logger.lt_shared_between_all_pr#</b>#logger.lt__so_that_you_can____s# <b>#logger.lt_map_variables_to____p#</b>.
   </p>
 
   <p class="logger_font">
-    Some variables will be <b>additive</b>, meaning that it makes
-    sense to add them together and look at the total. An example of an
-    additive variable is time spent. Others are <b>non-additive</b>,
-    which means the opposite. Instead, you would typically average
-    over them. An example is measuring your personal weight, or the
-    account balance of your bank account. It doesn't make sense to add
-    those numbers together, they're snapshots at a given point in
-    time, and just because you check your account balance 10 times a
-    day doesn't (necessarily) mean you're getting richer and richer.
+    #logger.lt_Some_variables_will_b# <b>#logger.additive#</b>#logger.lt__meaning_that_it_make# <b>#logger.non-additive#</b>#logger.lt_____which_means_the_o#
   </p>
   
   <p class="logger_font">
@@ -88,24 +76,13 @@
   
 
   <p class="logger_font">
-    You can mount multiple <b>instances of the logger
-    application</b>. The projects you define are shared between all
-    logger application instances, subject to the permissions you grant
-    on them. Each instance of logger will be setup to display a
-    certain subset of the projects available, as defined by the
-    administrator of that instance.
+    #logger.lt_You_can_mount_multipl# <b>#logger.lt_instances_of_the_logg#</b>#logger.lt__The_projects_you_def#
   </p>
 
   <p class="logger_font">
-    An example of why this is useful is if you work for a company,
-    which works on many different projects for different clients. In
-    that scenario, you would mount a logger instance in your intranet,
-    where people log the hours they spend on projects. Then if you
-    want to give your clients access to your logs, you can mount an
-    instance per client in the client's extranet area. These client
-    loggers would only have access to the projects that pertain to the
-    given client.
+    #logger.lt_An_example_of_why_thi#
   </p>
 
 </div>
+
 

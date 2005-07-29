@@ -21,7 +21,7 @@
     <table border="0" cellspacing="0" cellpadding="2" width="150">
       <tr>
         <td colspan="2" class="logger_filter_header">
-          Add Entry
+          <#Add_Entry Add Entry#>
         </td>
       </tr>
       <multiple name="variables">
@@ -46,7 +46,7 @@
 </blockquote>
 
 <if @show_log_history_p@ true>
-  <h3 class="logger" style="clear: left;">Recent Entries</h3>
+  <h3 class="logger" style="clear: left;"><#Recent_Entries Recent Entries#></h3>
 
   <include src="/packages/logger/lib/entries" 
       project_id="@project_id;noquote@" 
@@ -62,3 +62,4 @@
       project_manager_url="@project_manager_url;noquote@"
       /> 
 </if>
+
