@@ -2,6 +2,7 @@
 <message_catalog package_key="logger" package_version="1.1b2" locale="en_US" charset="ISO-8859-1">
 
   <msg key="A">A</msg>
+  <msg key="Add_Entry">Add Entry</msg>
   <msg key="Add_Log_Entry">Add Log Entry</msg>
   <msg key="additive">additive</msg>
   <msg key="Cancel_do_not_delete">Cancel, do not delete</msg>
@@ -9,6 +10,7 @@
   <msg key="Delete">Delete</msg>
   <msg key="Description">Description</msg>
   <msg key="Edit_Log_Entry">Edit Log Entry</msg>
+  <msg key="entries">entries</msg>
   <msg key="Euro">Euro</msg>
   <msg key="Expense">Expense</msg>
   <msg key="Help">Help</msg>
@@ -73,16 +75,21 @@
   <msg key="lt_Weight_of_goods_shipp">Weight of goods shipped (lbs, kgs)</msg>
   <msg key="lt_You_can_mount_multipl">You can mount multiple</msg>
   <msg key="lt_Your_personal_weight_">Your personal weight (lbs, kgs). Non-additive.</msg>
+  <msg key="name_Expense">Expense</msg>
+  <msg key="name_Time">Time</msg>
   <msg key="non-additive">non-additive</msg>
   <msg key="Project">Project</msg>
   <msg key="Projection">Projection:</msg>
   <msg key="Projects">Projects</msg>
   <msg key="projects">projects</msg>
+  <msg key="Task">Task</msg>
   <msg key="this_log_entry">this log entry</msg>
   <msg key="Time">Time</msg>
   <msg key="Time_spent_hours">Time spent (hours)</msg>
   <msg key="to_do_so_now">to do so now.</msg>
   <msg key="Total">Total:</msg>
+  <msg key="unit_Euro">Euro</msg>
+  <msg key="unit_hours">hours</msg>
   <msg key="User">User</msg>
   <msg key="Value">Value</msg>
   <msg key="Variable">Variable</msg>
