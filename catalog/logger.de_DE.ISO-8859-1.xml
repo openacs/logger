@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="logger" package_version="1.1b2" locale="de_DE" charset="ISO-8859-1">
 
+  <msg key="Add_Entry">Eintrag hinzufügen</msg>
   <msg key="Add_Log_Entry">Log Eintrag hinzufügen</msg>
+  <msg key="Add_new_log_entry">Einen neuen Zeiteintrag hinzufügen</msg>
   <msg key="Date">Datum</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Description">Beschreibung</msg>
+  <msg key="entries">Einträge</msg>
+  <msg key="name_Time">Zeit</msg>
   <msg key="Project">Projekt</msg>
-  <msg key="Recent_Entries">Letzten Einträge</msg>
+  <msg key="Task">Aufgabe</msg>
   <msg key="Total">Gesamt</msg>
   <msg key="User">User</msg>
 </message_catalog>
