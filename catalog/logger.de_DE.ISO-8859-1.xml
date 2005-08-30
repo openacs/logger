@@ -12,5 +12,6 @@
   <msg key="Project">Projekt</msg>
   <msg key="Task">Aufgabe</msg>
   <msg key="Total">Gesamt</msg>
+  <msg key="unit_hours">Stunden</msg>
   <msg key="User">User</msg>
 </message_catalog>
