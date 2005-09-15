@@ -47,6 +47,7 @@
   <msg key="Link_in">Link in</msg>
   <msg key="Link_to_instance">Link to instance</msg>
   <msg key="List">List</msg>
+  <msg key="log_comment_title">logged %value% %variable_array.unit%</msg>
   <msg key="Log_entry_modified">Log entry modified.</msg>
   <msg key="Logger_Application">Logger Application</msg>
   <msg key="lt_A_bvariableb_is_somet">A &lt;b&gt;variable&lt;/b&gt; is something you wish to track, for example:</msg>

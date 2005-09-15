@@ -95,6 +95,20 @@ ad_proc -public logger::entry::new {
         if { $update_status_p } {
             pm::project::compute_status $project_item_id
         }
+
+	set log_comment_p [parameter::get -parameter "LogCommentsP" -default "0"]
+	if {$log_comment_p} {
+	    # add comment to task
+	    pm::util::general_comment_add \
+		-object_id $task_item_id \
+		-title "[_ logger.log_comment_title]" \
+		-comment $description \
+		-mime_type "text/plain" \
+		-user_id $creation_user \
+		-peeraddr [ad_conn peeraddr] \
+		-type "task" \
+		-send_email_p t
+	}
     }
     
     # Check cache, expire if it is a new user
