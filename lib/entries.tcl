@@ -155,7 +155,7 @@ set elements {
            <if @entries.edit_p@ true>
             <a href="@entries.edit_url@" title="[_ logger.Edit_this_log_entry]"
             ><img src="/shared/images/Edit16.gif" height="16" width="16" 
-            alt="[_ logger.Edit]" border="0"></a>
+            alt="[_ acs-kernel.common_Edit]" border="0"></a>
             </if>        
         }
     }
