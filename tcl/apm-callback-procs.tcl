@@ -158,3 +158,18 @@ ad_proc -public -callback pm::task_edit -impl logger {
 			   and rel_type = 'application_data_link')
     }
 }
+
+ad_proc -public logger::apm::after_upgrade {
+    {-from_version_name:required}
+    {-to_version_name:required}
+} {
+
+    apm_upgrade_logic \
+        -from_version_name $from_version_name \
+        -to_version_name $to_version_name \
+        -spec {
+	    1.1b2 1.1b3 {
+		apm_parameter_register "DefaultDescriptionList" "A list of default descriptions separeted by &quot;;&quot; to use when adding a log entry." "logger" "" "string" 
+	    }
+	}
+}
