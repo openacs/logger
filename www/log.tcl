@@ -199,21 +199,54 @@ category::ad_form::add_widgets \
 # Add form elements common to all modes
 # The form builder date datatype doesn't take ANSI format date strings
 # but wants dates in list format
-ad_form -extend -name log_entry_form -form {
-    {value:float
-        {label $variable_array(name)}
-        {after_html $unit}
-	{html {size 7 maxlength 7}}
-    }
-    {description:text,optional
-        {label "[_ logger.Description]"} 
-        {html {size 50}}
-    }
-    {time_stamp:date(date),to_sql(ansi),from_sql(ansi)
-        {label "[_ logger.Date]"}
-    }
-} 
 
+set default_descriptions [split [parameter::get -parameter "DefaultDescriptionList"] ";"]
+set options [list]
+lappend options [list "" ""]
+foreach desc $default_descriptions {
+    lappend options [list $desc $desc]
+}
+
+if { ![llength $default_descriptions] } {
+    # There is no value in the list so we leave the form as it is
+    ad_form -extend -name log_entry_form -form {
+	{value:float
+	    {label $variable_array(name)}
+	    {after_html $unit}
+	    {html {size 7 maxlength 7}}
+	}
+	{description:text,optional
+	    {label "[_ logger.Description]"} 
+	    {html {size 50}}
+	}
+	{time_stamp:date(date),to_sql(ansi),from_sql(ansi)
+	    {label "[_ logger.Date]"}
+	}
+    }   
+} else {
+    # We add the default_list for descriptions
+    ad_form -extend -name log_entry_form -form {
+	{value:float
+	    {label $variable_array(name)}
+	    {after_html $unit}
+	    {html {size 7 maxlength 7}}
+	}
+	{default_description:text(select),optional
+	    {label "[_ logger.Default_description]"} 
+	    {options $options}
+	    {section "[_ logger.Description]"}
+	    {value ""}
+	}
+	{description:text,optional
+	    {label "[_ logger.Custom_description]"} 
+	    {html {size 50}}
+	    {help_text "[_ logger.You_can_either]"}
+	}
+	{time_stamp:date(date),to_sql(ansi),from_sql(ansi)
+	    {label "[_ logger.Date]"}
+	}
+    } 
+}
 # Additions to form if project-manager is involved.
 if {[exists_and_not_null pm_project_id]} {
 
@@ -323,6 +356,17 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         { [regexp {^-?([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
         {The value may not contain more than two decimals and must be between -999999.99 and 999999.99}
     }
+} -on_submit {
+
+    if { [exists_and_not_null description] && [exists_and_not_null default_description] } {
+	ad_return_complaint 1 "<b>[_ logger.You_can_either]</b>"
+	ad_script_abort
+    }
+
+    if { [exists_and_not_null default_description] } {
+	set description $default_description
+    }
+
 } -new_request {
     # Get the date of the last entry
     set time_stamp [ad_get_client_property logger time_stamp]
