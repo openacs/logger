@@ -19,6 +19,22 @@ ad_proc -public logger::apm::after_install {} {
     logger::variable::new -name "[_ logger.Expense]" -unit "[_ logger.Euro]" -pre_installed_p 1
 }
 
+ad_proc -public -callback logger::apm::instantiate {
+    {-package_id:required}
+} {
+}
+
+ad_proc -public logger::apm::after_instantiate {
+    {-package_id:required}
+} {
+    At the moment this is primarily a placeholder for the callback that allows the setting
+    of the DefaultDescriptionList
+
+    @author Peter Marklund
+} {
+    callback logger::apm::instantiate -package_id $package_id
+}
+
 ad_proc -public logger::apm::before_uninstall {} {
     This proc needs to tear down whatever the logger::apm::after_install proc
     sets up.
@@ -169,7 +185,7 @@ ad_proc -public logger::apm::after_upgrade {
         -to_version_name $to_version_name \
         -spec {
 	    1.1b2 1.1b3 {
-		apm_parameter_register "DefaultDescriptionList" "A list of default descriptions separeted by &quot;;&quot; to use when adding a log entry." "logger" "" "string" 
+		# apm_parameter_register "DefaultDescriptionList" "A list of default descriptions separeted by &quot;;&quot; to use when adding a log entry." "logger" "" "string" 
 	    }
 	}
 }

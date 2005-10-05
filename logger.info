@@ -25,6 +25,7 @@ Logger can be optionally integrated with project-manager, for logging of time ag
 
         <callbacks>
             <callback type="after-install"  proc="logger::apm::after_install"/>
+            <callback type="after-instantiate"  proc="logger::apm::after_instantiate"/>
             <callback type="before-uninstall"  proc="logger::apm::before_uninstall"/>
             <callback type="before-uninstantiate"  proc="logger::apm::before_uninstantiate"/>
             <callback type="after-upgrade"  proc="logger::apm::after_upgrade"/>
