@@ -14,6 +14,7 @@ set home_url [ad_parameter -package_id [ad_acs_kernel_id] HomeURL]
 
 set application_url [ad_conn url]
 set permissions_uri "/permissions/one"
+set parameters_url [export_vars -base "/shared/parameters" {package_id {return_url $application_url}}]
 
 ###########
 #

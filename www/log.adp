@@ -46,7 +46,7 @@
 </blockquote>
 
 <if @show_log_history_p@ true>
-  <h3 class="logger" style="clear: left;"><#Recent_Entries Recent Entries#></h3>
+  <h3 class="logger" style="clear: left;">#logger.Recent_Entries#</h3>
 
   <include src="/packages/logger/lib/entries" 
       project_id="@project_id;noquote@" 

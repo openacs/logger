@@ -26,7 +26,8 @@
   <h2 class="logger">#logger.lt_Logger_Application_In#</h2>
 
   <ul class="action-links">
-    <li><a href="@package_permissions_url@">#logger.lt_Set_permissions_for_t#</a></li>
+    <li><a href="@package_permissions_url@">#logger.lt_Set_permissions_for_t#</a></li> 
+    <li><a href="@parameters_url@">#acs-subsite.Parameters#</a>
   </ul>
 
   <h2 class="logger">#logger.Help#</h2>
