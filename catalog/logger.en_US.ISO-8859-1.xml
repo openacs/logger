@@ -56,6 +56,7 @@
   <msg key="lt_Are_you_sure_you_want">Are you sure you want to delete</msg>
   <msg key="lt_Before_anyone_can_sta">Before anyone can start working with the Logger application an administrator needs to setup a project.</msg>
   <msg key="lt_Expenses_currency_USD">Expenses (currency, USD, EUR, whatever)</msg>
+  <msg key="lt_If_you_change_this_pl">If you change this please reload the page</msg>
   <msg key="lt_instances_of_the_logg">instances of the logger
     application</msg>
   <msg key="lt_is_something_you_wish">is something you wish to track, for example:</msg>
@@ -84,6 +85,7 @@
   <msg key="Projection">Projection:</msg>
   <msg key="Projects">Projects</msg>
   <msg key="projects">projects</msg>
+  <msg key="Recent_Entries">Recent Entries</msg>
   <msg key="Task">Task</msg>
   <msg key="this_log_entry">this log entry</msg>
   <msg key="Time">Time</msg>
