@@ -80,7 +80,7 @@ if { ![exists_and_not_null variable_id] } {
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
 set unit "[_ [regsub -all {#} $variable_array(unit) ""]]"
-    
+
 # get the project_manager_url if this is related to project manager
 set project_manager_url [logger::util::project_manager_url]
 
@@ -257,6 +257,7 @@ if {[exists_and_not_null pm_project_id]} {
         db_1row get_task_values { }
 
         set my_task_id $pm_task_id
+                
     } else {
 
         set my_task_id ""
@@ -540,6 +541,12 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     
     if {[exists_and_not_null pm_task_id]} {
         db_1row get_task_values { }
+
+        # Remix status if it exists to fix localization
+        if {[info exists status_description]} {
+            set status_description "[_ [regsub -all {#} $status_description ""]]"
+        }
+    
     } else {
         set my_task_id ""
     }
