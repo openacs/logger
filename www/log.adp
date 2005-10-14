@@ -21,7 +21,7 @@
     <table border="0" cellspacing="0" cellpadding="2" width="150">
       <tr>
         <td colspan="2" class="logger_filter_header">
-          <#Add_Entry Add Entry#>
+          #logger.Add_Entry#
         </td>
       </tr>
       <multiple name="variables">
@@ -41,9 +41,7 @@
   </div>
 </if>
 
-<blockquote>
-  <formtemplate id="log_entry_form"></formtemplate>
-</blockquote>
+<formtemplate id="log_entry_form"></formtemplate>
 
 <if @show_log_history_p@ true>
   <h3 class="logger" style="clear: left;">#logger.Recent_Entries#</h3>

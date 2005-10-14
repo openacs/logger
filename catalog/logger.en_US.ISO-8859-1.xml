@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="logger" package_version="1.1b3" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="logger" package_version="1.1b4" locale="en_US" charset="ISO-8859-1">
 
   <msg key="A">A</msg>
   <msg key="Add_Entry">Add Entry</msg>
   <msg key="Add_Log_Entry">Add Log Entry</msg>
   <msg key="additive">additive</msg>
   <msg key="Cancel_do_not_delete">Cancel, do not delete</msg>
+  <msg key="Closed">Closed</msg>
   <msg key="Custom_description">Custom Description</msg>
   <msg key="Date">Date</msg>
+  <msg key="Day">Day</msg>
   <msg key="Default_description">Default Description</msg>
   <msg key="Delete">Delete</msg>
   <msg key="Description">Description</msg>
@@ -18,6 +20,7 @@
   <msg key="Help">Help</msg>
   <msg key="hours">hours</msg>
   <msg key="in_different">in different</msg>
+  <msg key="Last_month">Last month</msg>
   <msg key="Log_entry_modified">Log entry modified</msg>
   <msg key="Logger_Application">Logger Application</msg>
   <msg key="Logger_entries">Logger Entries</msg>
@@ -60,6 +63,7 @@
   <msg key="lt_instances_of_the_logg">instances of the logger
     application</msg>
   <msg key="lt_is_something_you_wish">is something you wish to track, for example:</msg>
+  <msg key="lt_Log_entry_for_value_v">Log entry added</msg>
   <msg key="lt_Logger_Application_In">Logger Application Instance</msg>
   <msg key="lt_map_variables_to____p">map variables to
     projects</msg>
@@ -81,6 +85,7 @@
   <msg key="name_Expense">Expense</msg>
   <msg key="name_Time">Time</msg>
   <msg key="non-additive">non-additive</msg>
+  <msg key="Open">Open</msg>
   <msg key="Project">Project</msg>
   <msg key="Projection">Projection:</msg>
   <msg key="Projects">Projects</msg>
@@ -101,5 +106,7 @@
   <msg key="Variables">Variables</msg>
   <msg key="variables">variables</msg>
   <msg key="Variables_are">Variables are</msg>
+  <msg key="Week">Week</msg>
+  <msg key="Yesterday">Yesterday</msg>
   <msg key="You_can_either">You can either use &quot;Default Description&quot; or &quot;Custom Description&quot;, but not both</msg>
 </message_catalog>

@@ -357,10 +357,10 @@ if {[exists_and_not_null show_orderby_p] && [string is false $show_orderby_p]} {
 
 
 set groupby_values {
-    { "[_ logger.Day]" { { groupby time_stamp } { orderby time_stamp,desc } } }
-    { "[_ logger.Week]" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
-    { "[_ logger.Project]" { { groupby project_name } { orderby project_id,asc } } }
-    { "[_ logger.User]" { { groupby user_id } { orderby user_id,asc } } }
+    { "#logger.Day#" { { groupby time_stamp } { orderby time_stamp,desc } } }
+    { "#logger.Week#" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
+    { "#logger.Project#" { { groupby project_name } { orderby project_id,asc } } }
+    { "#logger.User#" { { groupby user_id } { orderby user_id,asc } } }
 }
 
 set normal_row {
@@ -403,9 +403,10 @@ foreach id $tree_ids {
         [list label \$tree_name_${id} multirow_cols c_${id}_category_id]
 
     # Groupby
-    lappend groupby_values [list [category_tree::get_name $id] \
+    set groupby_values [list [category_tree::get_name $id] \
                                 [list [list groupby c_${id}_category_id] \
                                      [list orderby c_${id}_category_id]]]
+    
 }
 
 

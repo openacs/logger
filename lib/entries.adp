@@ -1,10 +1,10 @@
 <if @filters_p@ true>
-  <table cellpadding="3" cellspacing="3" width="100%">
+  <table cellpadding="3" cellspacing="3" width="100%" border="0">
     <tr>
       <td class="list-filter-pane" valign="top" width="200">
         <listfilters name="entries"></listfilters>
       </td>
-      <td class="list-list-pane" valign="top">
+      <td valign="top">
 </if>
       <if @projection_id@ not nil>
         <div style="border-top: 1px dotted black; border-bottom: 1px dotted black; margin-bottom: 8px;">
