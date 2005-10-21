@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="logger" package_version="1.1b3" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="logger" package_version="1.1b4" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="A">A</msg>
   <msg key="Add_Entry">Eintrag hinzufügen</msg>
   <msg key="Add_Log_Entry">Log Eintrag hinzufügen</msg>
   <msg key="additive">zusätzlich</msg>
   <msg key="Cancel_do_not_delete">Abbrechen, nicht löschen</msg>
+  <msg key="Closed">Geschlossen</msg>
   <msg key="Custom_description">Freie Beschreibung</msg>
   <msg key="Date">Datum</msg>
+  <msg key="Day">Tag</msg>
   <msg key="Default_description">Vorgegeben Beschreibung</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Description">Beschreibung</msg>
@@ -18,6 +20,7 @@
   <msg key="Help">Hilfe</msg>
   <msg key="hours">Stunden</msg>
   <msg key="in_different">in verschiendenen</msg>
+  <msg key="Last_month">Letzter Monat</msg>
   <msg key="Log_entry_modified">Log Eintrag verändert</msg>
   <msg key="Logger_Application">Log Applikation</msg>
   <msg key="Logger_entries">Log Einträge</msg>
@@ -37,6 +40,7 @@
   <msg key="lt_If_you_change_this_pl">Wenn Sie dies ändern bitte laden Sie die Seite neu.</msg>
   <msg key="lt_instances_of_the_logg">Instanzen der Log Applikation</msg>
   <msg key="lt_is_something_you_wish">ist etwas, was sie verfolgen (tracken) möchten, z.B.:</msg>
+  <msg key="lt_Log_entry_for_value_v">Einen Eintrag wurde erfasst</msg>
   <msg key="lt_Logger_Application_In">Log Applikation Instanz</msg>
   <msg key="lt_map_variables_to____p">Variablen zu Projekten zuweisen</msg>
   <msg key="lt_Please_contact_an_adm">Bitte setzen Sie sich mit einem Administrator in Kontakt. Danke!</msg>
@@ -57,6 +61,7 @@
   <msg key="name_Expense">Ausgaben</msg>
   <msg key="name_Time">Zeit</msg>
   <msg key="non-additive">nicht additiv</msg>
+  <msg key="Open">Offen</msg>
   <msg key="Project">Projekt</msg>
   <msg key="Projection">Vorhersage:</msg>
   <msg key="Projects">Projekte</msg>
@@ -77,5 +82,6 @@
   <msg key="Variables">Variablen</msg>
   <msg key="variables">Variablen</msg>
   <msg key="Variables_are">Variablen sind</msg>
+  <msg key="Week">Woche</msg>
   <msg key="You_can_either">Sie können entweder die &quot;Standard Beschreibung&quot; nutzen oder die &quot;Freie Beschreibung&quot; aber nicht beide zusammen.</msg>
 </message_catalog>
