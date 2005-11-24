@@ -58,6 +58,10 @@
       show_tasks_p="@show_tasks_p;noquote@"
       return_url="@return_url;noquote@"
       project_manager_url="@project_manager_url;noquote@"
+      groupby="@groupby;noquote@"
+      description_f="@description_f;noquote@"	
+      project_status="@project_status;noquote@"
+      user_id="@user_id;noquote@"
       /> 
 </if>
 

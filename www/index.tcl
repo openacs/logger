@@ -16,6 +16,8 @@ ad_page_contract {
     projection_id:optional
     {format "normal"}
     page:integer,optional
+    {description_f ""}
+    {project_status ""}
 } -validate {
     time_stamps_valid {
         if { [llength $time_stamp] != 0 && [llength $time_stamp] != 2 } {

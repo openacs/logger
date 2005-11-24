@@ -28,7 +28,9 @@
       &="page"
       &="return_url"
       &="project_manager_url"
-      &="show_tasks_p">
+      &="show_tasks_p"
+      &="description_f"
+      &="project_status">
   </if>
   <else>
       <include src="/packages/logger/lib/entries" 
@@ -45,7 +47,9 @@
       &="format"
       &="page"
       &="return_url"
-      &="show_tasks_p">
+      &="show_tasks_p"
+      &="description_f"
+      &="project_status">
   </else>
 </else>
 

@@ -13,7 +13,11 @@ ad_page_contract {
     {return_url ""}
     {pm_project_id:integer ""}
     {pm_task_id:integer ""}
+    {description_f ""}
+    {groupby ""}
+    {user_id ""}
     {__refreshing_p "0"}
+    {project_status ""}
 } -validate {
     project_id_required_in_add_mode {
         # For the sake of simplicity of the form 
@@ -207,6 +211,7 @@ lappend options [list "" ""]
 foreach desc $default_descriptions {
     lappend options [list $desc $desc]
 }
+
 
 if { ![llength $default_descriptions] } {
     # There is no value in the list so we leave the form as it is

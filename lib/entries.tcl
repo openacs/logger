@@ -1,30 +1,64 @@
 # Expected variables:
 # -------------------
-# filters_p, default true, show filters
+# filters_p   Boolean that indicates if you wan to show the filters or not, default true.
+#
+# Optional variables:
+# -------------------
+#
+# show_orderby_p        The calling include may not want to show links to sort
+# start_date            in ansi format
+# end_date              in ansi format
+# format                Format of the list, default normal
+# url                   of logger (if called by another package) /url/to/logger/
+# add_link              If you want to override the add link (for example, to go
+#                       directly to the correct project)
+# project_manager_url   If passed in, the /url/to/project-manager/  that is used to 
+#                       display the link to the task and project page.
+# entry_id              (not sure if this works), should highlight entries.
+# return_url            used for delete links
+# show_tasks_p          Used to specified if you want to show the task name in the list
+# groupby               To group the results of the list in the provided value.
+# pm_project_id 
+# variable_id
+#
+# Filters:
+# -------
+# project_status        Used for adding in a status for projects, active or not
+# pm_task_id            Used for showing logs for specific task_id
+# description_f         Used to filter according description
+# user_id               Used to show entries of an specific user_id
+# project_id            Used to filter entries for this project_id
+# time_stamp            To filter according the date time entry uses start_date and end_date variables
+
+set required_param_list [list]
+set optional_param_list [list filters_p show_orderby_p start_date end_date url add_link project_manager_url \
+			     entry_id return_url pm_project_id show_tasks_p variable_id]
+set optional_unset_list [list description_f project_status pm_task_id groupby user_id time_stamp \
+			     start_date end_date project_id]
+
+foreach required_param $required_param_list {
+    if {![info exists $required_param]} {
+        return -code error "$required_param is a required parameter."
+    }
+}
+
+foreach optional_param $optional_param_list {
+    if {![info exists $optional_param]} {
+        set $optional_param {}
+    }
+}
+
+foreach optional_unset $optional_unset_list {
+    if {[info exists $optional_unset]} {
+        if {[empty_string_p [set $optional_unset]] || [set $optional_unset] == 0} {
+            unset $optional_unset
+        }
+    }
+}
 
 if { ![exists_and_not_null filters_p] } {
     set filters_p 1
 }
-
-# Optional variables:
-# -------------------
-# pm_task_id 
-# pm_project_id 
-# show_tasks_p 
-# show_orderby_p the calling include may not want to show links to sort
-# project_id 
-# variable_id
-# start_date in ansi format
-# end_date in ansi format
-# format (normal is default)
-# url : of logger (if called by another package) /url/to/logger/
-# add_link If you want to override the add link (for example, to go
-#   directly to the correct project)
-# project_manager_url : if passed in, the /url/to/project-manager/
-#   that is used to display the link to the task and project page.
-# entry_id (not sure if this works), should highlight entries.
-# return_url (used for delete links)
-# project_status (used for adding in a status for projects, active or not)
 
 if { ![exists_and_not_null format] } {
     set format "normal"
@@ -194,7 +228,7 @@ set elements {
     task_name {
         label "[_ logger.Task]"
         link_url_eval {[export_vars -base "${my_project_manager_url}task-one" { task_id }]}
-}
+    }
     description_long {
         label "[_ logger.Description]"
         display_eval {[string_truncate -len 400 -- $description]}
@@ -207,6 +241,23 @@ set elements {
 #----------------------------------------------------------------------
 # Define list filters
 #----------------------------------------------------------------------
+
+
+# For the description filter we get the value of the parameter
+set community_id [dotlrn_community::get_community_id]
+if { ![empty_string_p $community_id] } {
+    set logger_package_id [dotlrn_community::get_package_id_from_package_key \
+			       -package_key "logger" \
+			       -community_id $community_id]
+} else {
+    set logger_package_id [ad_conn package_id]
+}
+
+set desc_options [list]
+set default_descriptions [split [parameter::get -parameter "DefaultDescriptionList" -package_id $logger_package_id] ";"]
+foreach desc $default_descriptions {
+    lappend desc_options [list $desc $desc]
+}
 
 set filters {
     project_id {
@@ -318,6 +369,13 @@ set filters {
             task.item_id = :pm_task_id
         }
     }
+    description_f {
+        label "[_ logger.Description]"
+	values $desc_options
+	where_clause {
+	    le.description = :description_f
+	}
+    }
 }
 
 set orderbys {
@@ -357,10 +415,11 @@ if {[exists_and_not_null show_orderby_p] && [string is false $show_orderby_p]} {
 
 
 set groupby_values {
-    { "#logger.Day#" { { groupby time_stamp } { orderby time_stamp,desc } } }
-    { "#logger.Week#" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
-    { "#logger.Project#" { { groupby project_name } { orderby project_id,asc } } }
-    { "#logger.User#" { { groupby user_id } { orderby user_id,asc } } }
+    { "\#logger.Day\#" { { groupby time_stamp } { orderby time_stamp,desc } } }
+    { "\#logger.Week\#" { { groupby time_stamp_week } { orderby time_stamp,desc } }  }
+    { "\#logger.Project\#" { { groupby project_name } { orderby project_id,asc } } }
+    { "\#logger.User\#" { { groupby user_id } { orderby user_id,asc } } }
+    { "\#logger.Description\#" { { groupby description } { orderby user_id,asc } } }
 }
 
 set normal_row {
