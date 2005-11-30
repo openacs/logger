@@ -13,17 +13,19 @@
 	           to_char(le.time_stamp, 'IW-YYYY') as time_stamp_week,
 	           le.value,
 	           le.description,
+                   $task_select
                    lp.project_id,               
 	           lp.name as project_name,
-	           submitter.user_id,
+	           submitter.person_id as user_id,
 	           submitter.first_names || ' ' || submitter.last_name as user_name
 	    from   logger_entries le,
+                   $task_left_join
 	           logger_projects lp,
 	           acs_objects ao,
-	           cc_users submitter
+	           persons submitter
 	    where  le.project_id = lp.project_id
 	    and    ao.object_id = le.entry_id 
-	    and    ao.creation_user = submitter.user_id
+	    and    ao.creation_user = submitter.person_id
             [list::filter_where_clauses -and -name "entries"]
 	    [list::orderby_clause -orderby -name "entries"]
     </querytext>
@@ -39,13 +41,15 @@
            le.description,
            lp.project_id,               
            lp.name as project_name,
+           $task_select
            submitter.person_id as user_id,
            submitter.first_names || ' ' || submitter.last_name as user_name,
            c.category_id,
            c.tree_id
     from   logger_entries le 
            LEFT OUTER JOIN 
-           category_object_map_tree c on (c.object_id = le.entry_id),
+           category_object_map_tree c on (c.object_id = le.entry_id)
+           $task_left_join
            logger_projects lp,
            acs_objects ao,
            persons submitter
