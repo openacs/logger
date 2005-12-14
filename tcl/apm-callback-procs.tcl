@@ -174,9 +174,8 @@ ad_proc -public -callback pm::task_edit -impl logger {
 	update logger_entries 
 	set project_id = :logger_project 
 	where entry_id in (select object_id_two
-			   from acs_rels
-			   where object_id_one = :task_id
-			   and rel_type = 'application_data_link')
+			   from acs_data_links
+			   where object_id_one = :task_id)
     }
 }
 

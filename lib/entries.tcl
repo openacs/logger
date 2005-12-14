@@ -490,9 +490,8 @@ if { $show_tasks_p || [exists_and_not_null pm_task_id]} {
                     from 
                     cr_items i, 
                     cr_revisions r,
-		    acs_rels ar
+		    acs_data_links ar
 		    where r.item_id = ar.object_id_one and
-		    ar.rel_type = 'application_data_link' and
                     i.live_revision = r.revision_id) task 
         ON le.entry_id = task.logger_entry,
     }
