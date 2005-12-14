@@ -111,6 +111,11 @@ ad_proc -public -callback pm::project_new -impl logger {
             -project_id $logger_project \
             -package_id $logger_package_id
     }
+    
+    # if we have a default logger, map this as well
+    logger::package::map_project \
+	-project_id $logger_project \
+	-package_id [site_node::get_element -url "/logger" -element "package_id"]
 }
 
 ad_proc -public -callback pm::project_edit -impl logger {
