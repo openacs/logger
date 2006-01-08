@@ -381,6 +381,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         set time_stamp [clock format [clock seconds] -format "%Y-%m-%d"]
     }
     set time_stamp [template::util::date::acquire ansi $time_stamp]
+    set status_description [lang::util::localize $status_description]
 } -new_data {
     
     # jarkko: check to see if user has already added this entry and has come
