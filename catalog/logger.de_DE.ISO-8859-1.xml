@@ -2,9 +2,9 @@
 <message_catalog package_key="logger" package_version="1.1b4" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="A">A</msg>
-  <msg key="Add_Entry">Eintrag hinzufügen</msg>
+  <msg key="Add_Entry">Zeiten erfassen</msg>
   <msg key="Add_Log_Entry">Log Eintrag hinzufügen</msg>
-  <msg key="Add_new_log_entry">Einen Eintrag in die Zeiterfassung hinzufügen</msg>
+  <msg key="Add_new_log_entry">Zeit erfassen</msg>
   <msg key="additive">zusätzlich</msg>
   <msg key="Cancel_do_not_delete">Abbrechen, nicht löschen</msg>
   <msg key="Closed">Geschlossen</msg>
@@ -84,6 +84,5 @@
   <msg key="variables">Variablen</msg>
   <msg key="Variables_are">Variablen sind</msg>
   <msg key="Week">Woche</msg>
-  <msg key="Yesterday">Gestern</msg>
   <msg key="You_can_either">Sie können entweder die &quot;Standard Beschreibung&quot; nutzen oder die &quot;Freie Beschreibung&quot; aber nicht beide zusammen.</msg>
 </message_catalog>
