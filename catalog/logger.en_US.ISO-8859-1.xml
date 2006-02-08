@@ -51,133 +51,9 @@
   <msg key="Log_entry_modified">Log entry modified.</msg>
   <msg key="Logger_Application">Logger Application</msg>
   <msg key="lt_A_bvariableb_is_somet">A &lt;b&gt;variable&lt;/b&gt; is something you wish to track, for example:</msg>
-  <msg key="lt_Add_a_variable_to_pro">Add a variable to project \&quot;$project(name)\&quot;</msg>
-  <msg key="lt_Add_Entry_add_link___">Add Entry&quot; $add_link &quot;&lt;#_ Add new log entry&quot;] 
-
-set delete_link &quot;${base_url}log-delete&quot;
-
-set bulk_actions_list [list &quot;&lt;#_ Delete&quot; $delete_link &quot;&lt;#_ Delete checked entries&quot;] 
-
-list::create \
-    -name entries \
-    -multirow entries \
-    -key entry_id \
-    -row_pretty_plural &quot;entries&quot; \
-    -checkbox_name checkbox \
-    -selected_format $format \
-    -class &quot;list&quot; \
-    -main_class &quot;list&quot; \
-    -sub_class &quot;narrow&quot; \
-    -pass_properties {
-        variable
-    } -actions $actions_list \
-    -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars {
-        return_url
-    } \
-    -elements $elements -filters $filters \
-    -groupby {
-        label &quot;&lt;#_ Group by&quot;
-        type multivar
-        values $groupby_values
-    } -orderby $orderbys -formats {
-            normal {
-            label &quot;&lt;#_ Table&quot;
-            layout table
-            row $normal_row
-        }
-        detailed {
-            label &quot;&lt;#_ Detailed table&quot;
-            layout table
-            row {
-                checkbox {
-                    html { rowspan 2 }
-                }
-                edit {} 
-                project_id {}
-                user_id {}
-                time_stamp {}
-                value {}
-            }
-            row {
-                description_long {
-                    html { colspan 5 }
-                    hide_p 0
-                }
-            }
-        }
-        list {
-            label &quot;&lt;#_ List&quot;
-            layout list
-            template {
-                &lt;table cellpadding=&quot;0&quot; cellspacing=&quot;4&quot;&gt;
-                  &lt;tr&gt;
-                    &lt;td valign=&quot;top&quot;&gt;
-                      &lt;listelement name=&quot;checkbox&quot;&gt; 
-                    &lt;/td&gt;
-                    &lt;td valign=&quot;top&quot;&gt;
-                      &lt;span class=&quot;list-label&quot;&gt;@variable.name@:&lt;/span&gt;
-                      &lt;listelement name=&quot;value&quot;&gt;
-                      &lt;span class=&quot;list-label&quot;&gt;@variable.unit@&lt;/span&gt;&lt;br&gt;
-
-                      &lt;listelement name=&quot;description_long&quot;&gt;&lt;br&gt;
-
-                      &lt;span class=&quot;list-label&quot;&gt;Project:&lt;/span&gt; &lt;listelement name=&quot;project_id&quot;&gt;&lt;br&gt;
-
-                      &lt;span class=&quot;list-label&quot;&gt;By&lt;/span&gt; &lt;listelement name=&quot;user_id&quot;&gt;
-                      &lt;span class=&quot;list-label&quot;&gt;on&lt;/span&gt; &lt;listelement name=&quot;time_stamp&quot;&gt;
-                    &lt;/td&gt;
-                  &lt;/tr&gt;
-                &lt;/table&gt;
-            }
-        }
-        csv {
-            label &quot;&lt;#_ CSV&quot;
-            output csv
-            page_size 0
-        }
-    }
-
-# TODO B: With multiple categories from the same tree, make sure they're listed in correct sort_order
-
-
-
-# We add a virtual column per category tree
-
-# some more documentation of what's going on here would be helpful. 
-
-set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url project_url }
-foreach id $tree_ids {
-    lappend extend c_${id}_category_id
-}
-
-array set row_categories [list]
-array set project_write_p [list]
-
-db_multirow -extend $extend -unclobber entries select_entries2 { } {
-
-    set my_base_url $base_url 
-    set my_project_manager_url $project_manager_url
-
-    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
-    set project_url [export_vars -base &quot;[logger::util::project_manager_url]one&quot; {project_item_id}]
-    if { ![empty_string_p $tree_id] &amp;&amp; ![empty_string_p $category_id] } {
-        lappend row_categories($tree_id) $category_id
-    }
-    
-    if { ![db_multirow_group_last_row_p -column entry_id] } {
-        continue
-    } else {
-        set selected_p [string equal [ns_queryget entry_id] $entry_id]
-        set edit_url [export_vars -base &quot;${base_url}log&quot; { entry_id { edit t } { return_url [ad_return_url] } }]
-        if { ![exists_and_not_null project_write_p($project_id)] } {
-            set project_write_p($project_id) [template::util::is_true [permission::permission_p -object_id $project_id -privilege write]]
-        }
-        set edit_p [expr $project_write_p($project_id) || ($user_id == [ad_conn user_id])]
-        set delete_p $edit_p
-        if { $delete_p } {
-            set delete_onclick &quot;return confirm('&lt;#_ Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?</msg>
-  <msg key="lt_Add_variablesname_to_">Add @variables.name@ to $project(name)</msg>
+  <msg key="lt_Add_a_variable_to_pro">Add a variable to project &quot;%project.name%&quot;</msg>
+  <msg key="lt_Add_Entry_add_link___">Add Entry&quot; %add_link% &quot;&lt;#_ Add new log entry&quot;</msg>
+  <msg key="lt_Add_variablesname_to_">Add %variables.name% to %project.name%</msg>
   <msg key="lt_An_administrator_need">An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done.</msg>
   <msg key="lt_An_example_of_why_thi">An example of why this is useful is if you work for a company,
     which works on many different projects for different clients. In
@@ -188,11 +64,11 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
     loggers would only have access to the projects that pertain to the
     given client.</msg>
   <msg key="lt_Are_you_sure_you_want">Are you sure you want to delete</msg>
-  <msg key="lt_Are_you_sure_you_want_1">Are you sure you want to delete log entry with $value $unit $variable_name on $time_stamp?</msg>
-  <msg key="lt_Are_you_sure_you_want_2">Are you sure you want to delete project @projects.name@?</msg>
-  <msg key="lt_Are_you_sure_you_want_3">Are you sure you want to delete variable @variables.name@?</msg>
-  <msg key="lt_Are_you_sure_you_want_4">Are you sure you want to delete the projection @projections.name@?</msg>
-  <msg key="lt_Are_you_sure_you_want_5">Are you sure you want to delete log entry with $value $variable(unit) $variable(name) on $time_stamp?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Are you sure you want to delete log entry with %value% %unit% %variable_name% on %time_stamp%?</msg>
+  <msg key="lt_Are_you_sure_you_want_2">Are you sure you want to delete project %projects.name%?</msg>
+  <msg key="lt_Are_you_sure_you_want_3">Are you sure you want to delete variable %variables.name%?</msg>
+  <msg key="lt_Are_you_sure_you_want_4">Are you sure you want to delete the projection %projections.name%?</msg>
+  <msg key="lt_Are_you_sure_you_want_5">Are you sure you want to delete log entry with %value% %variable.unit% %variable.name% on %time_stamp%?</msg>
   <msg key="lt_Before_anyone_can_sta">Before anyone can start working with the Logger application an administrator needs to setup a project.</msg>
   <msg key="lt_Create_new_projection">Create new projection</msg>
   <msg key="lt_Delete_checked_entrie">Delete checked entries</msg>
@@ -208,8 +84,8 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
   <msg key="lt_Please_contact_an_adm">Please contact an administrator about this. Thank you.</msg>
   <msg key="lt_progress_total_days">&amp;nbsp;&amp;nbsp;&amp;nbsp;%progress_days%/%total_days% days</msg>
   <msg key="lt_Project_has_no_variab">Project has no variable</msg>
-  <msg key="lt_Project_name_has_been">Project \&quot;$name\&quot; has been created.</msg>
-  <msg key="lt_Project_name_has_been_1">Project \&quot;$name\&quot; has been modified.</msg>
+  <msg key="lt_Project_name_has_been">Project &quot;%name%&quot; has been created.</msg>
+  <msg key="lt_Project_name_has_been_1">Project &quot;%name%&quot; has been modified.</msg>
   <msg key="lt_Projects_not_in_this_">Projects not in this logger application instance which can be linked in:</msg>
   <msg key="lt_Set_permissions_for_t">Set permissions for this logger application instance</msg>
   <msg key="lt_Set_to_100_to_close_t">Set to 100% to close the task, less to open it</msg>
@@ -232,7 +108,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
   <msg key="lt_these_num_entries_log">these %num_entries% log entries</msg>
   <msg key="lt_Time_stamps_not_valid">Time stamps not valid</msg>
   <msg key="lt_Variable_is_in_use_yo">Variable is in use: you cannot delete this variable as it is being used by log entries</msg>
-  <msg key="lt_Variable_variablename">Variable \&quot;$variable(name)\&quot; has been added to \&quot;$project(name)\&quot;.</msg>
+  <msg key="lt_Variable_variablename">Variable &quot;%variable.name%&quot; has been added to &quot;%project.name%&quot;.</msg>
   <msg key="lt_Variables_are_bshared">Variables are &lt;b&gt;shared between all projects&lt;/b&gt;, so that you can
     summarize the variable across projects. However, if you have many
     diverse projects going on, only certain variables will make sense
