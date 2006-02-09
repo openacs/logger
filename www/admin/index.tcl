@@ -24,15 +24,15 @@ set permissions_uri "/permissions/one"
 
 template::list::create \
     -name projects \
-    -no_data "[_ logger.lt_No_projects_in_this_i]" \
+    -no_data "\#logger.lt_No_projects_in_this_i\#" \
     -actions {
-        "[_ logger.Create_new_project]" project {}
+        "\#logger.Create_new_project\#" project {}
     } \
     -elements {
         edit {
             link_url_col edit_url
             display_template {
-                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="[_ logger.Edit]" border="0">
+                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="\#logger.Edit\#" border="0">
             }
             sub_class narrow
             html { align center }
@@ -44,7 +44,7 @@ template::list::create \
         active_p {
             label "[_ logger.Active]"
             display_template {
-                <if @projects.active_p@ eq t>Yes (<a href="@projects.make_inactive_url@" title="[_ logger.lt_Make_this_project_ina]">toggle</a>)</if><else>No (<a href="@projects.make_active_url@" title="[_ logger.lt_Make_this_project_act]">toggle</a>)</else> 
+                <if @projects.active_p@ eq t>Yes (<a href="@projects.make_inactive_url@" title="\#logger.lt_Make_this_project_ina\#">toggle</a>)</if><else>No (<a href="@projects.make_active_url@" title="\#logger.lt_Make_this_project_act\#">toggle</a>)</else> 
             }
             html { align center }
         }
@@ -70,8 +70,8 @@ template::list::create \
             sub_class narrow
             display_template {
                 <if @projects.admin_p@>
-                <a href="@projects.delete_url@" title="[_ logger.Delete_this_project]"
-                onclick="return confirm('[_ logger.lt_Are_you_sure_you_want_2]');"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                <a href="@projects.delete_url@" title="\#logger.Delete_this_project\#"
+                onclick="return confirm('\#logger.lt_Are_you_sure_you_want_2\#');"><img src="/shared/images/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
                 </if>
             }            
             html { align center }
@@ -110,7 +110,7 @@ template::list::create \
             label "[_ logger.Link_in]"
             link_url_col map_url
             html { align center }
-            display_template "[_ logger.Link_to_instance]"
+            display_template "\#logger.Link_to_instance\#"
         }
     }
 
@@ -132,13 +132,13 @@ if { $user_id != 0 } {
 template::list::create \
     -name variables \
     -actions {
-        "[_ logger.Create_new_variable]" variable {}
+        "\#logger.Create_new_variable\#" variable {}
     } \
     -elements {
         edit {
             link_url_col edit_url
             display_template {
-                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="[_ logger.Edit]" border="0">
+                <img src="/resources/acs-subsite/Edit16.gif" height="16" width="16" alt="\#logger.Edit\#" border="0">
             }
             sub_class narrow
             html { align center }
@@ -167,8 +167,8 @@ template::list::create \
             sub_class narrow
             display_template {
                 <if @variables.admin_p@>
-                <a href="@variables.delete_url@" title="[_ logger.Delete_this_variable]"
-                onclick="return confirm('[_ logger.lt_Are_you_sure_you_want_3]');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
+                <a href="@variables.delete_url@" title="\#logger.Delete_this_variable\#"
+                onclick="return confirm('\#logger.lt_Are_you_sure_you_want_3\#');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="Delete" border="0"></a>
                 </if>
             }            
             html { align center }
