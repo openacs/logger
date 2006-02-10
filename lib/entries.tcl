@@ -153,14 +153,16 @@ set elements {
         label {}
         display_template {
            <if @entries.edit_p@ true>
-            <a href="@entries.edit_url@" title="[_ logger.Edit_this_log_entry]"
+            <a href="@entries.edit_url@" title="\#logger.Edit_this_log_entry\#"
             ><img src="/shared/images/Edit16.gif" height="16" width="16" 
-            alt="[_ logger.Edit]" border="0"></a>
+            alt="\#logger.Edit\#" border="0"></a>
             </if>        
         }
     }
     project_id {
-        display_template {<a href="@entries.project_url@">@entries.project_name@</a>}
+        display_template {
+	    <if @entries.project_url@ not nil><a href="@entries.project_url@">@entries.project_name@</a></if><else>@entries.project_name@</else>
+	}
         label "[_ logger.Project]"
         hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
     }
@@ -554,9 +556,13 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
 
     set my_base_url $base_url 
     set my_project_manager_url $project_manager_url
+    if { [logger::util::project_manager_linked_p] } {
+	set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
+	set project_url [export_vars -base "[logger::util::project_manager_url]one" {project_item_id}]
+    } else {
+	set project_url ""
+    }
 
-    set project_item_id [logger::util::project_manager_project_id -project_id $project_id]
-    set project_url [export_vars -base "[logger::util::project_manager_url]one" {project_item_id}]
     if { ![empty_string_p $tree_id] && ![empty_string_p $category_id] } {
         lappend row_categories($tree_id) $category_id
     }
