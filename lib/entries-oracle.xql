@@ -24,6 +24,9 @@
 	    where  le.project_id = lp.project_id
 	    and    ao.object_id = le.entry_id 
 	    and    ao.creation_user = submitter.user_id
+            and    lp.project_id in (select project_id 
+                                       from logger_project_pkg_map
+                                      where package_id = :package_id)
             [list::filter_where_clauses -and -name "entries"]
 	    [list::orderby_clause -orderby -name "entries"]
     </querytext>
@@ -52,6 +55,9 @@
     where  le.project_id = lp.project_id
     and    ao.object_id = le.entry_id 
     and    ao.creation_user = submitter.person_id
+    and    lp.project_id in (select project_id 
+                               from logger_project_pkg_map
+                              where package_id = :package_id)
     [list::filter_where_clauses -and -name "entries"]
     [list::orderby_clause -orderby -name "entries"]
     </querytext>
