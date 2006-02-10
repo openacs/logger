@@ -53,7 +53,7 @@
   <msg key="lt_A_bvariableb_is_somet">A &lt;b&gt;variable&lt;/b&gt; is something you wish to track, for example:</msg>
   <msg key="lt_Add_a_variable_to_pro">Add a variable to project &quot;%project.name%&quot;</msg>
   <msg key="lt_Add_Entry_add_link___">Add Entry&quot; %add_link% &quot;&lt;#_ Add new log entry&quot;</msg>
-  <msg key="lt_Add_variablesname_to_">Add %variables.name% to %project.name%</msg>
+  <msg key="lt_Add_variablesname_to_">Add %variables.name%</msg>
   <msg key="lt_An_administrator_need">An administrator needs to associate a variable, such as time or expense, to this project before any logging can be done.</msg>
   <msg key="lt_An_example_of_why_thi">An example of why this is useful is if you work for a company,
     which works on many different projects for different clients. In

@@ -10,7 +10,7 @@ ad_page_contract {
 
 logger::project::get -project_id $project_id -array project
 
-set page_title "[_ logger.lt_Add_a_variable_to_pro]"
+set page_title [_ logger.lt_Add_a_variable_to_pro]
 set context [list [list [export_vars -base project { project_id }] $project(name)] $page_title]
 
 # List all variables not already mapped to the project
@@ -37,7 +37,7 @@ template::list::create \
         add {
             sub_class narrow
             label "[_ logger.Add]"
-            display_template "[_ logger.lt_Add_variablesname_to_]"
+            display_template "\#logger.lt_Add_variablesname_to_\#"
             link_url_eval {[export_vars -base map-variable-to-project-2 { project_id variable_id }]}
         }
     }

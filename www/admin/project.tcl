@@ -213,8 +213,8 @@ template::list::create \
         delete {
             sub_class narrow
             display_template {
-                <a href="@projections.delete_url@" title="[_ logger.lt_Delete_this_projectio]"
-                onclick="return confirm('[_ logger.lt_Are_you_sure_you_want_4]');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="[_ logger.Delete]" border="0"></a>
+                <a href="@projections.delete_url@" title="\#logger.lt_Delete_this_projectio\#"
+                onclick="return confirm('\#logger.lt_Are_you_sure_you_want_4\#');"><img src="/resources/acs-subsite/Delete16.gif" height="16" width="16" alt="\#logger.Delete\#" border="0"></a>
                 </if>
             }            
             html { align center }
