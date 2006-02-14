@@ -164,6 +164,7 @@ set elements {
 	    <if @entries.project_url@ not nil><a href="@entries.project_url@">@entries.project_name@</a></if><else>@entries.project_name@</else>
 	}
         label "[_ logger.Project]"
+	csv_col project_name
         hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
     }
     user_id {

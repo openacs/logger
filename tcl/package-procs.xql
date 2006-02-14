@@ -27,20 +27,13 @@
 
   <fullquery name="logger::package::select_users_not_cached.select_users">
     <querytext>
-        select submitter.first_names || ' ' || submitter.last_name as label,
-               submitter.person_id as user_id
-        from   acs_objects ao,
-               logger_entries le,
-               persons submitter
-        where  ao.object_id = le.entry_id
-        and    submitter.person_id = ao.creation_user
-        and    exists (select 1
-                      from   logger_project_pkg_map
-                      where  project_id = le.project_id
-                      and    package_id = :package_id)
-        group  by submitter.person_id, submitter.first_names,
-                  submitter.last_name
-        order by submitter.first_names, submitter.last_name
+select submitter.first_names || ' ' || submitter.last_name as label, e.user_id from persons submitter join
+       (select distinct creation_user as user_id
+          from acs_objects ao join 
+               (select entry_id 
+                  from logger_entries le join logger_project_pkg_map ppm on (le.project_id = ppm.project_id) 
+         where ppm.package_id = :package_id) x on (ao.object_id = x.entry_id)) e on (e.user_id = submitter.person_id)
+  order by submitter.first_names, submitter.last_name
     </querytext>
   </fullquery>
 </queryset>
