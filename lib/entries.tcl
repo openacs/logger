@@ -60,6 +60,8 @@ if { ![exists_and_not_null filters_p] } {
     set filters_p 1
 }
 
+set dotlrn_installed_p [apm_package_installed_p dotlrn]
+
 if { ![exists_and_not_null format] } {
     set format "normal"
 }
@@ -101,6 +103,7 @@ if {[info exists url]} {
 # using logger with categories and without
 
 set package_id [ad_conn package_id]
+
 set current_user_id [ad_conn user_id]
 set admin_p [permission::permission_p -object_id $package_id -privilege admin]
 
@@ -244,8 +247,11 @@ set elements {
 
 
 # For the description filter we get the value of the parameter
-set community_id [dotlrn_community::get_community_id]
-if { ![empty_string_p $community_id] } {
+if {$dotlrn_installed_p} {
+    set community_id [dotlrn_community::get_community_id]
+}
+
+if { [exists_and_not_null community_id] } {
     set logger_package_id [dotlrn_community::get_package_id_from_package_key \
 			       -package_key "logger" \
 			       -community_id $community_id]
