@@ -84,6 +84,7 @@ if { ![exists_and_not_null variable_id] } {
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
 set unit "[_ [regsub -all {#} $variable_array(unit) ""]]"
+
 set project_array(name) [lang::util::localize $project_array(name)]
 
 

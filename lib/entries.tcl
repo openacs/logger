@@ -28,13 +28,14 @@
 # description_f         Used to filter according description
 # user_id               Used to show entries of an specific user_id
 # project_id            Used to filter entries for this project_id
+# project_ids           Used to filter entries for this list of project_ids
 # time_stamp            To filter according the date time entry uses start_date and end_date variables
 
 set required_param_list [list]
 set optional_param_list [list filters_p show_orderby_p start_date end_date url add_link project_manager_url \
 			     entry_id return_url pm_project_id show_tasks_p variable_id]
 set optional_unset_list [list description_f project_status pm_task_id groupby user_id time_stamp \
-			     start_date end_date project_id]
+			     start_date end_date project_id project_ids]
 
 foreach required_param $required_param_list {
     if {![info exists $required_param]} {
@@ -129,10 +130,18 @@ set monthdayno [string trimleft [clock format [clock seconds] -format %d] 0]
 # optimized in some way? If you have thousands of projects, it tends
 # to be a bit slow. Perhaps limit the results to only open projects?
 
-if {[exists_and_not_null project_id] && [string is false $filters_p]} {
-    set project_ids [list $project_id]
-}  else {
-    set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
+if {![exists_and_not_null project_ids]} {
+    if {[exists_and_not_null project_id] && [string is false $filters_p]} {
+	set project_ids [list $project_id]
+    }  else {
+	set project_ids [logger::package::all_projects_in_package -package_id [ad_conn package_id]]
+    }
+} else {
+    
+    # We cant search for projects and one single project at the same time
+    if {[exists_and_not_null project_id]} {
+	unset project_id
+    }
 }
 
 array set tree_id_array [list]
@@ -169,7 +178,7 @@ if {[string is true $filters_p]} {
 
     set project_status_values [list [list "[_ logger.Open]" "t"] [list "[_ logger.Closed]" "f"]]
 } else {
-    set project_where "and lp.project_id = :project_id"
+    set project_where "and lp.project_id in ([join $project_ids ","])"
 
     set project_status_values [list]
 }
@@ -199,7 +208,7 @@ set elements {
     project_id {
         display_col project_name
         label "[_ logger.Project]"
-        hide_p {[ad_decode [exists_and_not_null project_id] 1 1 0]}
+        hide_p {[ad_decode [exists_and_not_null project_ids] 1 1 0]}
     }
     user_id {
         label "[_ logger.User]"
@@ -266,11 +275,11 @@ foreach desc $default_descriptions {
 }
 
 set filters {
-    project_id {
+    project_ids {
         label "[_ logger.Projects]"
         values $project_values
         where_clause {
-            le.project_id = :project_id
+            le.project_id in ([join $project_ids ","])
         }
         add_url_eval {[export_vars -base "${base_url}log" { { project_id $__filter_value } pm_task_id variable_id }]}
         has_default_p {[ad_decode [llength $project_values] 1 1 0]}
