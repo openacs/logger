@@ -84,14 +84,17 @@ ad_proc -public -callback pm::project_new -impl logger {
     if {[exists_and_not_null callback_data(organization_id)]} {
 	set customer_name [organizations::name -organization_id $callback_data(organization_id)]
 	if {![empty_string_p $customer_name]} {
-	    append title "$customer_name - $title"
+	    set title "$customer_name - $title"
 	}
     }
+
+    # Trim the description
+    set logger_description [ad_html_to_text $description]
 
     # create a logger project
     set logger_project [logger::project::new \
 			    -name $title \
-			    -description $description \
+			    -description $logger_description \
 			    -project_lead $creation_user]
 
     application_data_link::new -this_object_id $project_id -target_object_id $logger_project
@@ -106,16 +109,20 @@ ad_proc -public -callback pm::project_new -impl logger {
     }
 
     # we want the logger project to show up in logger!
-    foreach logger_package_id [application_link::get_linked -from_package_id $package_id -to_package_key "logger"] {
+    set logger_packages [application_link::get_linked -from_package_id $package_id -to_package_key "logger"]
+    foreach logger_package_id $logger_packages {
         logger::package::map_project \
             -project_id $logger_project \
             -package_id $logger_package_id
     }
     
-    # if we have a default logger, map this as well
-    logger::package::map_project \
-	-project_id $logger_project \
-	-package_id [site_node::get_element -url "/logger" -element "package_id"]
+    # if we have a default logger, map this as well (if not already mapped)
+    set default_logger_package_id [site_node::get_element -url "/logger" -element "package_id"]
+    if {[lsearch -exact $logger_packages $default_logger_package_id] == -1} {
+	logger::package::map_project \
+	    -project_id $logger_project \
+	    -package_id $default_logger_package_id
+    }
 }
 
 ad_proc -public -callback pm::project_edit -impl logger {
@@ -136,7 +143,7 @@ ad_proc -public -callback pm::project_edit -impl logger {
     }
 
     set logger_project [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type logger_project] 0]
-    set active_p [pm::status::open_p -task_status_id $status_id]
+    set active_p [pm::status::open_p -project_status_id $status_id]
 
     if {[exists_and_not_null callback_data(organization_id)]} {
 	set customer_name [organizations::name -organization_id $callback_data(organization_id)]
@@ -145,10 +152,13 @@ ad_proc -public -callback pm::project_edit -impl logger {
 	}
     }
 
+    # Trim the description
+    set logger_description [ad_html_to_text $description]
+
     logger::project::edit \
         -project_id $logger_project \
         -name $title \
-        -description "$description" \
+        -description "$logger_description" \
         -project_lead $creation_user \
         -active_p $active_p
 
