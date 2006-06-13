@@ -84,6 +84,10 @@ if { ![exists_and_not_null variable_id] } {
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
 set unit "[_ [regsub -all {#} $variable_array(unit) ""]]"
+set project_array(name) [lang::util::localize $project_array(name)]
+
+
+##### Integration with project manager. Should be callback in the long run.
 
 # get the project_manager_url if this is related to project manager
 set project_manager_url [logger::util::project_manager_url]
@@ -117,6 +121,8 @@ if {![empty_string_p $project_manager_url]} {
                               -project_item_id $pm_project_id]
 
     }
+
+    set task_options [lang::util::localize $task_options]
 
 }
 
@@ -166,7 +172,7 @@ if { $edit_p } {
 }
 lappend actions { Done done }
 
-ad_form -name log_entry_form -cancel_url $return_url -mode $ad_form_mode \
+ad_form -name log_entry_form -mode $ad_form_mode \
     -actions $actions -form {
     entry_id:key(acs_object_id_seq)
 }
@@ -180,6 +186,9 @@ ad_form -extend -name log_entry_form -export { project_id variable_id return_url
         {section "[_ logger.Project]"}
         {label "[_ logger.Project]"}
         {value $project_array(name)}
+    }
+    {status_description:text(inform)
+	{label "[_ project-manager.Status]"}
     }
 }
 
@@ -284,9 +293,6 @@ if {[exists_and_not_null pm_project_id]} {
             {help}
             {help_text "[_ logger.lt_If_you_change_this_pl]"}
         }
-        {status_description:text(inform)
-            {label "[_ project-manager.Status]"}
-        }
     } 
 
     if {[exists_and_not_null pm_task_id]} {
@@ -358,7 +364,7 @@ if { [exists_and_not_null pm_task_id] } {
 #
 ###########
 
-ad_form -extend -name log_entry_form -select_query_name select_logger_entries -validate {
+ad_form -extend -name log_entry_form -validate {
     {value 
         { [regexp {^-?([0-9]{1,6}|[0-9]{0,6}\.[0-9]{0,2})$} $value] }
         {The value may not contain more than two decimals and must be between -999999.99 and 999999.99}
@@ -374,6 +380,11 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
 	set description $default_description
     }
 
+} -edit_request {
+    db_1row select_logger_entries {}
+    set time_stamp [template::util::date::from_ansi $time_stamp [lc_get frombuilder_time_format]]
+    set status_description [lang::util::localize [pm::project::get_status_description -project_item_id $pm_project_id]]
+
 } -new_request {
     # Get the date of the last entry
     set time_stamp [ad_get_client_property logger time_stamp]
@@ -381,7 +392,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
         set time_stamp [clock format [clock seconds] -format "%Y-%m-%d"]
     }
     set time_stamp [template::util::date::acquire ansi $time_stamp]
-    set status_description [lang::util::localize $status_description]
+    set status_description [lang::util::localize [pm::project::get_status_description -project_item_id $pm_project_id]]
 } -new_data {
     
     # jarkko: check to see if user has already added this entry and has come
@@ -521,7 +532,7 @@ ad_form -extend -name log_entry_form -select_query_name select_logger_entries -v
     }
 
     if {[logger::util::project_manager_linked_p]} {
-        set this_task_id [db_string task_entry_p "select task_item_id from pm_task_logger_proj_map where logger_entry = :entry_id" -default "-1"]
+	set this_task_id [lindex [application_data_link::get_linked_content -from_object_id $entry_id -to_content_type pm_task] 0]
     } else {
         set this_task_id -1
     }

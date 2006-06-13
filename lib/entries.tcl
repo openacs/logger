@@ -272,7 +272,7 @@ set filters {
         where_clause {
             le.project_id = :project_id
         }
-        add_url_eval {[export_vars -base "${base_url}log" { { project_id $__filter_value } variable_id }]}
+        add_url_eval {[export_vars -base "${base_url}log" { { project_id $__filter_value } pm_task_id variable_id }]}
         has_default_p {[ad_decode [llength $project_values] 1 1 0]}
     }
     project_status {
@@ -288,7 +288,7 @@ set filters {
         where_clause {
             le.variable_id = :variable_id
         }
-        add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "${base_url}log" { project_id { variable_id $__filter_value } }] ""]}
+        add_url_eval {[ad_decode [exists_and_not_null project_id] 1 [export_vars -base "${base_url}log" { project_id pm_task_id { variable_id $__filter_value } }] ""]}
         has_default_p t
     }
     projection_id {
@@ -629,7 +629,7 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
         continue
     } else {
         set selected_p [string equal [ns_queryget entry_id] $entry_id]
-        set edit_url [export_vars -base "${base_url}log" { entry_id { edit t } { return_url [ad_return_url] } }]
+        set edit_url [export_vars -base "${base_url}log" { entry_id { edit t } pm_project_id pm_task_id { return_url [ad_return_url] } }]
         if { ![exists_and_not_null project_write_p($project_id)] } {
             set project_write_p($project_id) [template::util::is_true [permission::permission_p -object_id $project_id -privilege write]]
         }
