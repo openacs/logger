@@ -42,14 +42,11 @@
            lp.project_id,
            lp.name as project_name,
            $task_select
+	   $category_select
            submitter.person_id as user_id,
-           submitter.first_names || ' ' || submitter.last_name as user_name,
-           c.category_id,
-           c.tree_id
+           submitter.first_names || ' ' || submitter.last_name as user_name
     from   logger_entries le 
-           LEFT OUTER JOIN 
-             category_object_map_tree c 
-             ON (c.object_id = le.entry_id)
+	   $category_left_join
            $task_left_join
            logger_projects lp,
            acs_objects ao,

@@ -154,6 +154,14 @@ foreach elm $elm_forest {
 
 set tree_ids [array names tree_id_array]
 
+if {$tree_ids eq ""} {
+    set category_select ""
+    set category_left_join ""
+} else {
+    set category_select "c.category_id,c.tree_id,"
+    set category_left_join "LEFT OUTER JOIN category_object_map_tree c ON (c.object_id = le.entry_id)"
+}
+
 
 # Projections
 set projection_values [list]
@@ -236,10 +244,6 @@ set elements {
         display_eval {[string_truncate -len 50 -- $description]}
         link_url_eval {[export_vars -base "${my_base_url}log" { entry_id }]}
         link_html { title "[_ logger.View_this_entry]" }
-    }
-    task_name {
-        label "[_ logger.Task]"
-        link_url_eval {[export_vars -base "${my_project_manager_url}task-one" { task_id }]}
     }
     description_long {
         label "[_ logger.Description]"
@@ -486,16 +490,18 @@ foreach id $tree_ids {
 
 if {$show_tasks_p} {
     lappend normal_row task_name {}
+    lappend elements task_name {
+	label "[_ logger.Task]"
+	link_url_eval {[export_vars -base "${my_project_manager_url}task-one" { task_id }]}
+    }
 }
 
 lappend normal_row value {} description {}
 
-
-
 # we modify the queries if we are viewing tasks
 
-if { $show_tasks_p || [exists_and_not_null pm_task_id]} {
-    set task_select "case when task.title is null then '' else task.title end as task_name, task.item_id as task_id,"
+if { [exists_and_not_null pm_task_id]} {
+    set task_select "task.title as task_name, task.item_id as task_id,"
 
     set task_left_join {
         LEFT JOIN  (select 
@@ -617,7 +623,7 @@ list::create \
 
 # some more documentation of what's going on here would be helpful. 
 
-set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url }
+set extend  { edit_url delete_url delete_onclick time_stamp_pretty edit_p delete_p my_base_url my_project_manager_url task_name task_id }
 foreach id $tree_ids {
     lappend extend c_${id}_category_id
 }
@@ -630,8 +636,27 @@ db_multirow -extend $extend -unclobber entries select_entries2 { } {
     set my_base_url $base_url 
     set my_project_manager_url $project_manager_url
 
-    if { ![empty_string_p $tree_id] && ![empty_string_p $category_id] } {
+    if { [exists_and_not_null tree_id] && [exists_and_not_null category_id] } {
         lappend row_categories($tree_id) $category_id
+    }
+
+    if {$show_tasks_p} {
+	if {![exists_and_not_null task_id]} {
+	    set task_id ""
+	    set task_name ""
+	    db_0or1row get_task {
+		select 
+		r.title as task_name, 
+		i.item_id as task_id
+		from 
+		cr_items i, 
+		cr_revisions r,
+		acs_data_links ar
+		where r.item_id = ar.object_id_one and
+		i.live_revision = r.revision_id
+		and object_id_two = :entry_id
+	    }
+	}
     }
     
     if { ![db_multirow_group_last_row_p -column entry_id] } {
