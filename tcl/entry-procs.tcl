@@ -101,26 +101,13 @@ ad_proc -public logger::entry::edit {
 
         # delete any linked in tasks (an entry could be linked to a
         # task, and the user could decide to log against the project only)
-        db_dml delete_logger_map {
-            DELETE FROM
-            pm_task_logger_proj_map
-            WHERE
-            logger_entry = :entry_id
-        }
+	application_data_link::delete_links -object_id $entry_id
 
         # if we have a task_id, then we need to note that this
         # entry is logged to a particular task.
         if {[exists_and_not_null task_item_id]} {
             
-            db_dml add_logger_map "
-                INSERT INTO
-                pm_task_logger_proj_map
-                (task_item_id,
-                 logger_entry)
-                VALUES
-                (:task_item_id,
-                 :entry_id)
-             "
+	    application_data_link::new -this_object_id $entry_id -target_object_id $task_item_id 
             
             pm::task::update_hours \
                 -task_item_id $task_item_id \
@@ -188,7 +175,7 @@ ad_proc -public logger::entry::task_id {
     
     @error 
 } {
-    return [db_string task_id { } -default ""]
+    return [lindex [application_data_link::get_linked_content -from_object_id $entry_id -to_content_type pm_task] 0]
 }
 
 
