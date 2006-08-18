@@ -77,8 +77,9 @@ ad_proc -public -callback pm::project_new -impl logger {
 
     db_1row project_data {
 	select creation_user, title, description, project_id as project_rev_id
-	from pm_projectsx
-	where item_id = :project_id
+	from pm_projectsx px, cr_items i
+	where i.item_id = :project_id
+	and px.project_id = i.latest_revision
     }
 
     if {[exists_and_not_null callback_data(organization_id)]} {
@@ -143,6 +144,13 @@ ad_proc -public -callback pm::project_edit -impl logger {
     }
 
     set logger_project [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type logger_project] 0]
+    if {$logger_project eq ""} {
+	# create new logger project
+	ns_log Notice "Need to generate logger project for project_item_id $project_id"
+	callback -impl logger pm::project_new -package_id $package_id -project_id $project_id -data [array get callback_data]
+	set logger_project [lindex [application_data_link::get_linked -from_object_id $project_id -to_object_type logger_project] 0]
+    }
+
     set active_p [pm::status::open_p -project_status_id $status_id]
 
     if {[exists_and_not_null callback_data(organization_id)]} {
