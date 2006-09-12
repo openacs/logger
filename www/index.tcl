@@ -18,6 +18,7 @@ ad_page_contract {
     page:integer,optional
     {description_f ""}
     {project_status ""}
+    {project_ids ""}
 } -validate {
     time_stamps_valid {
         if { [llength $time_stamp] != 0 && [llength $time_stamp] != 2 } {

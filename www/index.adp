@@ -17,6 +17,7 @@
       &="entry_id"
       &="variable_id"
       &="project_id"
+      &="project_ids"
       &="user_id"
       &="time_stamp"
       &="start_date"
@@ -30,13 +31,14 @@
       &="project_manager_url"
       &="show_tasks_p"
       &="description_f"
-      &="project_status">
+      &="project_status" project_ids=@project_ids@>
   </if>
   <else>
       <include src="/packages/logger/lib/entries" 
       &="entry_id"
       &="variable_id"
       &="project_id"
+      &="project_ids"
       &="user_id"
       &="time_stamp"
       &="start_date"
@@ -49,7 +51,7 @@
       &="return_url"
       &="show_tasks_p"
       &="description_f"
-      &="project_status">
+      &="project_status"  project_ids=@project_ids@>
   </else>
 </else>
 

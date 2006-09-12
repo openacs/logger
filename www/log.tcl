@@ -83,7 +83,7 @@ if { ![exists_and_not_null variable_id] } {
 # We need project and variable names
 logger::project::get -project_id $project_id -array project_array
 logger::variable::get -variable_id $variable_id -array variable_array
-set unit "[_ [regsub -all {#} $variable_array(unit) ""]]"
+set unit [lang::util::localize $variable_array(unit)]
 
 set project_array(name) [lang::util::localize $project_array(name)]
 
