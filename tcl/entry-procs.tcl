@@ -239,6 +239,7 @@ ad_proc -public logger::entry::pm_after_change {
 
     set user_id [ad_conn user_id]
     set peeraddr [ad_conn peeraddr]
+    set package_id [ad_conn package_id]
 
     pm::task::update_percent \
         -task_item_id $task_item_id \
@@ -246,46 +247,32 @@ ad_proc -public logger::entry::pm_after_change {
     
     # figure out what changed and notify everyone
     
-    set task_item_id_array(1) $task_item_id
-    set number   1
-    set comments(1) ""
-    set comments_mime_type(1) "text/html"
+    # if the old_percent was >= 100 and now less, or
+    # the old_percent was < 100 and is now more, then
+    # we need to send out an email to notify everyone
     
-    pm::task::what_changed \
-        -task_item_id_array          task_item_id_array \
-        -number                      $number \
-        -comments_array              comments \
-        -comments_mime_type_array    comments_mime_type
-    
-    if {[string length $comments(1)] > 0} {
-        
-        # add comment to task
-        pm::util::general_comment_add \
-            -object_id $task_item_id \
-            -title [pm::task::name -task_item_id $task_item_id] \
-            -comment $comments(1) \
-            -mime_type $comments_mime_type(1) \
-            -user_id $user_id \
-            -peeraddr $peeraddr \
-            -type "task" \
-            -send_email_p f
-        
-        # if the old_percent was >= 100 and now less, or
-        # the old_percent was < 100 and is now more, then
-        # we need to send out an email to notify everyone
-        
-        if { \
-                 $old_percent_complete >= 100 && \
-                 $new_percent_complete <  100 || \
-                 $old_percent_complete <  100 && \
-                 $new_percent_complete >= 100} {
-            
-            # send email notification
-            pm::task::email_alert \
-                -task_item_id $task_item_id \
-                -edit_p t \
-                -comment $comments(1) \
-                -comment_mime_type $comments_mime_type(1)
-        }
+    set old $old_percent_complete
+    set new $new_percent_complete
+
+    set changes [list]
+    if {![string equal $old $new]} {
+	if {$new >= 100 && $old < 100} {
+	    lappend changes "<b>Closing task</b>"
+	} elseif {$new < 100 && $old >= 100} {
+	    lappend changes "<b>Reopening task</b>"
+	}
+    }
+
+    if {[llength $changes] > 0 && ![parameter::get -parameter "LogCommentsP" -default "0" -package_id $package_id]} {
+	pm::util::general_comment_add \
+	    -object_id $task_item_id \
+	    -title [pm::task::name -task_item_id $task_item_id] \
+	    -comment "<ul><li>[join $changes <li>]</ul>" \
+	    -mime_type text/html \
+	    -user_id $user_id \
+	    -peeraddr $peeraddr \
+	    -type "task" \
+	    -send_email_p t \
+	    -to_party_ids [db_string assignees "select party_id from pm_task_assignment where task_id =:task_item_id" -default ""]
     }
 }

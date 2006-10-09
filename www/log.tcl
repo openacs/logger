@@ -412,7 +412,8 @@ ad_form -extend -name log_entry_form -validate {
             # logging against project manager
             if {[exists_and_not_null pm_task_id]} {
 
-                set old_percent_complete $percent_complete
+		set task_rev_id [content::item::get_best_revision -item_id $pm_task_id]
+                set old_percent_complete [db_string get_old_percent "select percent_complete from pm_tasks_revisions tr where tr.task_revision_id = :task_rev_id"]
                 logger::entry::pm_before_change \
                     -task_item_id $pm_task_id
 
@@ -443,7 +444,8 @@ ad_form -extend -name log_entry_form -validate {
             # logging against project manager
             if {[exists_and_not_null pm_task_id]} {
                 
-                set old_percent_complete $percent_complete
+		set task_rev_id [content::item::get_best_revision -item_id $pm_task_id]
+                set old_percent_complete [db_string get_old_percent "select percent_complete from pm_tasks_revisions tr where tr.task_revision_id = :task_rev_id"]
                 logger::entry::pm_before_change \
                     -task_item_id $pm_task_id
 
@@ -459,7 +461,7 @@ ad_form -extend -name log_entry_form -validate {
 
             if {[exists_and_not_null pm_task_id]} {
 
-                pm::task::pm_after_change \
+                logger::entry::pm_after_change \
                     -task_item_id $pm_task_id \
                     -new_percent_complete $percent_complete \
                     -old_percent_complete $old_percent_complete
@@ -474,6 +476,34 @@ ad_form -extend -name log_entry_form -validate {
             [category::ad_form::get_categories \
                  -container_object_id $the_project_id]
     }
+
+    if {[exists_and_not_null pm_task_id]} {
+	set log_comment_p [parameter::get -parameter "LogCommentsP" -default "0" -package_id $package_id]
+	if {$log_comment_p} {
+	    # add comment to task
+	    set title [_ logger.log_comment_title]
+
+	    if {![string equal $old_percent_complete $percent_complete]} {
+		if {$percent_complete >= 100 && $old_percent_complete < 100} {
+		    append title  ". Closing task"
+		} elseif {$percent_complete < 100 && $old_percent_complete >= 100} {
+		    append title ". Reopening task"
+		}
+	    }
+
+	    pm::util::general_comment_add \
+		-object_id $pm_task_id \
+		-title "$title" \
+		-comment $description \
+		-mime_type "text/plain" \
+		-user_id $current_user_id \
+		-peeraddr [ad_conn peeraddr] \
+		-type "task" \
+		-send_email_p t \
+		-to_party_ids [db_string assignees "select party_id from pm_task_assignment where task_id =:pm_task_id" -default ""]
+	}
+    }
+
     
     # Remember this date, as the next entry is likely to be for the same date
     ad_set_client_property logger time_stamp $time_stamp
@@ -484,6 +514,8 @@ ad_form -extend -name log_entry_form -validate {
     } else {	
 	ad_returnredirect -message "[_ logger.lt_Log_entry_for_value_v]" [export_vars -base [ad_conn url] { project_id variable_id pm_project_id pm_task_id}]
     }
+
+
     ad_script_abort
 
 } -edit_data {
@@ -493,7 +525,8 @@ ad_form -extend -name log_entry_form -validate {
 
             if {[exists_and_not_null pm_task_id]} {
 
-                set old_percent_complete $percent_complete
+		set task_rev_id [content::item::get_best_revision -item_id $pm_task_id]
+                set old_percent_complete [db_string get_old_percent "select percent_complete from pm_tasks_revisions tr where tr.task_revision_id = :task_rev_id"]
                 logger::entry::pm_before_change \
                     -task_item_id $pm_task_id
 
@@ -549,7 +582,6 @@ ad_form -extend -name log_entry_form -validate {
 } -after_submit {
 
     ad_returnredirect -message "[_ logger.Log_entry_modified]" $return_url
-
     if {![string equal $pm_task_id -1]} {
         pm::project::compute_status $pm_project_id
     }
