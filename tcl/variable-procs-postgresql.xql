@@ -34,7 +34,6 @@
             and    pm.package_id = :package_id
             and    p.project_id = pm.project_id
             and    p.active_p = 't'
-            order  by lower(p.name)
       limit 1
     </querytext>
   </fullquery>
