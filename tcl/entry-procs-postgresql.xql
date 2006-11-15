@@ -5,7 +5,9 @@
 
   <fullquery name="logger::entry::new.insert_entry">
     <querytext>
-        select logger_entry__new (
+		Begin	
+		LOCK TABLE acs_objects IN SHARE ROW EXCLUSIVE MODE;
+        perform logger_entry__new (
                   :entry_id,
                   :project_id,
                   :variable_id,
@@ -15,6 +17,8 @@
                   :creation_user,
                   :creation_ip
               );
+	return 0;
+	end;
     </querytext>
   </fullquery>
 

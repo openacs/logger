@@ -31,7 +31,7 @@ declare
 
     v_project_id          integer;
 begin
-       v_project_id := acs_object__new(
+       select acs_object__new(
            p_project_id,             -- object_id
            ''logger_project'',           -- object_type
            current_timestamp,      -- creation_date
@@ -39,7 +39,7 @@ begin
            p_creation_ip,          -- creation_ip
            p_package_id,           -- context_id
            ''t''                   -- security_inherit_p
-       ); 
+       ) into v_project_id;
        
        insert into logger_projects (project_id, name, description, project_lead)
            values (v_project_id, p_name, p_description, p_project_lead);

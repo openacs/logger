@@ -56,7 +56,11 @@ ad_proc -public logger::entry::new {
         set creation_user $party_id
     }
     
-    set entry_id [db_exec_plsql insert_entry {}]
+    if {$entry_id eq ""} {
+	set entry_id [db_nextval "acs_object_id_seq"]
+    }
+
+    db_exec_plsql insert_entry {}
 
     # The creator can admin his own entry
     permission::grant -party_id $creation_user -object_id $entry_id -privilege admin
