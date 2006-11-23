@@ -100,8 +100,6 @@ ad_proc -public logger::package::map_project {
         set package_id [ad_conn package_id]
     }
 
-    permission::require_permission -object_id $project_id -privilege "read"
-    
     db_dml map_project {
         insert into logger_project_pkg_map (project_id, package_id) values (:project_id, :package_id)
     }

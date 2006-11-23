@@ -55,7 +55,7 @@ ad_proc -public logger::entry::new {
     if {[exists_and_not_null party_id]} {
         set creation_user $party_id
     }
-    
+
     if {$entry_id eq ""} {
 	set entry_id [db_nextval "acs_object_id_seq"]
     }
