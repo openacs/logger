@@ -118,7 +118,7 @@ ad_proc -public logger::variable::get {
 }
 
 ad_proc -public logger::variable::get_default_variable_id {
-    {-package_id {}}
+    {-package_id ""}
 } {
     Get the ID of the default (first) variable.
 } {
@@ -128,12 +128,12 @@ ad_proc -public logger::variable::get_default_variable_id {
     if { ![empty_string_p $package_id] } {
         # Get the default variable of the first active project in the given package
         set primary_variables [db_list select_first_project_primary_variable {}]
-        
+
         # Just the first
         set variable_id [lindex $primary_variables 0]
     }
 
-    if { [empty_string_p $variable_id] } {
+    if { [exists_and_not_null variable_id] } {
         # Just get the first ever variable, most likely "Time"
         set variable_id [db_string select_first_variable_id {} -default {}]
     }

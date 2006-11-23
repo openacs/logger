@@ -106,7 +106,7 @@ ad_proc -public -callback pm::project_new -impl logger {
 	}
     } else {
 	# add in the default variable
-	logger::project::map_variable -project_id $logger_project -variable_id [logger::variable::get_default_variable_id]
+	logger::project::map_variable -project_id $logger_project -variable_id [logger::variable::get_default_variable_id -package_id $package_id]
     }
 
     # we want the logger project to show up in logger!
@@ -173,7 +173,7 @@ ad_proc -public -callback pm::project_edit -impl logger {
     if {[exists_and_not_null callback_data(variables)]} {
 	logger::project::remap_variables -project_id $logger_project -new_variable_list $callback_data(variables)
     } else {
-	logger::project::remap_variables -project_id $logger_project -new_variable_list [logger::variable::get_default_variable_id]
+	logger::project::remap_variables -project_id $logger_project -new_variable_list [logger::variable::get_default_variable_id -package_id $package_id]
     }
 }
 
