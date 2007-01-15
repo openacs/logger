@@ -500,7 +500,7 @@ ad_form -extend -name log_entry_form -validate {
 		-peeraddr [ad_conn peeraddr] \
 		-type "task" \
 		-send_email_p t \
-		-to_party_ids [db_string assignees "select party_id from pm_task_assignment where task_id =:pm_task_id" -default ""]
+		-to_party_ids [db_list assignees "select party_id from pm_task_assignment where task_id =:pm_task_id"]
 	}
     }
 

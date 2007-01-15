@@ -133,7 +133,7 @@ ad_proc -public logger::variable::get_default_variable_id {
         set variable_id [lindex $primary_variables 0]
     }
 
-    if { [exists_and_not_null variable_id] } {
+    if { ![exists_and_not_null variable_id] } {
         # Just get the first ever variable, most likely "Time"
         set variable_id [db_string select_first_variable_id {} -default {}]
     }
