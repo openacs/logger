@@ -265,84 +265,85 @@ if { ![llength $default_descriptions] } {
 }
 # Additions to form if project-manager is involved.
 if {[exists_and_not_null pm_project_id]} {
-
+    
     # do I really need this both here and in the -on_refresh block? -jr
-
+    
     if {[exists_and_not_null pm_task_id]} {
         db_1row get_task_values { }
-
         set my_task_id $pm_task_id
-                
     } else {
-
         set my_task_id ""
-
     }
-
-
+    
     ad_form -extend -name log_entry_form -form {
-        
         {pm_project_id:text(hidden)
             {value $pm_project_id}
         }
-        {pm_task_id:integer(select),optional
-            {section "[_ project-manager.Task]"}
-            {label "[_ project-manager.Subject]"}
-            {options {$task_options}}
-            {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
-            {value $my_task_id}
-            {help}
-            {help_text "[_ logger.lt_If_you_change_this_pl]"}
-        }
-    } 
-
-    if {[exists_and_not_null pm_task_id]} {
-        set display_hours [pm::task::hours_remaining \
-                               -estimated_hours_work $estimated_hours_work \
-                               -estimated_hours_work_min $estimated_hours_work_min \
-                               -estimated_hours_work_max $estimated_hours_work_max \
-                               -percent_complete $percent_complete \
-                              ]
-        
-        set total_hours_work [pm::task::estimated_hours_work \
-                                  -estimated_hours_work $estimated_hours_work \
-                                  -estimated_hours_work_min $estimated_hours_work_min \
-                                  -estimated_hours_work_max $estimated_hours_work_max \
-                                 ]
-    } else {
-        set display_hours 0
-        set total_hours_work 0
-        set percent_complete 0
     }
 
-    ad_form -extend -name log_entry_form -form {
-        
-        {remaining_work:text(inform)
-            {label "[_ project-manager.Remaining_work]"}
-            {value $display_hours}
-            {after_html "[_ project-manager.hours]"}
-        }
-
-        {total_hours_work:text(inform)
-            {label "[_ project-manager.Total_work]"}
-            {value $total_hours_work}
-            {after_html "[_ project-manager.hours]"}
-        }
-    } 
-
-    ad_form -extend -name log_entry_form -form {
-
-        {percent_complete:float
-            {label "[_ project-manager.Complete]"}
-            {value $percent_complete}
-            {after_html "%"}
-            {html {size 5 maxlength 5}}
-            {help}
-            {help_text "[_ project-manager.lt_Set_to_100_to_close_t]"}
-        }
-        
-    } 
-
+    if {[exists_and_not_null pm_task_id]} {
+	if {[exists_and_not_null task_options]} {
+	    ad_form -extend -name log_entry_form -form {
+		{pm_task_id:integer(select),optional
+		    {section "[_ project-manager.Task]"}
+		    {label "[_ project-manager.Subject]"}
+		    {options {$task_options}}
+		    {html {onChange "document.log_entry_form.__refreshing_p.value='1';submit()"}}
+		    {value $my_task_id}
+		    {help}
+		    {help_text "[_ logger.lt_If_you_change_this_pl]"}
+		}
+	    }
+	} else {
+	    ad_form -extend -name log_entry_form -form {
+		{pm_task_id:integer(hidden) {value $my_task_id}}
+		{pm_task:text(inform),optional
+		    {label "[_ project-manager.Subject]"}
+		    {value "[pm::task::name -task_item_id $my_task_id]"}
+		}
+	    }
+	}
+	
+	set display_hours [pm::task::hours_remaining \
+			       -estimated_hours_work $estimated_hours_work \
+			       -estimated_hours_work_min $estimated_hours_work_min \
+			       -estimated_hours_work_max $estimated_hours_work_max \
+			       -percent_complete $percent_complete \
+			      ]
+	
+	set total_hours_work [pm::task::estimated_hours_work \
+				  -estimated_hours_work $estimated_hours_work \
+				  -estimated_hours_work_min $estimated_hours_work_min \
+				  -estimated_hours_work_max $estimated_hours_work_max \
+				 ]
+	
+	ad_form -extend -name log_entry_form -form {
+	    
+	    {remaining_work:text(inform)
+		{label "[_ project-manager.Remaining_work]"}
+		{value $display_hours}
+		{after_html "[_ project-manager.hours]"}
+	    }
+	    
+	    {total_hours_work:text(inform)
+		{label "[_ project-manager.Total_work]"}
+		{value $total_hours_work}
+		{after_html "[_ project-manager.hours]"}
+	    }
+	} 
+    
+	ad_form -extend -name log_entry_form -form {
+	    
+	    {percent_complete:float
+		{label "[_ project-manager.Complete]"}
+		{value $percent_complete}
+		{after_html "%"}
+		{html {size 5 maxlength 5}}
+		{help}
+		{help_text "[_ project-manager.lt_Set_to_100_to_close_t]"}
+	    }
+	} 
+    }
 }
 
 
