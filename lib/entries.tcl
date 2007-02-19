@@ -429,7 +429,15 @@ set orderbys {
 
 # the calling include may not want to show links to sort
 if {[exists_and_not_null show_orderby_p] && [string is false $show_orderby_p]} {
-    set orderbys ""
+    set orderbys {
+	time_stamp {
+	    label "[_ logger.Date]"
+	    orderby_desc "le.time_stamp desc, ao.creation_date desc"
+	    orderby_asc "le.time_stamp asc, ao.creation_date asc"
+	    default_direction desc
+	}
+	default_value time_stamp,desc
+    }
 }
 
 
