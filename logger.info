@@ -14,7 +14,7 @@
         <summary>Time and expenses reporting.</summary>
         <release-date>2005-10-14</release-date>
         <vendor url="http://www.collaboraid.biz">Collaboraid</vendor>
-        <description format="text/html">Logger lets you keep track of measurements over time. The primary use case is time and expenses reporting, an area where we are being guided by the HR-XML Time Expense Reporting 2.0 standard. However, the intention is to allow for reporting of arbitrary types of numerical data such as financial results - account balance, revenue etc. You could even use this application to monitor your weight.  The full specification is here: &lt;a href=&quot;http://www.collaboraid.biz/developer/logger-spec&quot;&gt;http://www.collaboraid.biz/developer/logger-spec&lt;a&gt;
+        <description format="text/html">Logger lets you keep track of measurements over time. The primary use case is time and expenses reporting, an area where we are being guided by the HR-XML Time Expense Reporting 2.0 standard. However, the intention is to allow for reporting of arbitrary types of numerical data such as financial results - account balance, revenue etc. You could even use this application to monitor your weight.  The full specification is here: &lt;a href=&quot;http://web.archive.org/web/20050223235915/http://www.collaboraid.biz:80/developer/logger-spec&quot;&gt;http://www.collaboraid.biz/developer/logger-spec&lt;a&gt;
 
 Logger can be optionally integrated with project-manager, for logging of time against projects and tasks.</description>
         <maturity>1</maturity>
