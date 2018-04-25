@@ -258,7 +258,7 @@ ad_proc -public logger::entry::pm_after_change {
     set old $old_percent_complete
     set new $new_percent_complete
 
-    set changes [list]
+    set changes {}
     if {![string equal $old $new]} {
 	if {$new >= 100 && $old < 100} {
 	    lappend changes "<b>Closing task</b>"
