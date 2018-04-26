@@ -109,7 +109,7 @@ if {![empty_string_p $project_manager_url]} {
     # project. When a new task is chosen, we want to change the
     # information shown about that task
 
-    set task_options [list]
+    set task_options {}
 
     if {[exists_and_not_null pm_task_id]} {
 
@@ -167,7 +167,7 @@ set context [list $page_title]
 
 
 # Build the log entry form elements
-set actions [list]
+set actions {}
 if { $edit_p } {
     lappend actions { Edit edit }
 }
@@ -216,7 +216,7 @@ category::ad_form::add_widgets \
 # but wants dates in list format
 
 set default_descriptions [split [parameter::get -parameter "DefaultDescriptionList"] ";"]
-set options [list]
+set options {}
 lappend options [list "" ""]
 foreach desc $default_descriptions {
     lappend options [list $desc $desc]
