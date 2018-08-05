@@ -31,7 +31,7 @@ Logger can be optionally integrated with project-manager, for logging of time ag
             <callback type="before-uninstantiate"  proc="logger::apm::before_uninstantiate"/>
         </callbacks>
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultDescriptionList"  description="A list of default descriptions separeted by &quot;;&quot; to use when adding a log entry."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultDescriptionList"  description="A list of default descriptions separated by &quot;;&quot; to use when adding a log entry."/>
         </parameters>
 
     </version>
