@@ -32,7 +32,7 @@ ad_proc -private logger::util::set_vars_from_ad_conn {
     } else {
         foreach variable_name $variable_names {
             upvar $variable_name $variable_name
-            set $variable_name [db_null]
+            set $variable_name ""
         }
     }    
 }

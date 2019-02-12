@@ -42,7 +42,7 @@ ad_proc -public logger::variable::new {
 
     if { $pre_installed_p } {
         # Pre-installed vars are not associated with any particular package
-        set package_id [db_null]
+        set package_id ""
     }
 
     set variable_id [db_exec_plsql insert_variable {}]
