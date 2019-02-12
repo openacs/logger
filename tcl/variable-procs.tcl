@@ -1,7 +1,7 @@
 ad_library {
     Procedures in the logger::variable namespace. Those procedures
     operate on logger variable objects.
-    
+
     @creation-date 4:th of April 2003
     @author Peter Marklund (peter@collaboraid.biz)
     @cvs-id $Id$
@@ -22,7 +22,7 @@ ad_proc -public logger::variable::new {
 
     @param variable_id Any pre-generated id of the variable. Optional.
     @param name The name of the new variable. Required.
-    @param unit The unit of the variable, for example hours, minutes, or 
+    @param unit The unit of the variable, for example hours, minutes, or
                 a currency code such as USD or EUR.
     @param type Must be either additive (default) or non-additive.
     @param pre_installed_p Indicates whether this is a variable that is comes pre-installed
@@ -33,11 +33,11 @@ ad_proc -public logger::variable::new {
     @author Peter Marklund
 } {
     ad_assert_arg_value_in_list type {additive non-additive}
-    
+
     set name [lang::util::convert_to_i18n -package_key "logger" -prefix "name" -text $name]
     set unit [lang::util::convert_to_i18n -package_key "logger" -prefix "unit" -text $unit]
 
-    # Use ad_conn to initialize variables    
+    # Use ad_conn to initialize variables
     logger::util::set_vars_from_ad_conn {package_id creation_user creation_ip}
 
     if { $pre_installed_p } {
@@ -53,7 +53,7 @@ ad_proc -public logger::variable::new {
             -party_id [acs_magic_object registered_users] \
             -object_id $variable_id \
             -privilege read
-    } 
+    }
 
     return $variable_id
 }
@@ -76,7 +76,7 @@ ad_proc -public logger::variable::edit {
     @author Peter Marklund
 } {
     ad_assert_arg_value_in_list type {additive non-additive}
-    
+
     set package_id [ad_conn package_id]
 
     db_dml update_variable {}
@@ -100,7 +100,7 @@ ad_proc -public logger::variable::get {
     {-variable_id:required}
     {-array:required}
 } {
-    Retrieve attributes of the variable with given id into an 
+    Retrieve attributes of the variable with given id into an
     array (using upvar) in the callers scope. The
     array will contain the keys variable_id, name, unit, and type.
 
@@ -140,3 +140,9 @@ ad_proc -public logger::variable::get_default_variable_id {
 
     return $variable_id
 }
+
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:
